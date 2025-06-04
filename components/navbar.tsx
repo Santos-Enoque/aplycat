@@ -1,11 +1,15 @@
+// components/navbar.tsx
 "use client";
 
 import { useState } from "react";
+import { useUser, SignInButton, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X, Zap, User } from "lucide-react";
+import Link from "next/link";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isSignedIn, isLoaded } = useUser();
 
   const navItems = [
     { name: "Features", href: "#features" },
@@ -20,12 +24,12 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
+            <Link href="/" className="flex items-center">
               <span className="text-2xl">🐱</span>
               <span className="ml-2 text-xl font-bold text-gray-900">
                 Aplycat
               </span>
-            </div>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -43,18 +47,50 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Desktop CTA Buttons */}
+          {/* Desktop Auth & CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Sign In
-            </Button>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-              <Zap className="h-4 w-4 mr-2" />
-              Try Free
-            </Button>
+            {!isLoaded ? (
+              // Loading skeleton
+              <div className="flex items-center space-x-4">
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            ) : isSignedIn ? (
+              // Signed in state
+              <div className="flex items-center space-x-4">
+                <Link href="/dashboard">
+                  <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+                    Dashboard
+                  </Button>
+                </Link>
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      avatarBox: "h-8 w-8"
+                    }
+                  }}
+                  afterSignOutUrl="/"
+                />
+              </div>
+            ) : (
+              // Not signed in state
+              <div className="flex items-center space-x-4">
+                <SignInButton mode="modal">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    Sign In
+                  </Button>
+                </SignInButton>
+                <SignInButton mode="modal">
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Zap className="h-4 w-4 mr-2" />
+                    Try Free
+                  </Button>
+                </SignInButton>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -86,16 +122,58 @@ export function Navbar() {
                   {item.name}
                 </a>
               ))}
+              
               <div className="pt-4 pb-2 border-t border-gray-200 mt-4">
-                <div className="flex flex-col space-y-2">
-                  <Button variant="ghost" className="justify-start">
-                    Sign In
-                  </Button>
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white justify-start">
-                    <Zap className="h-4 w-4 mr-2" />
-                    Try Free
-                  </Button>
-                </div>
+                {!isLoaded ? (
+                  // Loading skeleton
+                  <div className="space-y-2">
+                    <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                ) : isSignedIn ? (
+                  // Signed in state
+                  <div className="space-y-2">
+                    <Link href="/dashboard">
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <div className="px-3 py-2">
+                      <UserButton 
+                        appearance={{
+                          elements: {
+                            avatarBox: "h-8 w-8"
+                          }
+                        }}
+                        afterSignOutUrl="/"
+                      />
+                      <span className="ml-3 text-sm text-gray-700">
+                        {user.firstName || user.emailAddresses[0]?.emailAddress}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  // Not signed in state
+                  <div className="flex flex-col space-y-2">
+                    <SignInButton mode="modal">
+                      <Button variant="ghost" className="justify-start">
+                        <User className="h-4 w-4 mr-2" />
+                        Sign In
+                      </Button>
+                    </SignInButton>
+                    <SignInButton mode="modal">
+                      <Button className="bg-purple-600 hover:bg-purple-700 text-white justify-start">
+                        <Zap className="h-4 w-4 mr-2" />
+                        Try Free
+                      </Button>
+                    </SignInButton>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,18 +1,19 @@
-import { currentUser } from "@clerk/nextjs/server";
+// app/dashboard/page.tsx
+import { getCurrentUserFromDB } from "@/lib/auth/user-sync";
 import { redirect } from "next/navigation";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { db } from "@/lib/db";
 
 export default async function DashboardPage() {
-  const user = await currentUser();
+  const user = await getCurrentUserFromDB();
 
   if (!user) {
     redirect("/sign-in");
   }
 
-  // Fetch user data and related information
-  const dbUser = await db.user.findUnique({
-    where: { clerkId: user.id },
+  // Fetch comprehensive user data with all relationships
+  const userData = await db.user.findUnique({
+    where: { id: user.id },
     include: {
       resumes: {
         include: {
@@ -53,10 +54,10 @@ export default async function DashboardPage() {
     },
   });
 
-  if (!dbUser) {
-    // Create user if doesn't exist (fallback)
-    redirect("/sign-up");
+  if (!userData) {
+    // This shouldn't happen, but fallback to sign-in
+    redirect("/sign-in");
   }
 
-  return <DashboardContent user={dbUser} />;
+  return <DashboardContent user={userData} />;
 }

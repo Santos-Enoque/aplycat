@@ -2,8 +2,9 @@
 "use client";
 
 import { useState } from "react";
+import { useUser, SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { Zap, Lock, Eye, ArrowRight } from "lucide-react";
+import { Zap, Lock, Eye, ArrowRight, LogIn } from "lucide-react";
 
 interface ResumeSection {
   section_name: string;
@@ -107,7 +108,8 @@ interface AnalysisCardsProps {
 }
 
 export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // For demo purposes - replace with actual auth
+  const { user, isSignedIn, isLoaded } = useUser();
+  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 bg-green-100";
@@ -158,12 +160,7 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
     navigator.clipboard.writeText(text);
   };
 
-  const handleLogin = () => {
-    // For demo - replace with actual login logic
-    setIsLoggedIn(true);
-  };
-
-  const renderLockedSection = (sectionName: string) => (
+  const renderLockedSection = (sectionName: string, description: string) => (
     <div className="relative mb-6">
       <div className="filter blur-sm pointer-events-none select-none">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -178,15 +175,43 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
         </div>
       </div>
       <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-lg">
-        <div className="text-center">
-          <Lock className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-          <p className="text-purple-700 font-medium">
-            Login to unlock {sectionName.toLowerCase()}
+        <div className="text-center p-6">
+          <Lock className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+          <h4 className="text-lg font-semibold text-purple-900 mb-2">
+            Sign in to unlock {sectionName.toLowerCase()}
+          </h4>
+          <p className="text-purple-700 mb-4 text-sm">
+            {description}
           </p>
+          <SignInButton 
+            mode="modal"
+            fallbackRedirectUrl={window.location.href}
+          >
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In to View
+            </Button>
+          </SignInButton>
         </div>
       </div>
     </div>
   );
+
+  // Show loading state while auth is being determined
+  if (!isLoaded) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-8"></div>
+          <div className="grid md:grid-cols-4 gap-4 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-gray-200 h-32 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -196,6 +221,11 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
           🐱 Aplycat's Brutal Analysis
         </h2>
         <p className="text-gray-600">Analysis for: {fileName}</p>
+        {isSignedIn && user && (
+          <p className="text-sm text-green-600 mt-1">
+            Welcome back, {user.firstName || 'there'}! 
+          </p>
+        )}
       </div>
 
       {/* TOP CTA - Prominent Improve Button */}
@@ -273,7 +303,7 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
         </h3>
 
         <div className="space-y-6">
-          {/* Show ONLY first section for free users */}
+          {/* Show ONLY first section for everyone */}
           {analysis.resume_sections?.slice(0, 1).map((section, index) => (
             <div key={index} className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
@@ -365,45 +395,45 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
             </div>
           ))}
 
-          {/* Show locked sections if not logged in and there are more sections */}
-          {!isLoggedIn &&
-            analysis.resume_sections &&
-            analysis.resume_sections.length > 1 && (
-              <div className="space-y-6">
-                {/* Preview of locked sections */}
-                <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-purple-50/50">
-                  <div className="text-center py-6">
-                    <Lock className="h-12 w-12 text-purple-600 mx-auto mb-3" />
-                    <h4 className="text-lg font-semibold text-purple-900 mb-2">
-                      {analysis.resume_sections.length - 1} More Sections Locked
-                    </h4>
-                    <p className="text-purple-700 mb-4">
-                      Get detailed analysis for all sections including:
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-2 mb-4">
-                      {analysis.resume_sections.slice(1).map((section, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
-                        >
-                          {section.section_name}
-                        </span>
-                      ))}
-                    </div>
-                    <Button
-                      onClick={handleLogin}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Login to View All Sections Free
-                    </Button>
+          {/* Show locked sections OR full sections based on auth status */}
+          {!isSignedIn && analysis.resume_sections && analysis.resume_sections.length > 1 && (
+            <div className="space-y-6">
+              {/* Preview of locked sections */}
+              <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-purple-50/50">
+                <div className="text-center py-6">
+                  <Lock className="h-12 w-12 text-purple-600 mx-auto mb-3" />
+                  <h4 className="text-lg font-semibold text-purple-900 mb-2">
+                    {analysis.resume_sections.length - 1} More Sections Locked
+                  </h4>
+                  <p className="text-purple-700 mb-4">
+                    Get detailed analysis for all sections including:
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 mb-4">
+                    {analysis.resume_sections.slice(1).map((section, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
+                      >
+                        {section.section_name}
+                      </span>
+                    ))}
                   </div>
+                  <SignInButton 
+                    mode="modal"
+                    fallbackRedirectUrl={window.location.href}
+                  >
+                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Sign In to View All Sections Free
+                    </Button>
+                  </SignInButton>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-          {/* Show all sections if logged in */}
-          {isLoggedIn &&
+          {/* Show all sections if signed in */}
+          {isSignedIn &&
             analysis.resume_sections?.slice(1).map((section, index) => (
               <div
                 key={index + 1}
@@ -500,23 +530,23 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
         </div>
       </div>
 
-      {/* All other sections - show locked versions for free users OR full content for logged in users */}
-      {!isLoggedIn ? (
+      {/* All other sections - show locked versions for guests OR full content for signed in users */}
+      {!isSignedIn ? (
         <div className="space-y-6">
           {/* Show locked versions of all sections */}
-          {renderLockedSection("🕳️ Missing Sections")}
-          {renderLockedSection("🔍 Keyword Autopsy")}
-          {renderLockedSection("🎨 Formatting Disasters")}
-          {renderLockedSection("📊 Numbers Don't Lie")}
-          {renderLockedSection("🏭 Industry Standards")}
-          {renderLockedSection("✅ What Doesn't Suck")}
-          {renderLockedSection("⚠️ Needs Work")}
-          {renderLockedSection("🚨 Critical Disasters")}
-          {renderLockedSection("📱 Viral-Worthy Roasts")}
-          {renderLockedSection("🤖 ATS Issues")}
-          {renderLockedSection("📋 Action Plan")}
+          {renderLockedSection("🕳️ Missing Sections", "See what critical resume sections you're missing")}
+          {renderLockedSection("🔍 Keyword Autopsy", "Get industry-specific keyword analysis")}
+          {renderLockedSection("🎨 Formatting Disasters", "Fix formatting issues that hurt your chances")}
+          {renderLockedSection("📊 Numbers Don't Lie", "Learn how to quantify your achievements")}
+          {renderLockedSection("🏭 Industry Standards", "Understand what your industry expects")}
+          {renderLockedSection("✅ What Doesn't Suck", "See what you're doing right")}
+          {renderLockedSection("⚠️ Needs Work", "Get specific improvement suggestions")}
+          {renderLockedSection("🚨 Critical Disasters", "Fix resume-killing issues")}
+          {renderLockedSection("📱 Viral-Worthy Roasts", "Get shareable feedback")}
+          {renderLockedSection("🤖 ATS Issues", "Make your resume robot-friendly")}
+          {renderLockedSection("📋 Action Plan", "Get step-by-step improvement plan")}
 
-          {/* Final Login CTA */}
+          {/* Final Sign In CTA */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-8 text-white text-center">
             <div className="text-5xl mb-4">🔓</div>
             <h3 className="text-2xl font-bold mb-4">
@@ -527,20 +557,22 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
               improvements, ATS optimization tips, and everything else Aplycat
               found.
             </p>
-            <Button
-              onClick={handleLogin}
-              className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-4 text-lg"
+            <SignInButton 
+              mode="modal"
+              fallbackRedirectUrl={window.location.href}
             >
-              <Eye className="h-5 w-5 mr-2" />
-              Login to View All Results Free
-            </Button>
+              <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-4 text-lg">
+                <LogIn className="h-5 w-5 mr-2" />
+                Sign In to View All Results Free
+              </Button>
+            </SignInButton>
             <p className="text-purple-200 text-sm mt-4">
               100% Free • No credit card required • Full analysis unlocked
             </p>
           </div>
         </div>
       ) : (
-        // Show full content for logged in users
+        // Show full content for signed in users
         <div className="space-y-6">
           {/* Missing Sections */}
           {analysis.missing_sections &&
@@ -640,6 +672,7 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
             </div>
           )}
 
+          {/* Continue with all other sections... */}
           {/* Formatting Issues */}
           {analysis.formatting_issues &&
             analysis.formatting_issues.length > 0 && (
