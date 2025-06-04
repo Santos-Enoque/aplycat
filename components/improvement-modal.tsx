@@ -1,9 +1,10 @@
 // components/improvement-modal.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EnhancedLoading } from "@/components/enhanced-loading";
 import {
   X,
   Target,
@@ -11,7 +12,7 @@ import {
   Sparkles,
   ArrowRight,
   Lightbulb,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface ImprovementModalProps {
   isOpen: boolean;
@@ -21,15 +22,15 @@ interface ImprovementModalProps {
   fileName: string;
 }
 
-export function ImprovementModal({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  isLoading, 
-  fileName 
+export function ImprovementModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+  fileName,
 }: ImprovementModalProps) {
-  const [targetRole, setTargetRole] = useState('');
-  const [targetIndustry, setTargetIndustry] = useState('');
+  const [targetRole, setTargetRole] = useState("");
+  const [targetIndustry, setTargetIndustry] = useState("");
 
   if (!isOpen) return null;
 
@@ -40,19 +41,56 @@ export function ImprovementModal({
     }
   };
 
+  // Show enhanced loading if processing
+  if (isLoading) {
+    return (
+      <EnhancedLoading
+        title="AI is Optimizing Your Resume"
+        type="improvement"
+        fileName={fileName}
+        targetRole={targetRole}
+        targetIndustry={targetIndustry}
+      />
+    );
+  }
+
   const popularRoles = [
-    'Data Analyst', 'Software Engineer', 'Product Manager', 'Marketing Manager',
-    'Sales Representative', 'UX Designer', 'Business Analyst', 'Project Manager'
+    "Data Analyst",
+    "Software Engineer",
+    "Product Manager",
+    "Marketing Manager",
+    "Sales Representative",
+    "UX Designer",
+    "Business Analyst",
+    "Project Manager",
   ];
 
   const popularIndustries = [
-    'Technology', 'Healthcare', 'Finance', 'E-commerce', 
-    'Manufacturing', 'Education', 'Consulting', 'Retail'
+    "Technology",
+    "Healthcare",
+    "Finance",
+    "E-commerce",
+    "Manufacturing",
+    "Education",
+    "Consulting",
+    "Retail",
   ];
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget && !isLoading) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      onClick={handleBackdropClick}
+    >
+      <Card
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <CardHeader className="border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -62,11 +100,17 @@ export function ImprovementModal({
               <div>
                 <CardTitle className="text-xl">Improve Your Resume</CardTitle>
                 <p className="text-sm text-gray-600 mt-1">
-                  Get an AI-optimized, ATS-compliant version tailored to your target role
+                  Get an AI-optimized, ATS-compliant version tailored to your
+                  target role
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} disabled={isLoading}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              disabled={isLoading}
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -92,10 +136,9 @@ export function ImprovementModal({
                 onChange={(e) => setTargetRole(e.target.value)}
                 placeholder="e.g., Data Analyst, Software Engineer, Marketing Manager"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={isLoading}
                 required
               />
-              
+
               {/* Popular Roles */}
               <div className="mt-3">
                 <p className="text-xs text-gray-500 mb-2">Popular roles:</p>
@@ -106,7 +149,6 @@ export function ImprovementModal({
                       type="button"
                       onClick={() => setTargetRole(role)}
                       className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
-                      disabled={isLoading}
                     >
                       {role}
                     </button>
@@ -127,13 +169,14 @@ export function ImprovementModal({
                 onChange={(e) => setTargetIndustry(e.target.value)}
                 placeholder="e.g., Technology, Healthcare, Finance, E-commerce"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={isLoading}
                 required
               />
-              
+
               {/* Popular Industries */}
               <div className="mt-3">
-                <p className="text-xs text-gray-500 mb-2">Popular industries:</p>
+                <p className="text-xs text-gray-500 mb-2">
+                  Popular industries:
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {popularIndustries.map((industry) => (
                     <button
@@ -141,7 +184,6 @@ export function ImprovementModal({
                       type="button"
                       onClick={() => setTargetIndustry(industry)}
                       className="px-2 py-1 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors"
-                      disabled={isLoading}
                     >
                       {industry}
                     </button>
@@ -155,11 +197,16 @@ export function ImprovementModal({
               <div className="flex items-start gap-3">
                 <Lightbulb className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div>
-                  <h3 className="font-medium text-blue-900 mb-2">What we'll optimize:</h3>
+                  <h3 className="font-medium text-blue-900 mb-2">
+                    What we'll optimize:
+                  </h3>
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Professional summary tailored to your target role</li>
                     <li>• Experience section with quantified achievements</li>
-                    <li>• Skills relevant to the {targetIndustry || 'target'} industry</li>
+                    <li>
+                      • Skills relevant to the {targetIndustry || "target"}{" "}
+                      industry
+                    </li>
                     <li>• ATS-friendly formatting and keywords</li>
                     <li>• Content filtered for maximum relevance</li>
                   </ul>
@@ -173,41 +220,21 @@ export function ImprovementModal({
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={isLoading}
                 className="flex-1"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={!targetRole.trim() || !targetIndustry.trim() || isLoading}
+                disabled={!targetRole.trim() || !targetIndustry.trim()}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Optimizing Resume...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span>Improve My Resume</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <span>Improve My Resume</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
               </Button>
             </div>
-
-            {/* Loading State */}
-            {isLoading && (
-              <div className="text-center py-4">
-                <div className="text-sm text-gray-600">
-                  Our AI is analyzing and optimizing your resume for <strong>{targetRole}</strong> in <strong>{targetIndustry}</strong>...
-                </div>
-                <div className="text-xs text-gray-500 mt-2">
-                  This may take 30-60 seconds for comprehensive optimization
-                </div>
-              </div>
-            )}
           </form>
         </CardContent>
       </Card>

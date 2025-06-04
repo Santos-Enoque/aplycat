@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +15,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aplycat - Resume Analyzer",
+  title: "Aplycat - Brutally Honest Resume Analysis",
   description:
-    "Get brutally honest feedback on your resume with AI-powered analysis",
+    "Get AI-powered, brutally honest feedback on your resume. Transform your career with insights that actually matter.",
+  keywords:
+    "resume analysis, resume feedback, AI resume review, ATS optimization, job search",
+  openGraph: {
+    title: "Aplycat - Brutally Honest Resume Analysis",
+    description:
+      "Get AI-powered, brutally honest feedback on your resume. Transform your career with insights that actually matter.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +39,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        {children}
+        <Navbar />
+        <main className="min-h-screen">{children}</main>
+        <Footer />
       </body>
     </html>
   );
