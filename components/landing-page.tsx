@@ -118,50 +118,75 @@ export function LandingPage({ onStartAnalysis }: LandingPageProps) {
 
   const pricingPlans = [
     {
-      name: "Free",
+      name: "Free Trial",
       price: "$0",
-      period: "forever",
-      description: "Perfect for trying out Aplycat",
+      period: "one-time only",
+      credits: "10 credits",
+      description: "Experience the complete Aplycat transformation",
       features: [
-        "1 resume analysis",
-        "Basic feedback",
-        "ATS score",
-        "General improvements",
+        "1× Resume Analysis (2 credits)",
+        "1× Resume Improvement (3 credits)",
+        "1× Job Tailoring (4 credits)",
+        "1 credit for updates",
+        "See your resume go from terrible to hired-worthy",
       ],
-      cta: "Start Free",
+      cta: "Transform Your Resume Free!",
       popular: false,
+      highlight: "Complete transformation included",
     },
     {
-      name: "Pro",
-      price: "$19",
-      period: "one-time",
-      description: "Everything you need for job hunting",
+      name: "Starter Pack",
+      price: "$9",
+      period: "25 credits",
+      credits: "25 credits",
+      description: "Perfect for polishing one resume",
       features: [
-        "Unlimited resume analysis",
-        "Brutal honest feedback",
-        "AI-powered improvements",
-        "Job-specific tailoring",
-        "Cover letter generation",
-        "Priority support",
+        "2-3 complete resume analyses",
+        "2-3 resume improvements",
+        "5-10 custom updates",
+        "Basic optimization",
+        "Great for testing improvements",
       ],
-      cta: "Get Pro",
-      popular: true,
+      cta: "Get Starter",
+      popular: false,
+      highlight: "Perfect for beginners",
     },
     {
-      name: "Premium",
-      price: "$49",
-      period: "one-time",
+      name: "Professional Pack",
+      price: "$19",
+      period: "60 credits + 10 bonus",
+      credits: "70 credits total",
+      description: "Everything you need for your job search",
+      features: [
+        "5-8 resume analyses",
+        "5-8 resume improvements",
+        "3-5 job-specific tailorings",
+        "10-15 custom updates",
+        "Cover letter generation",
+        "Bonus: +10 extra credits (16% more value)",
+      ],
+      cta: "Get Professional",
+      popular: true,
+      highlight: "Most Popular - Best Value",
+    },
+    {
+      name: "Power User Pack",
+      price: "$39",
+      period: "140 credits + 25 bonus",
+      credits: "165 credits total",
       description: "For serious career advancement",
       features: [
-        "Everything in Pro",
-        "LinkedIn profile optimization",
-        "Interview preparation",
-        "Salary negotiation tips",
-        "Career coaching session",
-        "White-glove support",
+        "10+ resume analyses",
+        "10+ resume improvements",
+        "10+ job-specific tailorings",
+        "30+ custom updates",
+        "Unlimited cover letters",
+        "Priority support",
+        "Bonus: +25 extra credits (22% more value)",
       ],
-      cta: "Go Premium",
+      cta: "Go Power User",
       popular: false,
+      highlight: "Career Changer Special",
     },
   ];
 
@@ -440,6 +465,123 @@ export function LandingPage({ onStartAnalysis }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Credit Costs Section */}
+      <section className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              💳 How Credits Work
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Credits give you flexibility to use Aplycat's features as needed.
+              Here's what each feature costs:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <Card className="border-2 border-blue-200 hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6 text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Brain className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Resume Analysis
+                </h3>
+                <div className="text-3xl font-bold text-blue-600 mb-2">
+                  2 credits
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Detailed section-by-section analysis with brutal honesty
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-purple-200 hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6 text-center">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="h-8 w-8 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Resume Improvement
+                </h3>
+                <div className="text-3xl font-bold text-purple-600 mb-2">
+                  3 credits
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Full resume regeneration with AI optimization
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-green-200 hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Job Tailoring
+                </h3>
+                <div className="text-3xl font-bold text-green-600 mb-2">
+                  4 credits
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Role-specific optimization + cover letter
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-orange-200 hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6 text-center">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="h-8 w-8 text-orange-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Cover Letter
+                </h3>
+                <div className="text-3xl font-bold text-orange-600 mb-2">
+                  2 credits
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Professional cover letter generation
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-teal-200 hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6 text-center">
+                <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lightbulb className="h-8 w-8 text-teal-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Custom Update
+                </h3>
+                <div className="text-3xl font-bold text-teal-600 mb-2">
+                  1 credit
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Targeted modifications and tweaks
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-indigo-200 hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6 text-center">
+                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="h-8 w-8 text-indigo-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Value</h3>
+                <div className="text-3xl font-bold text-indigo-600 mb-2">
+                  $200+
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Professional resume service equivalent
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -452,7 +594,7 @@ export function LandingPage({ onStartAnalysis }: LandingPageProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {pricingPlans.map((plan, index) => (
               <Card
                 key={index}
@@ -465,7 +607,7 @@ export function LandingPage({ onStartAnalysis }: LandingPageProps) {
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-purple-600 text-white px-4 py-1">
-                      Most Popular
+                      {plan.highlight}
                     </Badge>
                   </div>
                 )}
@@ -480,6 +622,13 @@ export function LandingPage({ onStartAnalysis }: LandingPageProps) {
                     </span>
                     <span className="text-gray-600">/{plan.period}</span>
                   </div>
+                  {plan.credits && (
+                    <div className="mt-2">
+                      <Badge className="bg-blue-100 text-blue-800 text-sm px-3 py-1">
+                        {plan.credits}
+                      </Badge>
+                    </div>
+                  )}
                   <p className="text-gray-600 mt-2">{plan.description}</p>
                 </CardHeader>
 

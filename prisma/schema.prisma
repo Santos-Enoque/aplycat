@@ -1,0 +1,378 @@
+// Aplycat - AI Resume Analysis Platform
+// Production-ready Prisma Schema with Credit System
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// ===== USER MANAGEMENT (Clerk Integration) =====
+model User {
+    id        String  @id @default(cuid())
+    clerkId   String  @unique // Clerk user ID
+    email     String  @unique
+    firstName String?
+    lastName  String?
+    imageUrl  String?
+
+    // Account status
+    isActive  Boolean @default(true)
+    isPremium Boolean @default(false)
+
+    // Credits & Usage
+    credits          Int @default(10) // Free trial credits for new users
+    totalCreditsUsed Int @default(0)
+
+    // Timestamps
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+    lastActiveAt DateTime @default(now())
+
+    // Relations
+    resumes            Resume[]
+    analyses           Analysis[]
+    improvements       Improvement[]
+    creditTransactions CreditTransaction[]
+    subscriptions      Subscription[]
+    usageEvents        UsageEvent[]
+    feedback           Feedback[]
+
+    @@map("users")
+}
+
+// ===== CREDIT SYSTEM =====
+model CreditTransaction {
+    id     String @id @default(cuid())
+    userId String
+
+    // Transaction details
+    type        CreditTransactionType
+    amount      Int // Positive for additions, negative for deductions
+    description String
+
+    // Context
+    relatedAnalysisId    String? // If credit used for analysis
+    relatedImprovementId String? // If credit used for improvement
+
+    // Timestamps
+    createdAt DateTime @default(now())
+
+    // Relations
+    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    analysis    Analysis?    @relation(fields: [relatedAnalysisId], references: [id])
+    improvement Improvement? @relation(fields: [relatedImprovementId], references: [id])
+
+    @@map("credit_transactions")
+}
+
+enum CreditTransactionType {
+    SIGNUP_BONUS // Free credits on signup
+    PURCHASE // Purchased credits
+    SUBSCRIPTION // Monthly subscription credits
+    ANALYSIS_USE // Used for resume analysis
+    IMPROVEMENT_USE // Used for resume improvement
+    ADMIN_ADJUSTMENT // Manual admin adjustment
+    REFUND // Credit refund
+}
+
+// ===== RESUME & FILE MANAGEMENT =====
+model Resume {
+    id     String @id @default(cuid())
+    userId String
+
+    // File details
+    fileName String
+    fileUrl  String // UploadThing URL
+    fileSize Int? // File size in bytes
+    mimeType String?
+
+    // Metadata
+    title       String? // User-defined title
+    description String?
+
+    // Status
+    isActive Boolean @default(true)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    analyses     Analysis[]
+    improvements Improvement[]
+
+    @@map("resumes")
+}
+
+// ===== ANALYSIS RESULTS =====
+model Analysis {
+    id       String @id @default(cuid())
+    userId   String
+    resumeId String
+
+    // Analysis metadata
+    fileName         String
+    processingTimeMs Int?
+
+    // Scores
+    overallScore  Int
+    atsScore      Int
+    scoreCategory String
+    mainRoast     String
+
+    // Analysis results (JSON storage for flexibility)
+    analysisData Json // Complete analysis response
+
+    // Status & Credits
+    creditsUsed Int     @default(1)
+    isCompleted Boolean @default(false)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    resume             Resume              @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+    creditTransactions CreditTransaction[]
+    improvements       Improvement[]
+
+    @@map("analyses")
+}
+
+// ===== RESUME IMPROVEMENTS =====
+model Improvement {
+    id         String  @id @default(cuid())
+    userId     String
+    resumeId   String
+    analysisId String? // Optional: link to original analysis
+
+    // Improvement parameters
+    targetRole     String
+    targetIndustry String
+
+    // Generated content
+    improvedResumeData Json // Complete improved resume data
+    improvementSummary String? // Summary of changes made
+
+    // File output
+    generatedFileUrl String? // UploadThing URL for generated resume
+
+    // Status & Credits
+    creditsUsed      Int     @default(2) // Improvements cost more
+    isCompleted      Boolean @default(false)
+    processingTimeMs Int?
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    resume             Resume              @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+    analysis           Analysis?           @relation(fields: [analysisId], references: [id])
+    creditTransactions CreditTransaction[]
+
+    @@map("improvements")
+}
+
+// ===== SUBSCRIPTION & BILLING =====
+model Subscription {
+    id     String @id @default(cuid())
+    userId String
+
+    // Subscription details
+    planId   String // References to your pricing plans
+    planName String
+    status   SubscriptionStatus
+
+    // Billing
+    priceId        String? // Stripe price ID
+    customerId     String? // Stripe customer ID
+    subscriptionId String? // Stripe subscription ID
+
+    // Credits
+    monthlyCredits Int // Credits included in plan
+
+    // Billing cycle
+    currentPeriodStart DateTime?
+    currentPeriodEnd   DateTime?
+
+    // Timestamps
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    canceledAt DateTime?
+
+    // Relations
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+    ACTIVE
+    CANCELED
+    PAST_DUE
+    INCOMPLETE
+    TRIALING
+}
+
+// ===== USAGE TRACKING & ANALYTICS =====
+model UsageEvent {
+    id     String  @id @default(cuid())
+    userId String?
+
+    // Event details
+    eventType   UsageEventType
+    description String?
+    metadata    Json? // Additional event data
+
+    // Context
+    ipAddress String?
+    userAgent String?
+
+    // Timestamps
+    createdAt DateTime @default(now())
+
+    // Relations
+    user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+    @@map("usage_events")
+}
+
+enum UsageEventType {
+    SIGNUP
+    LOGIN
+    RESUME_UPLOAD
+    ANALYSIS_START
+    ANALYSIS_COMPLETE
+    IMPROVEMENT_START
+    IMPROVEMENT_COMPLETE
+    CREDIT_PURCHASE
+    SUBSCRIPTION_START
+    SUBSCRIPTION_CANCEL
+    FILE_DOWNLOAD
+}
+
+// ===== SYSTEM CONFIGURATION =====
+model SystemConfig {
+    id    String @id @default(cuid())
+    key   String @unique
+    value String
+
+    // Metadata
+    description String?
+    category    String?
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("system_config")
+}
+
+// ===== PRICING PLANS =====
+model PricingPlan {
+    id String @id @default(cuid())
+
+    // Plan details
+    name        String  @unique
+    description String?
+
+    // Credits & Features
+    monthlyCredits     Int
+    analysisCredits    Int @default(1) // Credits per analysis
+    improvementCredits Int @default(2) // Credits per improvement
+
+    // Pricing
+    price    Decimal @db.Decimal(10, 2)
+    currency String  @default("USD")
+
+    // Features
+    features Json // List of plan features
+
+    // Status
+    isActive  Boolean @default(true)
+    isPopular Boolean @default(false)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("pricing_plans")
+}
+
+// ===== FEEDBACK & SUPPORT =====
+model Feedback {
+    id     String  @id @default(cuid())
+    userId String?
+
+    // Feedback details
+    type    FeedbackType
+    subject String?
+    message String
+    rating  Int?         @db.SmallInt // 1-5 rating
+
+    // Context
+    page      String? // Which page feedback was left on
+    userAgent String?
+
+    // Status
+    status     FeedbackStatus @default(OPEN)
+    adminNotes String?
+
+    // Timestamps
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    resolvedAt DateTime?
+
+    // Relations
+    user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+    @@map("feedback")
+}
+
+enum FeedbackType {
+    BUG_REPORT
+    FEATURE_REQUEST
+    GENERAL_FEEDBACK
+    SUPPORT_REQUEST
+}
+
+enum FeedbackStatus {
+    OPEN
+    IN_PROGRESS
+    RESOLVED
+    CLOSED
+}
+
+// ===== WAITLIST (for future features) =====
+model WaitlistEntry {
+    id    String @id @default(cuid())
+    email String @unique
+
+    // Details
+    firstName String?
+    lastName  String?
+    company   String?
+    role      String?
+
+    // Source tracking
+    source   String? // How they found us
+    referrer String? // Referring URL
+
+    // Status
+    isNotified Boolean @default(false)
+
+    // Timestamps
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    notifiedAt DateTime?
+
+    @@map("waitlist_entries")
+}
