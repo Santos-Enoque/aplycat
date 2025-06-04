@@ -1,11 +1,65 @@
 // components/analysis-cards.tsx
 'use client';
 
+interface ResumeSection {
+  section_name: string;
+  found: boolean;
+  score: number;
+  roast: string;
+  issues: string[];
+  strengths: string[];
+  improvements: Array<{
+    issue: string;
+    fix: string;
+    example: string;
+  }>;
+}
+
+interface MissingSection {
+  section_name: string;
+  importance: string;
+  roast: string;
+  recommendation: string;
+}
+
+interface FormattingIssue {
+  issue: string;
+  severity: string;
+  fix: string;
+}
+
+interface KeywordAnalysis {
+  missing_keywords: string[];
+  overused_buzzwords: string[];
+  weak_action_verbs: string[];
+}
+
+interface QuantificationIssues {
+  missing_metrics: string[];
+  vague_statements: string[];
+}
+
+interface IndustryAdvice {
+  detected_industry: string;
+  industry_standards: string[];
+  industry_keywords: string[];
+}
+
+interface ActionItem {
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  time_estimate: string;
+}
+
 interface AnalysisData {
   overall_score: number;
   ats_score: number;
   main_roast: string;
   score_category: string;
+  resume_sections: ResumeSection[];
+  missing_sections: MissingSection[];
   good_stuff: Array<{
     title: string;
     roast: string;
@@ -33,20 +87,14 @@ interface AnalysisData {
     platform: string;
   }>;
   ats_issues: string[];
+  formatting_issues: FormattingIssue[];
+  keyword_analysis: KeywordAnalysis;
+  quantification_issues: QuantificationIssues;
   action_plan: {
-    immediate: Array<{
-      title: string;
-      description: string;
-      icon: string;
-      color: string;
-    }>;
-    longTerm: Array<{
-      title: string;
-      description: string;
-      icon: string;
-      color: string;
-    }>;
+    immediate: ActionItem[];
+    longTerm: ActionItem[];
   };
+  industry_specific_advice: IndustryAdvice;
 }
 
 interface AnalysisCardsProps {
@@ -74,22 +122,40 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
     return colors[color] || colors.gray;
   };
 
+  const getSeverityColor = (severity: string) => {
+    switch (severity.toLowerCase()) {
+      case 'high': return 'text-red-600 bg-red-100';
+      case 'medium': return 'text-orange-600 bg-orange-100';
+      case 'low': return 'text-yellow-600 bg-yellow-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getImportanceColor = (importance: string) => {
+    switch (importance.toLowerCase()) {
+      case 'critical': return 'text-red-600 bg-red-100';
+      case 'important': return 'text-orange-600 bg-orange-100';
+      case 'nice-to-have': return 'text-blue-600 bg-blue-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
           🐱 Aplycat's Brutal Analysis
         </h2>
         <p className="text-gray-600">Analysis for: {fileName}</p>
       </div>
 
-      {/* Scores */}
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
+      {/* Scores Overview */}
+      <div className="grid md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-6 rounded-lg border border-gray-200 text-center">
           <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${getScoreColor(analysis.overall_score)} text-2xl font-bold mb-3`}>
             {analysis.overall_score}
@@ -103,7 +169,7 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
             {analysis.ats_score}
           </div>
           <h3 className="font-semibold text-gray-900">ATS Score</h3>
-          <p className="text-sm text-gray-600 mt-1">Applicant Tracking</p>
+          <p className="text-sm text-gray-600 mt-1">Robot Approval</p>
         </div>
 
         <div className="bg-red-50 p-6 rounded-lg border border-red-200 text-center">
@@ -111,7 +177,245 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
           <h3 className="font-semibold text-red-900">Main Roast</h3>
           <p className="text-sm text-red-700 mt-2 font-medium">"{analysis.main_roast}"</p>
         </div>
+
+        <div className="bg-blue-50 p-6 rounded-lg border border-blue-200 text-center">
+          <div className="text-3xl mb-3">🎯</div>
+          <h3 className="font-semibold text-blue-900">Industry</h3>
+          <p className="text-sm text-blue-700 mt-2 font-medium">
+            {analysis.industry_specific_advice?.detected_industry || 'Unknown'}
+          </p>
+        </div>
       </div>
+
+      {/* Section-by-Section Analysis */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+          📋 Section-by-Section Destruction
+        </h3>
+        
+        <div className="space-y-6">
+          {analysis.resume_sections?.map((section, index) => (
+            <div key={index} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <h4 className="text-lg font-semibold text-gray-800">{section.section_name}</h4>
+                  <div className={`px-2 py-1 rounded text-xs font-medium ${getScoreColor(section.score)}`}>
+                    {section.score}/100
+                  </div>
+                </div>
+                <div className="text-2xl">
+                  {section.score >= 80 ? '😺' : section.score >= 60 ? '😼' : section.score >= 40 ? '🙀' : '😿'}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-red-50 p-3 rounded border border-red-200">
+                  <p className="text-red-700 font-medium italic">"{section.roast}"</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {section.issues.length > 0 && (
+                    <div>
+                      <h5 className="font-medium text-red-800 mb-2">🚨 Issues:</h5>
+                      <ul className="space-y-1">
+                        {section.issues.map((issue, idx) => (
+                          <li key={idx} className="text-sm text-red-700">• {issue}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {section.strengths.length > 0 && (
+                    <div>
+                      <h5 className="font-medium text-green-800 mb-2">✅ Strengths:</h5>
+                      <ul className="space-y-1">
+                        {section.strengths.map((strength, idx) => (
+                          <li key={idx} className="text-sm text-green-700">• {strength}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {section.improvements.length > 0 && (
+                  <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                    <h5 className="font-medium text-blue-800 mb-2">💡 How to Fix:</h5>
+                    <div className="space-y-2">
+                      {section.improvements.map((improvement, idx) => (
+                        <div key={idx} className="text-sm">
+                          <p className="text-blue-700"><strong>Issue:</strong> {improvement.issue}</p>
+                          <p className="text-blue-700"><strong>Fix:</strong> {improvement.fix}</p>
+                          <p className="text-blue-600"><strong>Example:</strong> {improvement.example}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Missing Sections */}
+      {analysis.missing_sections && analysis.missing_sections.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-xl font-bold text-red-700 mb-4 flex items-center gap-2">
+            🕳️ Missing Sections (How Embarrassing)
+          </h3>
+          <div className="space-y-4">
+            {analysis.missing_sections.map((section, index) => (
+              <div key={index} className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold text-red-800">{section.section_name}</h4>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getImportanceColor(section.importance)}`}>
+                    {section.importance}
+                  </span>
+                </div>
+                <p className="text-red-700 italic mb-2">"{section.roast}"</p>
+                <p className="text-red-600 text-sm">{section.recommendation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Keyword Analysis */}
+      {analysis.keyword_analysis && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-xl font-bold text-purple-700 mb-4 flex items-center gap-2">
+            🔍 Keyword Autopsy
+          </h3>
+          <div className="grid md:grid-cols-3 gap-4">
+            {analysis.keyword_analysis.missing_keywords.length > 0 && (
+              <div className="bg-red-50 p-4 rounded border border-red-200">
+                <h4 className="font-medium text-red-800 mb-2">Missing Keywords</h4>
+                <ul className="space-y-1">
+                  {analysis.keyword_analysis.missing_keywords.map((keyword, idx) => (
+                    <li key={idx} className="text-sm text-red-700">• {keyword}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {analysis.keyword_analysis.overused_buzzwords.length > 0 && (
+              <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
+                <h4 className="font-medium text-yellow-800 mb-2">Overused Buzzwords</h4>
+                <ul className="space-y-1">
+                  {analysis.keyword_analysis.overused_buzzwords.map((word, idx) => (
+                    <li key={idx} className="text-sm text-yellow-700">• {word}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {analysis.keyword_analysis.weak_action_verbs.length > 0 && (
+              <div className="bg-orange-50 p-4 rounded border border-orange-200">
+                <h4 className="font-medium text-orange-800 mb-2">Weak Action Verbs</h4>
+                <ul className="space-y-1">
+                  {analysis.keyword_analysis.weak_action_verbs.map((verb, idx) => (
+                    <li key={idx} className="text-sm text-orange-700">• {verb}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Formatting Issues */}
+      {analysis.formatting_issues && analysis.formatting_issues.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-xl font-bold text-orange-700 mb-4 flex items-center gap-2">
+            🎨 Formatting Disasters
+          </h3>
+          <div className="space-y-3">
+            {analysis.formatting_issues.map((issue, index) => (
+              <div key={index} className="bg-orange-50 p-4 rounded border border-orange-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-orange-800">{issue.issue}</h4>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getSeverityColor(issue.severity)}`}>
+                    {issue.severity}
+                  </span>
+                </div>
+                <p className="text-orange-600 text-sm">{issue.fix}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quantification Issues */}
+      {analysis.quantification_issues && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2">
+            📊 Numbers Don't Lie (But You Do)
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {analysis.quantification_issues.missing_metrics.length > 0 && (
+              <div className="bg-blue-50 p-4 rounded border border-blue-200">
+                <h4 className="font-medium text-blue-800 mb-2">Missing Metrics</h4>
+                <ul className="space-y-1">
+                  {analysis.quantification_issues.missing_metrics.map((metric, idx) => (
+                    <li key={idx} className="text-sm text-blue-700">• {metric}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {analysis.quantification_issues.vague_statements.length > 0 && (
+              <div className="bg-gray-50 p-4 rounded border border-gray-200">
+                <h4 className="font-medium text-gray-800 mb-2">Vague Statements</h4>
+                <ul className="space-y-1">
+                  {analysis.quantification_issues.vague_statements.map((statement, idx) => (
+                    <li key={idx} className="text-sm text-gray-700">• {statement}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Industry-Specific Advice */}
+      {analysis.industry_specific_advice && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-xl font-bold text-green-700 mb-4 flex items-center gap-2">
+            🏭 Industry Standards You're Ignoring
+          </h3>
+          <div className="space-y-4">
+            <div className="bg-green-50 p-4 rounded border border-green-200">
+              <h4 className="font-medium text-green-800 mb-2">
+                Detected Industry: {analysis.industry_specific_advice.detected_industry}
+              </h4>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {analysis.industry_specific_advice.industry_standards.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-green-800 mb-2">Industry Standards:</h4>
+                  <ul className="space-y-1">
+                    {analysis.industry_specific_advice.industry_standards.map((standard, idx) => (
+                      <li key={idx} className="text-sm text-green-700">• {standard}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.industry_specific_advice.industry_keywords.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-green-800 mb-2">Industry Keywords:</h4>
+                  <ul className="space-y-1">
+                    {analysis.industry_specific_advice.industry_keywords.map((keyword, idx) => (
+                      <li key={idx} className="text-sm text-green-700">• {keyword}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Good Stuff */}
       {analysis.good_stuff && analysis.good_stuff.length > 0 && (
@@ -236,8 +540,11 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
                   <div key={index} className={`p-3 rounded-lg border ${getColorClasses(action.color)}`}>
                     <div className="flex items-start gap-2">
                       <span className="text-lg">{action.icon}</span>
-                      <div>
-                        <h5 className="font-medium">{action.title}</h5>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                          <h5 className="font-medium">{action.title}</h5>
+                          <span className="text-xs opacity-75">{action.time_estimate}</span>
+                        </div>
                         <p className="text-sm mt-1">{action.description}</p>
                       </div>
                     </div>
@@ -254,8 +561,11 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
                   <div key={index} className={`p-3 rounded-lg border ${getColorClasses(action.color)}`}>
                     <div className="flex items-start gap-2">
                       <span className="text-lg">{action.icon}</span>
-                      <div>
-                        <h5 className="font-medium">{action.title}</h5>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                          <h5 className="font-medium">{action.title}</h5>
+                          <span className="text-xs opacity-75">{action.time_estimate}</span>
+                        </div>
                         <p className="text-sm mt-1">{action.description}</p>
                       </div>
                     </div>

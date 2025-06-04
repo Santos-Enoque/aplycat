@@ -5,14 +5,7 @@ import { useState } from 'react';
 import { FileUpload } from '@/components/file-upload';
 import { AnalysisCards } from '@/components/analysis-cards';
 import { Button } from '@/components/ui/button';
-
-interface AnalysisResponse {
-  success: boolean;
-  analysis: any;
-  fileName: string;
-  error?: string;
-  details?: string;
-}
+import type { AnalysisResponse } from '@/types/analysis';
 
 export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -65,8 +58,11 @@ export default function Home() {
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Get brutally honest, Gordon Ramsay-style feedback on your resume. 
-            No sugar-coating, just the truth you need to hear.
+            No sugar-coating, just the truth you need to hear with section-by-section analysis.
           </p>
+          <div className="mt-4 text-sm text-gray-500">
+            ✨ Now with enhanced section analysis, keyword optimization, and industry-specific advice
+          </div>
         </div>
 
         {/* Main Content */}
@@ -82,8 +78,11 @@ export default function Home() {
                 <div className="inline-flex items-center px-4 py-2 bg-blue-50 rounded-full">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-3"></div>
                   <span className="text-blue-700 font-medium">
-                    Aplycat is sharpening her claws and analyzing your resume...
+                    Aplycat is sharpening her claws and analyzing every section of your resume...
                   </span>
+                </div>
+                <div className="mt-4 text-xs text-gray-500">
+                  This may take 10-30 seconds for comprehensive analysis
                 </div>
               </div>
             )}
@@ -127,6 +126,9 @@ export default function Home() {
             Made with 🔥 and a lot of brutal honesty. 
             Your resume data is processed securely and not stored.
           </p>
+          <div className="mt-2 text-xs">
+            Enhanced with section-by-section analysis, keyword optimization, and industry insights
+          </div>
         </div>
       </div>
     </div>
