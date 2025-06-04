@@ -576,6 +576,29 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
           </div>
         </div>
       )}
+
+      {/* Resume Improvement CTA */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200 p-6">
+        <div className="text-center">
+          <div className="text-4xl mb-4">✨</div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Ready for the AI Magic?</h3>
+          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+            Let our AI transform your resume into an ATS-optimized, industry-tailored masterpiece. 
+            We'll fix everything we roasted and make it actually good.
+          </p>
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('openImprovementModal'))}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          >
+            <span className="flex items-center gap-2">
+              🚀 Improve My Resume with AI
+            </span>
+          </button>
+          <p className="text-sm text-gray-500 mt-3">
+            Tailored to your target role • ATS-optimized • Professional formatting
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

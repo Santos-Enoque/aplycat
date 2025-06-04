@@ -220,6 +220,8 @@ OUTPUT FORMAT: Return ONLY valid JSON with this exact structure. Ensure all scor
 REMEMBER YOUR CORE TRAITS: Gordon Ramsay's brutal honesty, Sinek's focus on 'why' for the helpful bits, a cat's disdain for mediocrity, and make it HILARIOUSLY SHAREABLE. Be specific. If no resume, ROAST THE VOID. YOU MUST ALWAYS RETURN THE OVERALLSCORE AND THE ATS SCORE AS INTEGERS AND RETURN ONLY VALID JSON. Analyze EACH SECTION individually using their exact names.`;
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  
   try {
     const { fileData, fileName } = await request.json();
 
@@ -229,6 +231,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    console.log(`[RESUME_ANALYSIS] Starting analysis for file: ${fileName}, timestamp: ${new Date().toISOString()}`);
 
     const USER_PROMPT = `REAL RESUME ANALYSIS REQUEST
 
@@ -279,8 +283,11 @@ CRITICAL: Return section analysis using the EXACT section headers found in the r
     const result = completion.output_text;
     
     if (!result) {
+      console.error('[RESUME_ANALYSIS] No response from OpenAI');
       throw new Error('No response from OpenAI');
     }
+
+    console.log(`[RESUME_ANALYSIS] OpenAI response length: ${result.length} characters`);
 
     // Clean up the response text to handle potential JSON issues
     let cleanedResult = result.trim();
@@ -292,67 +299,211 @@ CRITICAL: Return section analysis using the EXACT section headers found in the r
       cleanedResult = cleanedResult.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
 
-    // Parse the JSON response with better error handling
+    // Robust JSON parsing with multiple fallback strategies
     let analysis;
+    
+    // Strategy 1: Try parsing as-is
     try {
       analysis = JSON.parse(cleanedResult);
     } catch (parseError) {
-      console.error('JSON Parse Error:', parseError);
-      console.error('Raw response:', result);
+      console.error('Strategy 1 - JSON Parse Error:', parseError);
       
-      // Try to fix common JSON issues
+      // Strategy 2: Fix mixed quotes and escaped characters
       try {
-        // Fix escaped quotes within JSON strings - this is the main issue
         let fixedResult = cleanedResult;
         
-        // Replace escaped quotes within string values (but not the structural quotes)
-        // This regex finds \" that are inside string values and replaces them with '
-        fixedResult = fixedResult.replace(/"([^"]*)\\"([^"]*)*"/g, (match, before, after) => {
-          return `"${before}'${after || ''}"`;
-        });
-        
-        // Additional cleanup for other common issues
-        fixedResult = fixedResult
-          .replace(/\\n/g, ' ')  // Replace newlines with spaces
-          .replace(/\\t/g, ' ')  // Replace tabs with spaces
-          .replace(/\\\\/g, '\\'); // Fix double backslashes
+        // Fix the most common issue: mixed single/double quotes in JSON property values
+        // This regex finds JSON property values and normalizes quotes within them
+        fixedResult = fixedResult.replace(
+          /"([^"]*(?:\\.[^"]*)*)"/g, 
+          (match, content) => {
+            // Replace any single quotes inside the content with escaped single quotes
+            const cleanContent = content
+              .replace(/'/g, "\\'")  // Escape single quotes
+              .replace(/\\"/g, '"')  // Unescape double quotes
+              .replace(/\\n/g, ' ')  // Replace newlines with spaces
+              .replace(/\\t/g, ' ')  // Replace tabs with spaces
+              .replace(/\\r/g, ' '); // Replace carriage returns with spaces
+            return `"${cleanContent}"`;
+          }
+        );
         
         analysis = JSON.parse(fixedResult);
       } catch (secondError) {
-        console.error('Second JSON Parse Error:', secondError);
+        console.error('Strategy 2 - JSON Parse Error:', secondError);
         
-        // Last resort: try a more aggressive fix
+        // Strategy 3: More aggressive quote normalization
         try {
           let aggressiveFixResult = cleanedResult
-            // Replace all escaped quotes with single quotes
-            .replace(/\\"/g, "'")
-            // Clean up any remaining escape characters
-            .replace(/\\([^"\\\/bfnrt])/g, '$1')
-            // Fix any remaining issues
-            .replace(/\n/g, ' ')
-            .replace(/\t/g, ' ');
+            // Convert all property values to use double quotes consistently
+            .replace(/:\s*'([^'\\]*(?:\\.[^'\\]*)*)'/g, ': "$1"')
+            // Fix any remaining escaped quotes in values
+            .replace(/\\"/g, '"')
+            // Clean up line breaks and tabs
+            .replace(/\\n/g, ' ')
+            .replace(/\\t/g, ' ')
+            .replace(/\\r/g, ' ')
+            // Fix double backslashes
+            .replace(/\\\\/g, '\\');
             
           analysis = JSON.parse(aggressiveFixResult);
         } catch (thirdError) {
-          console.error('Third JSON Parse Error:', thirdError);
-          throw new Error(`Failed to parse OpenAI response as JSON. Response: ${result.substring(0, 500)}...`);
+          console.error('Strategy 3 - JSON Parse Error:', thirdError);
+          
+          // Strategy 4: Character-by-character cleaning
+          try {
+            let sanitizedResult = cleanedResult
+              // Replace single quotes in JSON property values with double quotes
+              .replace(/("[\w_]+"\s*:\s*)'([^']*)'/g, '$1"$2"')
+              // Remove any problematic escape sequences
+              .replace(/\\(?!["\\/bfnrt])/g, '')
+              // Normalize quotes in nested content
+              .replace(/'([^']*(?:\\'[^']*)*)'/g, '"$1"')
+              .replace(/\\'/g, "'")
+              // Clean whitespace issues
+              .replace(/\s+/g, ' ');
+              
+            analysis = JSON.parse(sanitizedResult);
+          } catch (fourthError) {
+            console.error('Strategy 4 - JSON Parse Error:', fourthError);
+            
+            // Strategy 5: Last resort - manual content extraction and reconstruction
+            try {
+              console.log('Attempting manual JSON reconstruction...');
+              
+              // Extract key values manually and reconstruct
+              const overallScore = cleanedResult.match(/"overall_score"\s*:\s*(\d+)/)?.[1] || '0';
+              const atsScore = cleanedResult.match(/"ats_score"\s*:\s*(\d+)/)?.[1] || '0';
+              const mainRoast = cleanedResult.match(/"main_roast"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/)?.[1] || 'Resume needs work';
+              const scoreCategory = cleanedResult.match(/"score_category"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/)?.[1] || 'Needs work';
+              
+              // Create a minimal valid response
+              analysis = {
+                overall_score: parseInt(overallScore),
+                ats_score: parseInt(atsScore),
+                main_roast: mainRoast.replace(/\\"/g, '"'),
+                score_category: scoreCategory,
+                resume_sections: [],
+                missing_sections: [],
+                good_stuff: [{
+                  title: "Analysis Completed",
+                  roast: "Despite technical hiccups, we got through your resume.",
+                  description: "The full analysis was processed but had formatting issues."
+                }],
+                needs_work: [{
+                  title: "Technical Issues",
+                  roast: "Even the AI had trouble with the response format.",
+                  issue: "Response formatting caused parsing issues",
+                  fix: "This is a system issue, not your resume",
+                  example: "Try uploading again for full analysis"
+                }],
+                critical_issues: [],
+                shareable_roasts: [{
+                  id: "main",
+                  text: mainRoast.replace(/\\"/g, '"'),
+                  category: "Overall Assessment",
+                  shareText: `This AI just told me my resume '${mainRoast.replace(/\\"/g, '"')}' and I can't even be mad 😂`,
+                  platform: "general"
+                }],
+                ats_issues: ["Technical parsing issues occurred"],
+                formatting_issues: [],
+                keyword_analysis: {
+                  missing_keywords: [],
+                  overused_buzzwords: [],
+                  weak_action_verbs: []
+                },
+                quantification_issues: {
+                  missing_metrics: [],
+                  vague_statements: []
+                },
+                action_plan: {
+                  immediate: [{
+                    title: "Try uploading again",
+                    description: "The analysis had technical issues, try again for full results",
+                    icon: "🔄",
+                    color: "red",
+                    time_estimate: "1 minute"
+                  }],
+                  longTerm: []
+                },
+                industry_specific_advice: {
+                  detected_industry: "Unknown",
+                  industry_standards: [],
+                  industry_keywords: []
+                }
+              };
+              
+              console.log('Manual JSON reconstruction successful');
+            } catch (finalError) {
+              console.error('Strategy 5 - Manual reconstruction failed:', finalError);
+              
+              // Absolute last resort - return a minimal error response
+              analysis = {
+                overall_score: 50,
+                ats_score: 50,
+                main_roast: "Technical difficulties analyzing your resume",
+                score_category: "Technical Error",
+                resume_sections: [],
+                missing_sections: [],
+                good_stuff: [],
+                needs_work: [{
+                  title: "System Error",
+                  roast: "The AI had a hiccup processing your resume",
+                  issue: "Technical parsing error occurred",
+                  fix: "Please try uploading your resume again",
+                  example: "This is a system issue, not your resume"
+                }],
+                critical_issues: [],
+                shareable_roasts: [{
+                  id: "main",
+                  text: "Technical difficulties analyzing your resume",
+                  category: "System Error",
+                  shareText: "The AI had technical difficulties with my resume 🤖💥",
+                  platform: "general"
+                }],
+                ats_issues: [],
+                formatting_issues: [],
+                keyword_analysis: { missing_keywords: [], overused_buzzwords: [], weak_action_verbs: [] },
+                quantification_issues: { missing_metrics: [], vague_statements: [] },
+                action_plan: { immediate: [], longTerm: [] },
+                industry_specific_advice: { detected_industry: "Unknown", industry_standards: [], industry_keywords: [] }
+              };
+            }
+          }
         }
       }
     }
+
+    const processingTime = Date.now() - startTime;
+    console.log(`[RESUME_ANALYSIS] Analysis completed successfully in ${processingTime}ms for file: ${fileName}`);
 
     return NextResponse.json({
       success: true,
       analysis,
       fileName,
+      processingTimeMs: processingTime,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error: any) {
-    console.error('Error analyzing resume:', error);
+    const processingTime = Date.now() - startTime;
+    console.error(`[RESUME_ANALYSIS] Error after ${processingTime}ms:`, error);
+    console.error('[RESUME_ANALYSIS] Stack trace:', error.stack);
+    
+    // Log the type of error for monitoring
+    const errorType = error.message?.includes('OpenAI') ? 'OPENAI_ERROR' : 
+                      error.message?.includes('JSON') ? 'JSON_PARSE_ERROR' : 
+                      'UNKNOWN_ERROR';
+    
+    console.error(`[RESUME_ANALYSIS] Error type: ${errorType}`);
     
     return NextResponse.json(
       { 
         error: 'Failed to analyze resume',
-        details: error.message 
+        details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        errorType,
+        processingTimeMs: processingTime,
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     );
