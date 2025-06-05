@@ -92,7 +92,7 @@ export function CachedResumesPage() {
       {/* Resumes Grid */}
       {resumes.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {resumes.map((resume) => (
+          {resumes.map((resume: any) => (
             <Card key={resume.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">

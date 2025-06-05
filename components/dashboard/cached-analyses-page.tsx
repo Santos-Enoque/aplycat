@@ -101,7 +101,7 @@ export function CachedAnalysesPage() {
       {/* Analyses Grid */}
       {analyses.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {analyses.map((analysis) => (
+          {analyses.map((analysis: any) => (
             <Card
               key={analysis.id}
               className="hover:shadow-lg transition-shadow"

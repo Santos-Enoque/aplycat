@@ -95,7 +95,7 @@ export function CachedImprovementsPage() {
       {/* Improvements Grid */}
       {improvements.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {improvements.map((improvement) => (
+          {improvements.map((improvement: any) => (
             <Card
               key={improvement.id}
               className="hover:shadow-lg transition-shadow"

@@ -346,8 +346,6 @@ export default function OptimizedAnalyzePage() {
         title="Aplycat is Analyzing Your Resume"
         type="analysis"
         fileName={decodeURIComponent(fileName)}
-        realTimeSteps={realTimeSteps}
-        apiLogs={apiLogs}
       />
     );
   }

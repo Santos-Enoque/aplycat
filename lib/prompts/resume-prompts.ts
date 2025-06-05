@@ -500,7 +500,7 @@ OUTPUT: Return ONLY valid JSON with this structure:
 }`;
 
 export const RESUME_TAILORING_USER_PROMPT = (
-  currentResume: any,
+  currentResume: unknown,
   jobDescription: string,
   includeCoverLetter: boolean,
   companyName?: string,

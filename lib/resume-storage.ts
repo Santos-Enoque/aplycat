@@ -130,9 +130,11 @@ export async function getResumeData(resumeId: string, clerkUserId: string) {
         return null;
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[RESUME_STORAGE] Error retrieving resume data:', error);
-    console.error('[RESUME_STORAGE] Error stack:', error.stack);
+    if (error instanceof Error) {
+      console.error('[RESUME_STORAGE] Error stack:', error.stack);
+    }
     return null;
   }
 } 

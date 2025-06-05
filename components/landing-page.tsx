@@ -24,10 +24,12 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUser, SignInButton } from "@clerk/nextjs";
 
 export function LandingPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const router = useRouter();
+  const { isSignedIn, isLoaded } = useUser();
 
   const handleFileUploaded = async (result: any) => {
     setIsAnalyzing(true);
@@ -44,10 +46,42 @@ export function LandingPage() {
   };
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+    if (typeof document !== "undefined") {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
+  };
+
+  // Component to handle authenticated actions
+  const AuthenticatedAction = ({
+    children,
+    fallback,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    fallback?: React.ReactNode;
+    onClick?: () => void;
+  }) => {
+    if (!isLoaded) {
+      return <div className="h-12 w-48 bg-gray-200 rounded animate-pulse" />;
+    }
+
+    if (isSignedIn) {
+      return <div onClick={onClick}>{children}</div>;
+    }
+
+    return (
+      <SignInButton
+        mode="modal"
+        fallbackRedirectUrl={
+          typeof window !== "undefined" ? window.location.href : "/"
+        }
+      >
+        {fallback || children}
+      </SignInButton>
+    );
   };
 
   const pricingPlans = [
@@ -162,17 +196,32 @@ export function LandingPage() {
               </p>
 
               <div className="space-y-4">
-                <Button
+                <AuthenticatedAction
                   onClick={() => scrollToSection("upload")}
-                  size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-lg w-full sm:w-auto"
+                  fallback={
+                    <Button
+                      size="lg"
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-lg w-full sm:w-auto"
+                    >
+                      Upload Resume & Get Roasted
+                      <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    </Button>
+                  }
                 >
-                  Upload Resume & Get Roasted
-                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
+                  <Button
+                    onClick={() => scrollToSection("upload")}
+                    size="lg"
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-lg w-full sm:w-auto"
+                  >
+                    Upload Resume & Get Roasted
+                    <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  </Button>
+                </AuthenticatedAction>
 
                 <p className="text-sm text-gray-500">
-                  {"It's free. AplyCat is feeling generous today."}
+                  {isSignedIn
+                    ? "You're ready to go!"
+                    : "Sign in to get started - it's free!"}
                 </p>
               </div>
             </div>
@@ -725,9 +774,19 @@ export function LandingPage() {
                     ))}
                   </ul>
 
-                  <Button className={`w-full text-white ${plan.buttonClass}`}>
-                    {plan.cta}
-                  </Button>
+                  <AuthenticatedAction
+                    fallback={
+                      <Button
+                        className={`w-full text-white ${plan.buttonClass}`}
+                      >
+                        {plan.cta}
+                      </Button>
+                    }
+                  >
+                    <Button className={`w-full text-white ${plan.buttonClass}`}>
+                      {plan.cta}
+                    </Button>
+                  </AuthenticatedAction>
                 </CardContent>
               </Card>
             ))}
@@ -846,10 +905,45 @@ export function LandingPage() {
 
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-4 sm:p-8 mb-6 sm:mb-8 mx-2 sm:mx-0">
             <div id="upload-section">
-              <FileUploadWithUploadThing
-                onFileUploaded={handleFileUploaded}
-                isLoading={isAnalyzing}
-              />
+              {isSignedIn ? (
+                <FileUploadWithUploadThing
+                  onFileUploaded={handleFileUploaded}
+                  isLoading={isAnalyzing}
+                />
+              ) : (
+                <div className="w-full max-w-md mx-auto">
+                  <div className="border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-lg p-8 text-center transition-all">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="p-3 bg-gray-100 rounded-full">
+                        <Upload className="w-6 h-6 text-gray-600" />
+                      </div>
+
+                      <div>
+                        <p className="text-lg font-medium text-gray-900">
+                          Upload your resume
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Sign in to get started
+                        </p>
+                      </div>
+
+                      <SignInButton
+                        mode="modal"
+                        fallbackRedirectUrl={
+                          typeof window !== "undefined"
+                            ? window.location.href
+                            : "/"
+                        }
+                      >
+                        <Button className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-3 rounded-lg">
+                          <Zap className="w-4 h-4 mr-2" />
+                          Sign In to Upload
+                        </Button>
+                      </SignInButton>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <p className="text-sm text-gray-500 mt-4">
               PDF files only. Max 5MB. AplyCat doesn't have all day.

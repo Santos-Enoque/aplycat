@@ -410,7 +410,8 @@ export function AnalysisCards({
                               <strong>Issue:</strong> {item.issue}
                             </p>
                             <p className="text-blue-700">
-                              <strong>Tip:</strong> {item.tip || item.fix}
+                              <strong>Tip:</strong>{" "}
+                              {"tip" in item ? item.tip : item.fix}
                             </p>
                             <p className="text-blue-600">
                               <strong>Example:</strong> {item.example}
@@ -551,7 +552,8 @@ export function AnalysisCards({
                                 <strong>Issue:</strong> {item.issue}
                               </p>
                               <p className="text-blue-700">
-                                <strong>Tip:</strong> {item.tip || item.fix}
+                                <strong>Tip:</strong>{" "}
+                                {"tip" in item ? item.tip : item.fix}
                               </p>
                               <p className="text-blue-600">
                                 <strong>Example:</strong> {item.example}

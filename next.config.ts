@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  
+  // Suppress Turbopack webpack warning
+  turbo: {},
 
   // Add PostHog rewrites to proxy ingestion requests
   async rewrites() {
