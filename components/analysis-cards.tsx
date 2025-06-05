@@ -14,7 +14,13 @@ interface ResumeSection {
   roast: string;
   issues: string[];
   strengths: string[];
-  improvements: Array<{
+  tips?: Array<{
+    issue: string;
+    tip: string;
+    example: string;
+  }>;
+  // Backward compatibility
+  improvements?: Array<{
     issue: string;
     fix: string;
     example: string;
@@ -248,19 +254,6 @@ export function AnalysisCards({
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          🐱 Aplycat's Brutal Analysis
-        </h2>
-        <p className="text-gray-600">Analysis for: {fileName}</p>
-        {isSignedIn && user && (
-          <p className="text-sm text-green-600 mt-1">
-            Welcome back, {user.firstName || "there"}!
-          </p>
-        )}
-      </div>
-
       {/* TOP CTA - Prominent Improve Button */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg p-6 text-white mb-8">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
@@ -402,25 +395,29 @@ export function AnalysisCards({
                   )}
                 </div>
 
-                {section.improvements.length > 0 && (
+                {((section.tips && section.tips.length > 0) ||
+                  (section.improvements &&
+                    section.improvements.length > 0)) && (
                   <div className="bg-blue-50 p-3 rounded border border-blue-200">
                     <h5 className="font-medium text-blue-800 mb-2">
-                      💡 How to Fix:
+                      💡 Quick Tips:
                     </h5>
                     <div className="space-y-2">
-                      {section.improvements.map((improvement, idx) => (
-                        <div key={idx} className="text-sm">
-                          <p className="text-blue-700">
-                            <strong>Issue:</strong> {improvement.issue}
-                          </p>
-                          <p className="text-blue-700">
-                            <strong>Fix:</strong> {improvement.fix}
-                          </p>
-                          <p className="text-blue-600">
-                            <strong>Example:</strong> {improvement.example}
-                          </p>
-                        </div>
-                      ))}
+                      {(section.tips || section.improvements || []).map(
+                        (item, idx) => (
+                          <div key={idx} className="text-sm">
+                            <p className="text-blue-700">
+                              <strong>Issue:</strong> {item.issue}
+                            </p>
+                            <p className="text-blue-700">
+                              <strong>Tip:</strong> {item.tip || item.fix}
+                            </p>
+                            <p className="text-blue-600">
+                              <strong>Example:</strong> {item.example}
+                            </p>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 )}
@@ -539,25 +536,29 @@ export function AnalysisCards({
                     )}
                   </div>
 
-                  {section.improvements.length > 0 && (
+                  {((section.tips && section.tips.length > 0) ||
+                    (section.improvements &&
+                      section.improvements.length > 0)) && (
                     <div className="bg-blue-50 p-3 rounded border border-blue-200">
                       <h5 className="font-medium text-blue-800 mb-2">
-                        💡 How to Fix:
+                        💡 Quick Tips:
                       </h5>
                       <div className="space-y-2">
-                        {section.improvements.map((improvement, idx) => (
-                          <div key={idx} className="text-sm">
-                            <p className="text-blue-700">
-                              <strong>Issue:</strong> {improvement.issue}
-                            </p>
-                            <p className="text-blue-700">
-                              <strong>Fix:</strong> {improvement.fix}
-                            </p>
-                            <p className="text-blue-600">
-                              <strong>Example:</strong> {improvement.example}
-                            </p>
-                          </div>
-                        ))}
+                        {(section.tips || section.improvements || []).map(
+                          (item, idx) => (
+                            <div key={idx} className="text-sm">
+                              <p className="text-blue-700">
+                                <strong>Issue:</strong> {item.issue}
+                              </p>
+                              <p className="text-blue-700">
+                                <strong>Tip:</strong> {item.tip || item.fix}
+                              </p>
+                              <p className="text-blue-600">
+                                <strong>Example:</strong> {item.example}
+                              </p>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
                   )}

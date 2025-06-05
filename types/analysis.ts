@@ -1,13 +1,19 @@
 // types/analysis.ts
 
-export interface ResumeSection {
+  export interface ResumeSection {
     section_name: string;
     found: boolean;
     score: number;
     roast: string;
     issues: string[];
     strengths: string[];
-    improvements: Array<{
+    tips?: Array<{
+      issue: string;
+      tip: string;
+      example: string;
+    }>;
+    // Backward compatibility
+    improvements?: Array<{
       issue: string;
       fix: string;
       example: string;

@@ -3,12 +3,22 @@
 import { useState, useEffect } from "react";
 import { Brain, Zap, Target, CheckCircle, Star } from "lucide-react";
 
+interface ProgressStep {
+  id: string;
+  title: string;
+  description: string;
+  status: "pending" | "in-progress" | "completed" | "error";
+  timestamp?: Date;
+}
+
 interface EnhancedLoadingProps {
   title: string;
   type: "analysis" | "improvement";
   fileName?: string;
   targetRole?: string;
   targetIndustry?: string;
+  realTimeSteps?: ProgressStep[];
+  apiLogs?: string[];
 }
 
 export function EnhancedLoading({
@@ -17,6 +27,8 @@ export function EnhancedLoading({
   fileName,
   targetRole,
   targetIndustry,
+  realTimeSteps = [],
+  apiLogs = [],
 }: EnhancedLoadingProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [currentMessage, setCurrentMessage] = useState(0);
@@ -136,38 +148,47 @@ export function EnhancedLoading({
   }, []);
 
   useEffect(() => {
-    let stepTimer: NodeJS.Timeout;
     let messageTimer: NodeJS.Timeout;
 
-    const totalDuration = steps.reduce((sum, step) => sum + step.duration, 0);
-    let elapsed = 0;
-
-    const updateStep = () => {
-      if (currentStep < steps.length - 1) {
-        elapsed += steps[currentStep].duration;
-        if (elapsed < totalDuration) {
-          setCurrentStep((prev) => prev + 1);
-          stepTimer = setTimeout(
-            updateStep,
-            steps[currentStep + 1]?.duration || 5000
-          );
-        }
-      }
-    };
-
+    // Update message rotation
     const updateMessage = () => {
       setCurrentMessage((prev) => (prev + 1) % encouragingMessages.length);
       messageTimer = setTimeout(updateMessage, 4000 + Math.random() * 2000);
     };
 
-    stepTimer = setTimeout(updateStep, steps[0].duration);
     messageTimer = setTimeout(updateMessage, 4000);
 
     return () => {
-      clearTimeout(stepTimer);
       clearTimeout(messageTimer);
     };
-  }, [currentStep, steps, encouragingMessages.length]);
+  }, [encouragingMessages.length]);
+
+  // Update progress based on real-time steps
+  useEffect(() => {
+    if (realTimeSteps.length > 0) {
+      const completedSteps = realTimeSteps.filter(
+        (step) => step.status === "completed"
+      ).length;
+      const inProgressSteps = realTimeSteps.filter(
+        (step) => step.status === "in-progress"
+      ).length;
+      const totalSteps = realTimeSteps.length;
+
+      if (totalSteps > 0) {
+        const progressPercentage =
+          ((completedSteps + inProgressSteps * 0.5) / totalSteps) * 100;
+        setProgress(Math.min(progressPercentage, 95)); // Cap at 95% until fully complete
+
+        // Set current step to the first in-progress or pending step
+        const activeStepIndex = realTimeSteps.findIndex(
+          (step) => step.status === "in-progress" || step.status === "pending"
+        );
+        if (activeStepIndex !== -1) {
+          setCurrentStep(activeStepIndex);
+        }
+      }
+    }
+  }, [realTimeSteps]);
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -210,36 +231,110 @@ export function EnhancedLoading({
           )}
         </div>
 
-        {/* Current Step */}
+        {/* Real-time Steps or Default Steps */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-              <div className="w-4 h-4 bg-purple-600 rounded-full animate-pulse" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900">
-                {steps[currentStep]?.title}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {steps[currentStep]?.description}
-              </p>
-            </div>
-          </div>
+          {realTimeSteps.length > 0 ? (
+            <>
+              {/* Real-time Progress */}
+              <div className="space-y-3 mb-6">
+                {realTimeSteps.map((step, index) => (
+                  <div key={step.id} className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        step.status === "completed"
+                          ? "bg-green-100"
+                          : step.status === "in-progress"
+                          ? "bg-purple-100"
+                          : step.status === "error"
+                          ? "bg-red-100"
+                          : "bg-gray-100"
+                      }`}
+                    >
+                      {step.status === "completed" ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : step.status === "in-progress" ? (
+                        <div className="w-4 h-4 bg-purple-600 rounded-full animate-pulse" />
+                      ) : step.status === "error" ? (
+                        <span className="text-red-600">✕</span>
+                      ) : (
+                        <div className="w-4 h-4 bg-gray-400 rounded-full" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3
+                        className={`font-semibold ${
+                          step.status === "completed"
+                            ? "text-green-900"
+                            : step.status === "in-progress"
+                            ? "text-purple-900"
+                            : step.status === "error"
+                            ? "text-red-900"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {step.description}
+                      </p>
+                      {step.timestamp && (
+                        <p className="text-xs text-gray-500">
+                          {step.timestamp.toLocaleTimeString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Default Step Display */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                  <div className="w-4 h-4 bg-purple-600 rounded-full animate-pulse" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900">
+                    {steps[currentStep]?.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {steps[currentStep]?.description}
+                  </p>
+                </div>
+              </div>
 
-          {/* Progress Steps */}
-          <div className="flex items-center gap-2 mb-6">
-            {steps.map((_, index) => (
-              <div
-                key={index}
-                className={`flex-1 h-2 rounded-full transition-all duration-500 ${
-                  index <= currentStep
-                    ? "bg-gradient-to-r from-purple-500 to-blue-500"
-                    : "bg-gray-200"
-                }`}
-              />
-            ))}
-          </div>
+              {/* Progress Steps */}
+              <div className="flex items-center gap-2 mb-6">
+                {steps.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`flex-1 h-2 rounded-full transition-all duration-500 ${
+                      index <= currentStep
+                        ? "bg-gradient-to-r from-purple-500 to-blue-500"
+                        : "bg-gray-200"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
+
+        {/* API Logs Section */}
+        {apiLogs.length > 0 && (
+          <div className="mb-6">
+            <div className="bg-gray-900 rounded-lg p-4 max-h-32 overflow-y-auto">
+              <div className="space-y-1">
+                {apiLogs.slice(-5).map((log, index) => (
+                  <div key={index} className="text-xs font-mono text-green-400">
+                    {log}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Encouraging Message */}
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-6">

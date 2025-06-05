@@ -860,20 +860,14 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
       <div className="max-w-7xl mx-auto py-6 px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button onClick={handleGoBack} variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Analysis
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {improvedResume.versionName ||
-                  `Version ${improvedResume.version}`}
-              </h1>
-              <p className="text-gray-600">
-                {improvedResume.targetRole} • {improvedResume.targetIndustry}
-              </p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {improvedResume.versionName ||
+                `Version ${improvedResume.version}`}
+            </h1>
+            <p className="text-gray-600">
+              {improvedResume.targetRole} • {improvedResume.targetIndustry}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -963,9 +957,27 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
             </Card>
           </div>
 
-          {/* Right Column - Stats & Actions (takes 1/3 width) */}
+          {/* Right Column - Improvement Tools & Stats (takes 1/3 width) */}
           <div className="lg:col-span-1 space-y-4">
-            {/* Version Stats */}
+            {improvedResumeId && (
+              <>
+                {/* Tailor by Job Title - Priority 1 */}
+                <TailoringComponent
+                  currentResume={editableResume}
+                  onTailor={handleTailor}
+                  improvedResumeId={improvedResumeId}
+                />
+
+                {/* Custom Improvement - Priority 2 */}
+                <CustomPromptComponent
+                  currentResume={editableResume}
+                  onImprove={handleCustomImprove}
+                  improvedResumeId={improvedResumeId}
+                />
+              </>
+            )}
+
+            {/* Version Stats - Priority 3 */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -1033,22 +1045,6 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
                 </div>
               </CardContent>
             </Card>
-
-            {improvedResumeId && (
-              <>
-                <TailoringComponent
-                  currentResume={editableResume}
-                  onTailor={handleTailor}
-                  improvedResumeId={improvedResumeId}
-                />
-
-                <CustomPromptComponent
-                  currentResume={editableResume}
-                  onImprove={handleCustomImprove}
-                  improvedResumeId={improvedResumeId}
-                />
-              </>
-            )}
           </div>
         </div>
       </div>

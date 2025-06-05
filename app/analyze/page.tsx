@@ -20,6 +20,85 @@ export default function OptimizedAnalyzePage() {
     upload: "pending" | "completed" | "failed";
     metadata: "pending" | "completed" | "failed";
   }>({ upload: "pending", metadata: "pending" });
+  const [realTimeSteps, setRealTimeSteps] = useState<
+    Array<{
+      id: string;
+      title: string;
+      description: string;
+      status: "pending" | "in-progress" | "completed" | "error";
+      timestamp?: Date;
+    }>
+  >([]);
+  const [apiLogs, setApiLogs] = useState<string[]>([]);
+
+  const addApiLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setApiLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
+  };
+
+  const updateStep = (
+    stepId: string,
+    status: "pending" | "in-progress" | "completed" | "error",
+    title?: string,
+    description?: string
+  ) => {
+    setRealTimeSteps((prev) => {
+      const existingIndex = prev.findIndex((step) => step.id === stepId);
+      const stepData = {
+        id: stepId,
+        title: title || prev[existingIndex]?.title || stepId,
+        description: description || prev[existingIndex]?.description || "",
+        status,
+        timestamp:
+          status === "completed" || status === "error"
+            ? new Date()
+            : prev[existingIndex]?.timestamp,
+      };
+
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = stepData;
+        return updated;
+      } else {
+        return [...prev, stepData];
+      }
+    });
+  };
+
+  const initializeAnalysisSteps = () => {
+    const steps = [
+      {
+        id: "auth",
+        title: "Authenticating",
+        description: "Verifying user credentials",
+      },
+      {
+        id: "data-prep",
+        title: "Preparing Data",
+        description: "Loading resume content",
+      },
+      {
+        id: "ai-analysis",
+        title: "AI Analysis",
+        description: "Analyzing resume with AI",
+      },
+      {
+        id: "processing",
+        title: "Processing Results",
+        description: "Parsing analysis results",
+      },
+      {
+        id: "saving",
+        title: "Saving Analysis",
+        description: "Storing results to database",
+      },
+    ];
+
+    setRealTimeSteps(
+      steps.map((step) => ({ ...step, status: "pending" as const }))
+    );
+    setApiLogs([]);
+  };
 
   useEffect(() => {
     const immediate = searchParams.get("immediate");
@@ -194,8 +273,16 @@ export default function OptimizedAnalyzePage() {
     console.log("[ANALYSIS] Analyzing with resume ID:", resumeId);
     setIsAnalyzing(true);
     setError(null);
+    initializeAnalysisSteps();
 
     try {
+      addApiLog("Starting resume analysis");
+      updateStep("auth", "in-progress");
+
+      addApiLog("Sending analysis request to API");
+      updateStep("auth", "completed");
+      updateStep("data-prep", "in-progress");
+
       const response = await fetch("/api/analyze-resume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -205,16 +292,34 @@ export default function OptimizedAnalyzePage() {
         }),
       });
 
+      addApiLog("API request sent, waiting for response");
+      updateStep("data-prep", "completed");
+      updateStep("ai-analysis", "in-progress");
+
       const result: AnalysisResponse = await response.json();
 
       if (!response.ok) {
+        updateStep("ai-analysis", "error");
+        addApiLog(`API Error: ${result.error || "Analysis failed"}`);
         throw new Error(result.error || "Analysis failed");
       }
+
+      addApiLog("AI analysis completed successfully");
+      updateStep("ai-analysis", "completed");
+      updateStep("processing", "in-progress");
+
+      addApiLog("Processing analysis results");
+      updateStep("processing", "completed");
+      updateStep("saving", "in-progress");
+
+      addApiLog("Analysis saved to database");
+      updateStep("saving", "completed");
 
       console.log("[ANALYSIS] Analysis completed successfully");
       setAnalysisResult(result);
     } catch (err: any) {
       console.error("[ANALYSIS] Analysis failed:", err);
+      addApiLog(`Error: ${err.message}`);
       setError(err.message || "Analysis failed. Please try again.");
     } finally {
       setIsAnalyzing(false);
@@ -241,6 +346,8 @@ export default function OptimizedAnalyzePage() {
         title="Aplycat is Analyzing Your Resume"
         type="analysis"
         fileName={decodeURIComponent(fileName)}
+        realTimeSteps={realTimeSteps}
+        apiLogs={apiLogs}
       />
     );
   }
