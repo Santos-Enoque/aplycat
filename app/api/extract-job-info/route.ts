@@ -1,34 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const SYSTEM_PROMPT = `Your primary function is to act as a job posting information extractor. I will provide you with URLs. You will analyze the content of the page at the given URL.
-
-1.  **If the URL clearly points to a job posting:**
-    You MUST process the content and return a clean JSON object strictly following this format:
-    \`\`\`json
-    {
-      "job_title": "[Job Title]",
-      "company_name": "[Company Name]",
-      "job_description": "[A summary focused on: job responsibilities, candidate requirements (experience, education), and the technical stack. Exclude information like company mission statements, benefits unless they are core to the role's requirements, and application instructions.]"
-    }
-    \`\`\`
-    If a value for a field (job_title, company_name, job_body) is not found on a job posting page, use \`null\` for that specific field. Your entire response in this case must be *only* this JSON object.
-
-2.  **If the URL does NOT appear to be a job posting or if you cannot confidently extract job-related information:**
-    You MUST return the following JSON object:
-    \`\`\`json
-    {
-      "message": "did not find any job posting information"
-    }
-    \`\`\`
-    Your entire response in this case must be *only* this specific JSON object.
-
-It is critical that your entire response is *only* the appropriate JSON object as specified above. Do not add any conversational fluff, explanations, or additional text outside the JSON structure.`;
+import { modelService } from '@/lib/models';
+import { 
+  JOB_EXTRACTION_SYSTEM_PROMPT, 
+  JOB_EXTRACTION_USER_PROMPT 
+} from '@/lib/prompts/resume-prompts';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -71,62 +47,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use OpenAI's web search tool instead of direct fetch to avoid 403 errors
-    const USER_PROMPT = `This is the job posting url: ${jobUrl}
-
-Please analyze this job posting URL and extract the relevant information.`;
-
-    console.log('[EXTRACT_JOB_INFO] Sending to OpenAI with web search tool...');
-    const completion = await openai.responses.create({
-      model: "gpt-4o-mini",
-      input: [
-        {
-          role: 'system',
-          content: [
-            {
-              type: 'input_text',
-              text: SYSTEM_PROMPT,
-            },
-          ],
+    console.log('[EXTRACT_JOB_INFO] Sending to model service with web search tool...');
+    
+    // Use the model service for job extraction with web search tool
+    const tools = [
+      {
+        "type": "web_search_preview",
+        "user_location": {
+          "type": "approximate"
         },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'input_text',
-              text: USER_PROMPT,
-            },
-          ],
-        },
-      ],
-      text: {
-        "format": {
-          "type": "text"
-        }
-      },
-      reasoning: {},
-      tools: [
-        {
-          "type": "web_search_preview",
-          "user_location": {
-            "type": "approximate"
-          },
-          "search_context_size": "medium"
-        }
-      ],
-      temperature: 0.1,
-      max_output_tokens: 1000,
-      top_p: 1,
-      store: true
-    });
+        "search_context_size": "medium"
+      }
+    ];
 
-    const result = completion.output_text;
+    const response = await modelService.extractJobInfo(
+      JOB_EXTRACTION_SYSTEM_PROMPT,
+      JOB_EXTRACTION_USER_PROMPT(jobUrl),
+      tools
+    );
+
+    const result = response.content;
     
     if (!result) {
-      throw new Error('No response from OpenAI');
+      throw new Error('No response from model service');
     }
 
-    console.log(`[EXTRACT_JOB_INFO] OpenAI response length: ${result.length} characters`);
+    console.log(`[EXTRACT_JOB_INFO] Model response length: ${result.length} characters`);
 
     // Parse the JSON response
     let jobInfo;
