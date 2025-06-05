@@ -1,15 +1,18 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Navbar } from "@/components/navbar";
+import { UnifiedNavbar } from "@/components/unified-navbar";
 import { Footer } from "@/components/footer";
 import { ResumeProvider } from "@/hooks/use-resume-context";
 import { PerformanceTracker } from "@/components/performance-tracker";
+import { QueryProvider } from "@/components/providers/query-provider";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { ConditionalFooter } from "@/components/conditional-footer";
+import { PostHogProvider } from "@/components/providers/PostHogProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -71,12 +74,16 @@ export default function RootLayout({
              */
             routerConfig={extractRouterConfig(ourFileRouter)}
           />
-          <ResumeProvider>
-            <PerformanceTracker />
-            <Navbar />
-            <main className="min-h-screen">{children}</main>
-            <Footer />
-          </ResumeProvider>
+          <PostHogProvider>
+            <QueryProvider>
+              <ResumeProvider>
+                <PerformanceTracker />
+                <UnifiedNavbar />
+                <main className="min-h-screen">{children}</main>
+                <ConditionalFooter />
+              </ResumeProvider>
+            </QueryProvider>
+          </PostHogProvider>
         </body>
       </html>
     </ClerkProvider>

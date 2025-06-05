@@ -437,75 +437,90 @@ export function DashboardContent({ user }: DashboardContentProps) {
               <CardContent>
                 {user.resumes.length > 0 ? (
                   <div className="space-y-4">
-                    {user.resumes.slice(0, 5).map((resume) => (
+                    {user.resumes.slice(0, 3).map((resume) => (
                       <div
                         key={resume.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:border-purple-300 transition-colors"
+                        className="p-4 border rounded-lg hover:border-purple-300 transition-colors"
                       >
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">
-                            {resume.title || resume.fileName}
-                          </h4>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {resume.fileName}
-                          </p>
-                          <div className="flex items-center gap-4 mt-2">
-                            <p className="text-xs text-gray-500">
+                        <div className="space-y-3">
+                          {/* Header */}
+                          <div>
+                            <h4 className="font-medium text-gray-900 text-base">
+                              {resume.title || resume.fileName}
+                            </h4>
+                            {resume.title && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                {resume.fileName}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Metadata */}
+                          <div className="flex flex-wrap gap-3 text-xs">
+                            <span className="text-gray-500">
                               Uploaded{" "}
                               {formatDistanceToNow(new Date(resume.createdAt), {
                                 addSuffix: true,
                               })}
-                            </p>
+                            </span>
                             {resume.analyses.length > 0 && (
-                              <p className="text-xs text-blue-600">
+                              <span className="text-blue-600 font-medium">
                                 {resume.analyses.length} analysis
                                 {resume.analyses.length > 1 ? "es" : ""}
-                              </p>
+                              </span>
                             )}
                             {resume.improvedResumes.length > 0 && (
-                              <p className="text-xs text-green-600">
+                              <span className="text-green-600 font-medium">
                                 {resume.improvedResumes.length} improvement
                                 {resume.improvedResumes.length > 1 ? "s" : ""}
-                              </p>
+                              </span>
                             )}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              const params = new URLSearchParams({
-                                resumeId: resume.id,
-                                fileName: encodeURIComponent(resume.fileName),
-                              });
-                              router.push(`/analyze?${params.toString()}`);
-                            }}
-                            disabled={user.credits < 2}
-                          >
-                            <Brain className="h-4 w-4 mr-1" />
-                            Re-analyze
-                          </Button>
-                          {resume.analyses.length > 0 && (
+
+                          {/* Actions */}
+                          <div className="flex flex-col sm:flex-row gap-2">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => {
-                                // Navigate to the most recent analysis
-                                const latestAnalysis = resume.analyses[0];
-                                handleViewAnalysis(latestAnalysis.id);
+                                const params = new URLSearchParams({
+                                  resumeId: resume.id,
+                                  fileName: encodeURIComponent(resume.fileName),
+                                });
+                                router.push(`/analyze?${params.toString()}`);
                               }}
+                              disabled={user.credits < 2}
+                              className="flex-1 sm:flex-none"
                             >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
+                              <Brain className="h-4 w-4 mr-1" />
+                              Re-analyze
                             </Button>
-                          )}
+                            {resume.analyses.length > 0 && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  // Navigate to the most recent analysis
+                                  const latestAnalysis = resume.analyses[0];
+                                  handleViewAnalysis(latestAnalysis.id);
+                                }}
+                                className="flex-1 sm:flex-none"
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
-                    {user.resumes.length > 5 && (
+                    {user.resumes.length > 3 && (
                       <div className="text-center pt-4">
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push("/dashboard/resumes")}
+                        >
                           View All Resumes ({user.resumes.length})
                         </Button>
                       </div>
@@ -544,77 +559,104 @@ export function DashboardContent({ user }: DashboardContentProps) {
               <CardContent>
                 {user.analyses.length > 0 ? (
                   <div className="space-y-4">
-                    {user.analyses.slice(0, 5).map((analysis) => (
+                    {user.analyses.slice(0, 3).map((analysis) => (
                       <div
                         key={analysis.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:border-purple-300 hover:bg-purple-50/50 transition-all cursor-pointer"
+                        className="p-4 border rounded-lg hover:border-purple-300 hover:bg-purple-50/50 transition-all cursor-pointer"
                         onClick={() => handleViewAnalysis(analysis.id)}
                       >
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">
-                            {analysis.resume.fileName}
-                          </h4>
-                          <p className="text-sm text-gray-600 mt-1">
-                            "{analysis.mainRoast}"
-                          </p>
-                          <div className="flex items-center gap-4 mt-2">
-                            <p className="text-xs text-gray-500">
+                        <div className="space-y-3">
+                          {/* Header */}
+                          <div>
+                            <h4 className="font-medium text-gray-900 text-base">
+                              {analysis.resume.fileName}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1 italic line-clamp-2">
+                              "{analysis.mainRoast}"
+                            </p>
+                          </div>
+
+                          {/* Scores - Mobile Friendly Layout */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="text-center">
+                                <Badge
+                                  className={getScoreBadgeColor(
+                                    analysis.overallScore
+                                  )}
+                                >
+                                  {analysis.overallScore}/100
+                                </Badge>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Overall
+                                </p>
+                              </div>
+                              <div className="text-center">
+                                <Badge
+                                  className={getScoreBadgeColor(
+                                    analysis.atsScore
+                                  )}
+                                >
+                                  {analysis.atsScore}/100
+                                </Badge>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  ATS
+                                </p>
+                              </div>
+                            </div>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent card click
+                                handleViewAnalysis(analysis.id);
+                              }}
+                              className="opacity-60 hover:opacity-100 hidden sm:flex"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          {/* Metadata */}
+                          <div className="flex flex-wrap gap-3 text-xs">
+                            <span className="text-gray-500">
                               {formatDistanceToNow(
                                 new Date(analysis.createdAt),
                                 {
                                   addSuffix: true,
                                 }
                               )}
-                            </p>
-                            <p className="text-xs text-purple-600">
+                            </span>
+                            <span className="text-purple-600 font-medium">
                               {analysis.creditsUsed} credits used
-                            </p>
+                            </span>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-center">
-                            <Badge
-                              className={getScoreBadgeColor(
-                                analysis.overallScore
-                              )}
+
+                          {/* Mobile Action Button */}
+                          <div className="sm:hidden">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewAnalysis(analysis.id);
+                              }}
+                              className="w-full"
                             >
-                              {analysis.overallScore}/100
-                            </Badge>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Overall
-                            </p>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Analysis
+                            </Button>
                           </div>
-                          <div className="text-center">
-                            <Badge
-                              className={getScoreBadgeColor(analysis.atsScore)}
-                            >
-                              {analysis.atsScore}/100
-                            </Badge>
-                            <p className="text-xs text-gray-500 mt-1">ATS</p>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent card click
-                              handleViewAnalysis(analysis.id);
-                            }}
-                            className="opacity-60 hover:opacity-100"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
                         </div>
                       </div>
                     ))}
-                    {user.analyses.length > 5 && (
+                    {user.analyses.length > 3 && (
                       <div className="text-center pt-4">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            // TODO: Navigate to full analyses list page
-                            console.log("Navigate to all analyses page");
-                          }}
+                          onClick={() => router.push("/dashboard/analyses")}
                         >
                           View All Analyses ({user.analyses.length})
                         </Button>
@@ -708,6 +750,17 @@ export function DashboardContent({ user }: DashboardContentProps) {
                         </div>
                       </div>
                     ))}
+                    {user.improvedResumes.length > 3 && (
+                      <div className="text-center pt-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push("/dashboard/improvements")}
+                        >
+                          View All Improvements ({user.improvedResumes.length})
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-8">

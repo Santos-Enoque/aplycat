@@ -23,6 +23,7 @@ import {
   Menu,
   User,
   LogOut,
+  Brain,
 } from "lucide-react";
 
 export function DashboardNav() {
@@ -32,7 +33,8 @@ export function DashboardNav() {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "Analyses", href: "/dashboard/analyses", icon: FileText },
+    { name: "Resumes", href: "/dashboard/resumes", icon: FileText },
+    { name: "Analyses", href: "/dashboard/analyses", icon: Brain },
     { name: "Improvements", href: "/dashboard/improvements", icon: Sparkles },
     { name: "Credits", href: "/dashboard/credits", icon: CreditCard },
   ];

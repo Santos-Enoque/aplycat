@@ -17,6 +17,8 @@ export const cacheKeys = {
     `user:analyses:${userId}:${limit}:${offset}`,
   userResumes: (userId: string, limit: number, offset: number) => 
     `user:resumes:${userId}:${limit}:${offset}`,
+  userImprovements: (userId: string, limit: number, offset: number) => 
+    `user:improvements:${userId}:${limit}:${offset}`,
   analysisById: (analysisId: string) => `analysis:${analysisId}`,
   userProfile: (userId: string) => `user:profile:${userId}`,
   userCredits: (userId: string) => `user:credits:${userId}`,
@@ -31,6 +33,7 @@ export const cacheTTL = {
   recentActivity: 180, // 3 minutes
   userAnalyses: 600, // 10 minutes
   userResumes: 600, // 10 minutes
+  userImprovements: 600, // 10 minutes
   analysisById: 1800, // 30 minutes
   userProfile: 300, // 5 minutes
   userCredits: 60, // 1 minute
@@ -183,6 +186,7 @@ export const dashboardCache = {
         deleteCachedDataBatch(userCacheKeys),
         deleteCachePattern(`user:analyses:${userId}:*`),
         deleteCachePattern(`user:resumes:${userId}:*`),
+        deleteCachePattern(`user:improvements:${userId}:*`),
         deleteCachePattern(`user:transactions:${userId}:*`),
       ]);
 
@@ -232,6 +236,27 @@ export const dashboardCache = {
       console.log(`[REDIS_CACHE] Invalidated resume caches for user: ${userId}`);
     } catch (error) {
       console.error(`[REDIS_CACHE] Error invalidating resume cache:`, error);
+    }
+  },
+
+  /**
+   * Invalidate improvement-related caches
+   */
+  async invalidateImprovement(userId: string): Promise<void> {
+    try {
+      const keys = [
+        cacheKeys.dashboardStats(userId),
+        cacheKeys.recentActivity(userId),
+      ];
+
+      await Promise.all([
+        deleteCachedDataBatch(keys),
+        deleteCachePattern(`user:improvements:${userId}:*`),
+      ]);
+
+      console.log(`[REDIS_CACHE] Invalidated improvement caches for user: ${userId}`);
+    } catch (error) {
+      console.error(`[REDIS_CACHE] Error invalidating improvement cache:`, error);
     }
   },
 

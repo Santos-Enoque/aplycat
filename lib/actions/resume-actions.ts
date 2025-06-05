@@ -32,6 +32,22 @@ export interface AnalysisRecord {
   processingTimeMs: number | null;
 }
 
+export interface ImprovementRecord {
+  id: string;
+  version: number;
+  versionName: string | null;
+  targetRole: string;
+  targetIndustry: string;
+  originalScore: number | null;
+  improvedScore: number | null;
+  improvementSummary: string | null;
+  createdAt: Date;
+  resume: {
+    fileName: string;
+    id: string;
+  };
+}
+
 /**
  * Get user's resumes with pagination
  */
@@ -111,6 +127,67 @@ export async function getUserAnalyses(
     );
   } catch (error) {
     console.error('[RESUME_ACTIONS] Error getting user analyses:', error);
+    return null;
+  }
+}
+
+/**
+ * Get user's improvements with pagination
+ */
+export async function getUserImprovements(
+  limit: number = 10,
+  offset: number = 0
+): Promise<{ improvements: ImprovementRecord[]; total: number } | null> {
+  try {
+    const user = await getCurrentUserFromDB();
+    if (!user) return null;
+
+    return getCachedData(
+      cacheKeys.userImprovements(user.id, limit, offset),
+      async () => {
+        const [improvements, total] = await Promise.all([
+          db.improvedResume.findMany({
+            where: { 
+              userId: user.id, 
+              isCompleted: true,
+              isActive: true 
+            },
+            orderBy: { createdAt: 'desc' },
+            take: limit,
+            skip: offset,
+            select: {
+              id: true,
+              version: true,
+              versionName: true,
+              targetRole: true,
+              targetIndustry: true,
+              originalScore: true,
+              improvedScore: true,
+              improvementSummary: true,
+              createdAt: true,
+              resume: {
+                select: {
+                  fileName: true,
+                  id: true,
+                },
+              },
+            },
+          }),
+          db.improvedResume.count({
+            where: { 
+              userId: user.id, 
+              isCompleted: true,
+              isActive: true 
+            },
+          }),
+        ]);
+
+        return { improvements, total };
+      },
+      cacheTTL.userImprovements
+    );
+  } catch (error) {
+    console.error('[RESUME_ACTIONS] Error getting user improvements:', error);
     return null;
   }
 }
