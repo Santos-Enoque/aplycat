@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileUploadWithUploadThing } from "@/components/file-upload-with-uploadthing";
+import HeroVideoDialog from "@/components/magicui/hero-video-dialog";
 import {
   ArrowRight,
   Upload,
@@ -155,9 +156,9 @@ export function LandingPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
-                Get savage, AI-powered feedback that recruiters are too polite
-                to give. Turn your cringeworthy resume into a job-landing
-                machine.
+                Get savage feedback from a cat who's seen it all and doesn't
+                care about your feelings. Turn your cringeworthy resume into
+                something that won't embarrass you.
               </p>
 
               <div className="space-y-4">
@@ -171,28 +172,19 @@ export function LandingPage() {
                 </Button>
 
                 <p className="text-sm text-gray-500">
-                  {"It's free to get your initial roast & score!"}
+                  {"It's free. AplyCat is feeling generous today."}
                 </p>
               </div>
             </div>
 
             <div className="relative mt-8 lg:mt-0">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 sm:p-8 relative">
-                <div className="w-full h-80 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-purple-300">
-                  <div className="text-6xl mb-4">😾</div>
-                  <div className="text-center px-4">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">
-                      AplyCat
-                    </h3>
-                    <p className="text-gray-600">
-                      "This resume makes me want to use my litter box instead."
-                    </p>
-                  </div>
-                </div>
-                <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 bg-red-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold transform rotate-12">
-                  YIKES!
-                </div>
-              </div>
+              <HeroVideoDialog
+                className="w-full max-w-2xl mx-auto"
+                animationStyle="from-center"
+                videoSrc="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                thumbnailSrc="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                thumbnailAlt="AplyCat Resume Analysis Demo"
+              />
             </div>
           </div>
         </div>
@@ -270,15 +262,15 @@ export function LandingPage() {
               </h2>
 
               <p className="text-xl text-gray-600 mb-8">
-                Brutal honesty. Better resume. Actual interviews.
+                Superior judgment. Reluctant assistance. Actual results.
               </p>
 
               <p className="text-lg text-gray-600 mb-8">
                 {
-                  "He's seen thousands of terrible resumes. He knows what works (and what makes him gag). "
+                  "He's a connoisseur of failure with impeccable taste. Thousands of resumes have crossed his superior gaze. "
                 }
-                Get unfiltered, actionable feedback that leads to genuinely
-                improved resumes.
+                Get unfiltered judgment from someone who actually knows better
+                (and isn't afraid to tell you).
               </p>
 
               <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -354,10 +346,10 @@ export function LandingPage() {
                 2
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Get Roasted & Scored
+                Get Judged & Scored
               </h3>
               <p className="text-gray-600">
-                AplyCat unleashes his brutal AI analysis in seconds.
+                AplyCat reluctantly shares his superior judgment in seconds.
               </p>
             </div>
 
@@ -369,11 +361,11 @@ export function LandingPage() {
                 3
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Improve & Conquer
+                Fix & Succeed
               </h3>
               <p className="text-gray-600">
                 {
-                  "Choose a pro template & get an AI-revamped resume that doesn't suck."
+                  "Choose from AplyCat's curated templates & get a resume that meets his standards."
                 }
               </p>
             </div>
@@ -438,12 +430,12 @@ export function LandingPage() {
             </div>
             <div className="order-1 lg:order-2">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-                Brutally Honest AI Analysis
+                Brutally Honest Feline Judgment
               </h3>
               <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
                 No sugar-coating, no participation trophies. AplyCat tells you
-                exactly what's wrong with your resume and why nobody's calling
-                you back. Get specific, actionable feedback that actually helps.
+                exactly what's wrong with your resume because someone has to.
+                Get specific, judgmental feedback from a cat with standards.
               </p>
               <ul className="space-y-2 text-sm sm:text-base text-gray-600">
                 <li className="flex items-center">
@@ -466,13 +458,13 @@ export function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-16 sm:mb-20">
             <div className="order-1">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-                AI-Powered Improvements
+                Reluctant Improvements
               </h3>
               <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
-                Watch AplyCat transform your boring job descriptions into
-                compelling success stories. Quantified achievements,
-                impact-driven bullet points, and one-page optimization that
-                actually gets noticed.
+                Watch AplyCat begrudgingly fix your mess. He'll transform your
+                boring job descriptions into something that won't make him
+                cringe. Proper achievements, decent bullet points, and
+                formatting that meets basic standards of civilization.
               </p>
               <ul className="space-y-2 text-sm sm:text-base text-gray-600">
                 <li className="flex items-center">
@@ -635,13 +627,13 @@ export function LandingPage() {
             </div>
             <div className="order-1 lg:order-2">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-                Job-Specific Tailoring
+                Custom Tailoring (When He Feels Like It)
               </h3>
               <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
-                Stop sending the same generic resume everywhere. AplyCat
-                analyzes job descriptions and tailors your resume to match what
-                employers are actually looking for, plus throws in a custom
-                cover letter.
+                Stop sending the same generic trash everywhere. AplyCat will
+                (sigh) analyze job descriptions and customize your resume to
+                actually match what they want. He'll even write you a cover
+                letter because apparently you need that too.
               </p>
               <ul className="space-y-2 text-sm sm:text-base text-gray-600">
                 <li className="flex items-center">
@@ -742,8 +734,8 @@ export function LandingPage() {
           </div>
 
           <p className="text-sm text-gray-500 mt-8">
-            All plans include AplyCat's brutally honest feedback. No refunds for
-            hurt feelings.
+            All plans include AplyCat's superior judgment. No refunds for hurt
+            feelings or wounded pride.
           </p>
         </div>
       </section>
@@ -773,7 +765,7 @@ export function LandingPage() {
                 </div>
                 <p className="text-gray-800 italic">
                   {
-                    "Your 'Skills' section includes 'Microsoft Word'? Did you also list 'Breathing' and 'Existing'? Wow. So hirable."
+                    "Your 'Skills' section includes 'Microsoft Word'? *yawn* How revolutionary. Did you also list 'Having thumbs' and 'Existing in 3D space'?"
                   }
                 </p>
                 <div className="flex items-center mt-4 text-sm text-gray-500">
@@ -796,7 +788,7 @@ export function LandingPage() {
                 </div>
                 <p className="text-gray-800 italic">
                   {
-                    "This resume is so dense, it's bending spacetime. Three pages to say you answered emails? Impressive. Not."
+                    "This resume is longer than my afternoon nap and twice as boring. Three pages to say you answered emails? I've seen litter boxes with more substance."
                   }
                 </p>
                 <div className="flex items-center mt-4 text-sm text-gray-500">
@@ -819,7 +811,7 @@ export function LandingPage() {
                 </div>
                 <p className="text-gray-800 italic">
                   {
-                    "Comic Sans font? Really? What's next, glitter? This isn't a birthday invitation, it's supposed to get you hired."
+                    "Comic Sans font? *slowly blinks* Really? I'm genuinely impressed by your ability to make poor life choices. Even my scratching post has better design sense."
                   }
                 </p>
                 <div className="flex items-center mt-4 text-sm text-gray-500">
@@ -845,11 +837,11 @@ export function LandingPage() {
       <section id="upload" className="py-8 sm:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 px-2">
-            Ready to Stop Sucking at Resumes?
+            Ready to Stop Embarrassing Yourself?
           </h2>
 
           <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 px-2">
-            Let AplyCat give your resume the tough love it desperately needs.
+            Let AplyCat reluctantly fix whatever this mess is supposed to be.
           </p>
 
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-4 sm:p-8 mb-6 sm:mb-8 mx-2 sm:mx-0">
@@ -860,14 +852,14 @@ export function LandingPage() {
               />
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              PDF files only. Max 5MB. Prepare for impact.
+              PDF files only. Max 5MB. AplyCat doesn't have all day.
             </p>
           </div>
 
           <p className="text-sm text-gray-500 px-4">
             Or,{" "}
             <button className="text-purple-600 hover:underline">
-              see example AplyCat-improved resumes
+              see examples of AplyCat's superior work
             </button>
           </p>
         </div>
