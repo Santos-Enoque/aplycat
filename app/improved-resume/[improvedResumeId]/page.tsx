@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,8 +76,6 @@ function ResumePreview({
   onEdit: (field: string, value: any) => void;
   highlightedFields: string[];
 }) {
-  const [editingField, setEditingField] = useState<string | null>(null);
-
   const isHighlighted = (field: string) => {
     return highlightedFields.some((highlightedField) => {
       // Skip keyword highlights for field-level highlighting
@@ -131,135 +129,184 @@ function ResumePreview({
     value,
     className = "",
     multiline = false,
+    style = {},
   }: {
     field: string;
     value: string;
     className?: string;
     multiline?: boolean;
+    style?: React.CSSProperties;
   }) => {
-    const [tempValue, setTempValue] = useState(value);
-
-    if (editingField === field) {
-      return multiline ? (
-        <Textarea
-          value={tempValue}
-          onChange={(e) => setTempValue(e.target.value)}
-          onBlur={() => {
-            onEdit(field, tempValue);
-            setEditingField(null);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && e.ctrlKey) {
-              onEdit(field, tempValue);
-              setEditingField(null);
-            }
-            if (e.key === "Escape") {
-              setTempValue(value);
-              setEditingField(null);
-            }
-          }}
-          className="min-h-[80px] resize-none"
-          autoFocus
-        />
-      ) : (
-        <Input
-          value={tempValue}
-          onChange={(e) => setTempValue(e.target.value)}
-          onBlur={() => {
-            onEdit(field, tempValue);
-            setEditingField(null);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              onEdit(field, tempValue);
-              setEditingField(null);
-            }
-            if (e.key === "Escape") {
-              setTempValue(value);
-              setEditingField(null);
-            }
-          }}
-          className={className}
-          autoFocus
-        />
-      );
-    }
-
+    const [isEditing, setIsEditing] = useState(false);
+    const editableRef = useRef<HTMLDivElement>(null);
     const hasKeywordHighlights = highlightedFields.some((field) =>
       field.startsWith("keyword:")
     );
-    const displayValue = hasKeywordHighlights
-      ? highlightKeywords(value)
-      : value;
+
+    const handleClick = () => {
+      setIsEditing(true);
+      setTimeout(() => {
+        if (editableRef.current) {
+          editableRef.current.focus();
+          // Place cursor at end of text
+          const range = document.createRange();
+          const selection = window.getSelection();
+          if (editableRef.current.childNodes.length > 0) {
+            range.selectNodeContents(editableRef.current);
+            range.collapse(false);
+          } else {
+            range.setStart(editableRef.current, 0);
+            range.setEnd(editableRef.current, 0);
+          }
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }, 0);
+    };
+
+    const handleBlur = () => {
+      if (editableRef.current) {
+        const newValue = editableRef.current.innerText;
+        if (newValue !== value) {
+          onEdit(field, newValue);
+        }
+      }
+      setIsEditing(false);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey && !multiline) {
+        e.preventDefault();
+        handleBlur();
+      }
+      if (e.key === "Escape") {
+        if (editableRef.current) {
+          editableRef.current.innerText = value;
+        }
+        setIsEditing(false);
+      }
+    };
+
+    const handleInput = () => {
+      // Auto-adjust height for multiline content
+      if (multiline && editableRef.current) {
+        editableRef.current.style.height = "auto";
+        editableRef.current.style.height =
+          editableRef.current.scrollHeight + "px";
+      }
+    };
+
+    const displayValue =
+      hasKeywordHighlights && !isEditing ? highlightKeywords(value) : value;
 
     return (
       <div
-        className={`${className} cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5 transition-colors group relative ${
-          isHighlighted(field) ? "bg-yellow-100 border border-yellow-300" : ""
-        }`}
-        onClick={() => setEditingField(field)}
-        title="Click to edit"
+        ref={editableRef}
+        contentEditable={isEditing}
+        suppressContentEditableWarning={true}
+        className={`${className} outline-none transition-all duration-200 group relative
+          ${
+            isEditing
+              ? "bg-white ring-2 ring-blue-400 ring-opacity-50 shadow-sm rounded-md px-2 py-1"
+              : "cursor-text hover:bg-gray-50 hover:bg-opacity-70 rounded px-1 py-0.5"
+          }
+          ${
+            isHighlighted(field) ? "bg-yellow-100 border border-yellow-300" : ""
+          }
+          ${multiline ? "min-h-[1.5rem]" : ""}
+        `}
+        style={{
+          ...style,
+          wordWrap: "break-word",
+          whiteSpace: multiline ? "pre-wrap" : "nowrap",
+          overflow: multiline ? "hidden" : "visible",
+          lineHeight: multiline ? "1.5" : "inherit",
+        }}
+        onClick={handleClick}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        onInput={handleInput}
+        dangerouslySetInnerHTML={
+          isEditing
+            ? undefined
+            : hasKeywordHighlights
+            ? { __html: displayValue }
+            : undefined
+        }
+        title={isEditing ? "" : "Click to edit"}
+        role="textbox"
+        aria-label={`Edit ${field}`}
       >
-        {hasKeywordHighlights ? (
-          <span dangerouslySetInnerHTML={{ __html: displayValue }} />
-        ) : (
-          value
-        )}
-        <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-0 right-0 transition-opacity" />
-        {isHighlighted(field) && (
-          <Badge
-            variant="secondary"
-            className="absolute -top-2 -right-2 text-xs"
-          >
-            AI Added
-          </Badge>
+        {isEditing && value}
+
+        {!isEditing && (
+          <>
+            {!hasKeywordHighlights && value}
+            <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
+            {isHighlighted(field) && (
+              <Badge
+                variant="secondary"
+                className="absolute -top-2 -right-2 text-xs pointer-events-none"
+              >
+                AI Added
+              </Badge>
+            )}
+          </>
         )}
       </div>
     );
   };
 
   return (
-    <div className="bg-white shadow-lg max-w-3xl mx-auto">
+    <div className="bg-gradient-to-br from-blue-50 to-white shadow-xl max-w-3xl mx-auto min-h-[297mm] relative border border-blue-100">
       {/* Resume Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-8 border-b border-gray-200">
         <div className="text-center">
           <EditableText
             field="personalInfo.name"
             value={resumeData.personalInfo.name}
-            className="text-2xl font-bold text-gray-900 text-center border-0 focus:ring-0"
+            className="text-3xl font-bold text-gray-900 text-center"
+            style={{ minHeight: "40px" }}
           />
-          <div className="mt-2 text-sm text-gray-600 space-y-1">
-            <div className="flex justify-center gap-4 flex-wrap">
+          <div className="mt-4 text-sm text-gray-600 space-y-2">
+            <div className="flex justify-center gap-6 flex-wrap">
               <EditableText
                 field="personalInfo.email"
                 value={resumeData.personalInfo.email}
-                className="text-sm border-0 focus:ring-0 text-center"
+                className="text-sm text-center"
               />
+              <span className="text-gray-400">•</span>
               <EditableText
                 field="personalInfo.phone"
                 value={resumeData.personalInfo.phone}
-                className="text-sm border-0 focus:ring-0 text-center"
+                className="text-sm text-center"
               />
             </div>
-            <div className="flex justify-center gap-4 flex-wrap">
+            <div className="flex justify-center gap-6 flex-wrap">
               <EditableText
                 field="personalInfo.location"
                 value={resumeData.personalInfo.location}
-                className="text-sm border-0 focus:ring-0 text-center"
+                className="text-sm text-center"
               />
               {resumeData.personalInfo.linkedin && (
-                <EditableText
-                  field="personalInfo.linkedin"
-                  value={resumeData.personalInfo.linkedin}
-                  className="text-sm border-0 focus:ring-0 text-center"
-                />
+                <>
+                  <span className="text-gray-400">•</span>
+                  <EditableText
+                    field="personalInfo.linkedin"
+                    value={resumeData.personalInfo.linkedin}
+                    className="text-sm text-center text-blue-600"
+                  />
+                </>
               )}
               {resumeData.personalInfo.website && (
-                <EditableText
-                  field="personalInfo.website"
-                  value={resumeData.personalInfo.website}
-                  className="text-sm border-0 focus:ring-0 text-center"
-                />
+                <>
+                  <span className="text-gray-400">•</span>
+                  <EditableText
+                    field="personalInfo.website"
+                    value={resumeData.personalInfo.website}
+                    className="text-sm text-center text-blue-600"
+                  />
+                </>
               )}
             </div>
           </div>
@@ -267,70 +314,75 @@ function ResumePreview({
       </div>
 
       {/* Professional Summary */}
-      <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">
+      <div className="p-8 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 uppercase tracking-wide">
           Professional Summary
         </h3>
         <EditableText
           field="professionalSummary"
           value={resumeData.professionalSummary}
-          className="text-sm text-gray-700 leading-relaxed border-0 focus:ring-0"
+          className="text-sm text-gray-700 leading-relaxed"
           multiline
+          style={{ minHeight: "60px" }}
         />
       </div>
 
       {/* Experience */}
-      <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="p-8 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6 uppercase tracking-wide">
           Professional Experience
         </h3>
-        <div className="space-y-6">
+        <div className="space-y-8">
           {resumeData.experience.map((exp, index) => (
-            <div key={index} className="border-l-2 border-gray-200 pl-4">
-              <div className="flex justify-between items-start mb-2">
+            <div key={index} className="relative">
+              <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <EditableText
                     field={`experience.${index}.title`}
                     value={exp.title}
-                    className="text-base font-semibold text-gray-900 border-0 focus:ring-0"
+                    className="text-base font-semibold text-gray-900"
                   />
-                  <EditableText
-                    field={`experience.${index}.company`}
-                    value={exp.company}
-                    className="text-sm font-medium text-gray-700 border-0 focus:ring-0"
-                  />
-                  <EditableText
-                    field={`experience.${index}.location`}
-                    value={exp.location}
-                    className="text-sm text-gray-600 border-0 focus:ring-0"
-                  />
+                  <div className="flex items-center gap-2 mt-1">
+                    <EditableText
+                      field={`experience.${index}.company`}
+                      value={exp.company}
+                      className="text-sm font-medium text-gray-700"
+                    />
+                    <span className="text-gray-400">•</span>
+                    <EditableText
+                      field={`experience.${index}.location`}
+                      value={exp.location}
+                      className="text-sm text-gray-600"
+                    />
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 flex-shrink-0">
                   <EditableText
                     field={`experience.${index}.startDate`}
                     value={exp.startDate}
-                    className="text-sm border-0 focus:ring-0"
+                    className="text-sm"
                   />
-                  {" - "}
+                  <span className="mx-1">-</span>
                   <EditableText
                     field={`experience.${index}.endDate`}
                     value={exp.endDate}
-                    className="text-sm border-0 focus:ring-0"
+                    className="text-sm"
                   />
                 </div>
               </div>
-              <ul className="space-y-1 ml-2">
+              <ul className="space-y-2 ml-0">
                 {exp.achievements.map((achievement, achIndex) => (
                   <li
                     key={achIndex}
                     className="text-sm text-gray-700 flex items-start"
                   >
-                    <span className="text-gray-400 mr-2">•</span>
+                    <span className="text-gray-400 mr-3 mt-0.5">•</span>
                     <EditableText
                       field={`experience.${index}.achievements.${achIndex}`}
                       value={achievement}
-                      className="flex-1 text-sm border-0 focus:ring-0"
+                      className="flex-1 text-sm leading-relaxed"
                       multiline
+                      style={{ minHeight: "20px" }}
                     />
                   </li>
                 ))}
@@ -341,35 +393,37 @@ function ResumePreview({
       </div>
 
       {/* Education */}
-      <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Education</h3>
+      <div className="p-8 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6 uppercase tracking-wide">
+          Education
+        </h3>
         <div className="space-y-4">
           {resumeData.education.map((edu, index) => (
             <div key={index}>
               <div className="flex justify-between items-start">
-                <div>
+                <div className="flex-1">
                   <EditableText
                     field={`education.${index}.degree`}
                     value={edu.degree}
-                    className="text-base font-semibold text-gray-900 border-0 focus:ring-0"
+                    className="text-base font-semibold text-gray-900"
                   />
                   <EditableText
                     field={`education.${index}.institution`}
                     value={edu.institution}
-                    className="text-sm font-medium text-gray-700 border-0 focus:ring-0"
+                    className="text-sm font-medium text-gray-700 mt-1"
                   />
                   {edu.details && (
                     <EditableText
                       field={`education.${index}.details`}
                       value={edu.details}
-                      className="text-sm text-gray-600 border-0 focus:ring-0"
+                      className="text-sm text-gray-600 mt-1"
                     />
                   )}
                 </div>
                 <EditableText
                   field={`education.${index}.year`}
                   value={edu.year}
-                  className="text-sm text-gray-600 border-0 focus:ring-0"
+                  className="text-sm text-gray-600 flex-shrink-0"
                 />
               </div>
             </div>
@@ -378,48 +432,38 @@ function ResumePreview({
       </div>
 
       {/* Skills */}
-      <div className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Skills</h3>
-        <div className="space-y-3">
+      <div className="p-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6 uppercase tracking-wide">
+          Skills
+        </h3>
+        <div className="space-y-4">
           {resumeData.skills.technical.length > 0 && (
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">
+              <p className="text-sm font-medium text-gray-700 mb-3">
                 Technical Skills
               </p>
-              <div className="flex flex-wrap gap-2">
-                {resumeData.skills.technical.map((skill, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {skill}
-                  </Badge>
-                ))}
+              <div className="text-sm text-gray-700 leading-relaxed">
+                {resumeData.skills.technical.join(" • ")}
               </div>
             </div>
           )}
           {resumeData.skills.certifications.length > 0 && (
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">
+              <p className="text-sm font-medium text-gray-700 mb-3">
                 Certifications
               </p>
-              <div className="flex flex-wrap gap-2">
-                {resumeData.skills.certifications.map((cert, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {cert}
-                  </Badge>
-                ))}
+              <div className="text-sm text-gray-700 leading-relaxed">
+                {resumeData.skills.certifications.join(" • ")}
               </div>
             </div>
           )}
           {resumeData.skills.otherRelevantSkills.length > 0 && (
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">
+              <p className="text-sm font-medium text-gray-700 mb-3">
                 Additional Skills
               </p>
-              <div className="flex flex-wrap gap-2">
-                {resumeData.skills.otherRelevantSkills.map((skill, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {skill}
-                  </Badge>
-                ))}
+              <div className="text-sm text-gray-700 leading-relaxed">
+                {resumeData.skills.otherRelevantSkills.join(" • ")}
               </div>
             </div>
           )}
@@ -654,6 +698,7 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
   const [coverLetter, setCoverLetter] = useState<string | null>(null);
   const [highlightedFields, setHighlightedFields] = useState<string[]>([]);
   const [tailoringAnalysis, setTailoringAnalysis] = useState<any>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     async function getParams() {
@@ -864,6 +909,49 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
     }
   };
 
+  const handleDownload = async (format: "docx" | "pdf") => {
+    if (!improvedResume || !editableResume) return;
+
+    setIsDownloading(true);
+    try {
+      const response = await fetch(`/api/download-resume`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          resumeData: editableResume,
+          format: format,
+          fileName:
+            improvedResume.versionName || `resume-v${improvedResume.version}`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate download");
+      }
+
+      // Get the blob and create download link
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `${
+        improvedResume.versionName || `resume-v${improvedResume.version}`
+      }.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download resume. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleGoBack = () => {
     if (improvedResume) {
       const params = new URLSearchParams({
@@ -933,13 +1021,33 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
                 }`}
               />
             </Button>
-            <Button variant="outline" size="sm" disabled>
-              <Download className="h-4 w-4 mr-2" />
-              Download
-              <Badge variant="secondary" className="ml-2 text-xs">
-                Soon
-              </Badge>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload("docx")}
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                DOCX
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload("pdf")}
+                disabled
+              >
+                <Download className="h-4 w-4 mr-2" />
+                PDF
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  Soon
+                </Badge>
+              </Button>
+            </div>
             <Button variant="outline" size="sm" disabled>
               <Share className="h-4 w-4 mr-2" />
               Share
@@ -960,11 +1068,11 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Resume Preview (takes 2/3 width) */}
           <div className="lg:col-span-2">
-            <Card className="h-fit">
-              <CardHeader>
+            <Card className="h-fit bg-gradient-to-br from-slate-50 to-blue-50 border-blue-200 shadow-xl">
+              <CardHeader className="bg-white border-b border-blue-100">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-purple-600" />
+                    <FileText className="h-5 w-5 text-blue-600" />
                     {activeTab === "resume" ? "Resume Preview" : "Cover Letter"}
                   </CardTitle>
                   {coverLetter && (
@@ -982,15 +1090,17 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="p-4">
                 {activeTab === "resume" ? (
-                  <ResumePreview
-                    resumeData={editableResume}
-                    onEdit={handleEditResume}
-                    highlightedFields={highlightedFields}
-                  />
+                  <div className="rounded-lg overflow-hidden">
+                    <ResumePreview
+                      resumeData={editableResume}
+                      onEdit={handleEditResume}
+                      highlightedFields={highlightedFields}
+                    />
+                  </div>
                 ) : (
-                  <div className="p-6 bg-white">
+                  <div className="p-6 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 shadow-sm">
                     <div className="prose max-w-none">
                       {highlightedFields.some((field) =>
                         field.startsWith("keyword:")
