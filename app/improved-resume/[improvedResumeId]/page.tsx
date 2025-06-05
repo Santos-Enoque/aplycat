@@ -33,7 +33,7 @@ import { EnhancedLoading } from "@/components/enhanced-loading";
 import { ImprovedResume, Experience, Education } from "@/types/improved-resume";
 
 interface ImprovedResumeProps {
-  params: { improvedResumeId: string };
+  params: Promise<{ improvedResumeId: string }>;
 }
 
 interface ImprovedResumeData {
@@ -607,7 +607,7 @@ function CustomPromptComponent({
 
 export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
   const router = useRouter();
-  const { improvedResumeId } = params;
+  const [improvedResumeId, setImprovedResumeId] = useState<string | null>(null);
   const [improvedResume, setImprovedResume] =
     useState<ImprovedResumeData | null>(null);
   const [editableResume, setEditableResume] =
@@ -621,7 +621,17 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
   const [highlightedFields, setHighlightedFields] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchImprovedResume();
+    async function getParams() {
+      const resolvedParams = await params;
+      setImprovedResumeId(resolvedParams.improvedResumeId);
+    }
+    getParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (improvedResumeId) {
+      fetchImprovedResume();
+    }
   }, [improvedResumeId]);
 
   const fetchImprovedResume = async () => {
@@ -1024,17 +1034,21 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
               </CardContent>
             </Card>
 
-            <TailoringComponent
-              currentResume={editableResume}
-              onTailor={handleTailor}
-              improvedResumeId={improvedResumeId}
-            />
+            {improvedResumeId && (
+              <>
+                <TailoringComponent
+                  currentResume={editableResume}
+                  onTailor={handleTailor}
+                  improvedResumeId={improvedResumeId}
+                />
 
-            <CustomPromptComponent
-              currentResume={editableResume}
-              onImprove={handleCustomImprove}
-              improvedResumeId={improvedResumeId}
-            />
+                <CustomPromptComponent
+                  currentResume={editableResume}
+                  onImprove={handleCustomImprove}
+                  improvedResumeId={improvedResumeId}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

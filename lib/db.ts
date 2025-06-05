@@ -4,7 +4,21 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const db = globalForPrisma.prisma ?? new PrismaClient()
+export const db = globalForPrisma.prisma ?? new PrismaClient({
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+  // Optimize for production
+  ...(process.env.NODE_ENV === 'production' && {
+    transactionOptions: {
+      timeout: 5000, // 5 second timeout
+      maxWait: 2000, // 2 second wait time
+    },
+  }),
+})
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
 
@@ -78,7 +92,7 @@ export const creditHelpers = {
   async addCredits(
     userId: string,
     amount: number,
-    type: 'SIGNUP_BONUS' | 'PURCHASE' | 'SUBSCRIPTION' | 'ADMIN_ADJUSTMENT' | 'REFUND',
+    type: 'BONUS_CREDIT' | 'PURCHASE' | 'SUBSCRIPTION_CREDIT' | 'REFUND',
     description: string
   ) {
     return await db.$transaction(async (tx) => {

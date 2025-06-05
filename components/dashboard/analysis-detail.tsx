@@ -61,6 +61,13 @@ export function AnalysisDetail({ analysis, onBack }: AnalysisDetailProps) {
     return "bg-red-50";
   };
 
+  const getRoastTextColor = (score: number) => {
+    if (score >= 80) return "text-green-700";
+    if (score >= 60) return "text-yellow-700";
+    if (score >= 40) return "text-orange-700";
+    return "text-gray-700";
+  };
+
   const shareAnalysis = () => {
     if (navigator.share) {
       navigator.share({
@@ -312,7 +319,13 @@ export function AnalysisDetail({ analysis, onBack }: AnalysisDetailProps) {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700 mb-4 italic">"{section.roast}"</p>
+                  <p
+                    className={`mb-4 italic ${getRoastTextColor(
+                      section.score
+                    )}`}
+                  >
+                    "{section.roast}"
+                  </p>
 
                   {section.issues?.length > 0 && (
                     <div className="mb-4">

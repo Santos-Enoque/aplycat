@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ResumeProvider } from "@/hooks/use-resume-context";
+import { PerformanceTracker } from "@/components/performance-tracker";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
@@ -71,6 +72,7 @@ export default function RootLayout({
             routerConfig={extractRouterConfig(ourFileRouter)}
           />
           <ResumeProvider>
+            <PerformanceTracker />
             <Navbar />
             <main className="min-h-screen">{children}</main>
             <Footer />

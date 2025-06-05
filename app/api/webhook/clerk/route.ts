@@ -107,7 +107,7 @@ async function handleUserCreated(data: ClerkEvent['data']) {
     await creditHelpers.addCredits(
       user.id,
       10,
-      'SIGNUP_BONUS',
+      'BONUS_CREDIT',
       'Welcome bonus - 10 free credits for new users'
     );
 

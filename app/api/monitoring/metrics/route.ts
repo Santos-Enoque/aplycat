@@ -29,7 +29,7 @@ aplycat_memory_usage{type="heap_total",service="resume-analysis"} ${health.check
 
 # HELP aplycat_uptime_seconds Service uptime in seconds
 # TYPE aplycat_uptime_seconds gauge
-aplycat_uptime_seconds{service="resume-analysis"} ${health.checks.uptime}
+aplycat_uptime_seconds{service="resume-analysis"} ${health.uptime}
 
 # HELP aplycat_health_status Service health status (1=healthy, 0.5=degraded, 0=unhealthy)
 # TYPE aplycat_health_status gauge

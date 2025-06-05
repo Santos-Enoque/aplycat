@@ -259,7 +259,9 @@ export default function AnalyzePage() {
                   <span>📄</span>
                   <span>Saved Analysis</span>
                   <span className="text-xs text-blue-600">
-                    {new Date(analysisResult.timestamp).toLocaleDateString()}
+                    {analysisResult.timestamp
+                      ? new Date(analysisResult.timestamp).toLocaleDateString()
+                      : "N/A"}
                   </span>
                 </div>
               )}

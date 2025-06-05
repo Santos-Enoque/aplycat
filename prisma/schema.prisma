@@ -24,7 +24,7 @@ model User {
     isPremium Boolean @default(false)
 
     // Credits & Usage
-    credits          Int @default(10) // Free trial credits for new users
+    credits          Int @default(5) // Free credits for new users
     totalCreditsUsed Int @default(0)
 
     // Timestamps
@@ -43,6 +43,10 @@ model User {
     usageEvents        UsageEvent[]
     feedback           Feedback[]
 
+    // Add indexes for dashboard performance
+    @@index([clerkId])
+    @@index([email])
+    @@index([lastActiveAt])
     @@map("users")
 }
 
@@ -70,17 +74,18 @@ model CreditTransaction {
     improvement    Improvement?    @relation(fields: [relatedImprovementId], references: [id])
     improvedResume ImprovedResume? @relation(fields: [relatedImprovedResumeId], references: [id])
 
+    @@index([userId, createdAt(sort: Desc)])
+    @@index([type, createdAt(sort: Desc)])
     @@map("credit_transactions")
 }
 
 enum CreditTransactionType {
-    SIGNUP_BONUS // Free credits on signup
-    PURCHASE // Purchased credits
-    SUBSCRIPTION // Monthly subscription credits
-    ANALYSIS_USE // Used for resume analysis
-    IMPROVEMENT_USE // Used for resume improvement
-    ADMIN_ADJUSTMENT // Manual admin adjustment
-    REFUND // Credit refund
+    PURCHASE
+    SUBSCRIPTION_CREDIT
+    ANALYSIS_USE
+    IMPROVEMENT_USE
+    BONUS_CREDIT
+    REFUND
 }
 
 // ===== RESUME & FILE MANAGEMENT =====
@@ -112,6 +117,9 @@ model Resume {
     improvedResumes   ImprovedResume[]
     resumeComparisons ResumeComparison[]
 
+    // Critical indexes for dashboard performance
+    @@index([userId, isActive, createdAt(sort: Desc)])
+    @@index([userId, createdAt(sort: Desc)])
     @@map("resumes")
 }
 
@@ -135,7 +143,7 @@ model Analysis {
     analysisData Json // Complete analysis response
 
     // Status & Credits
-    creditsUsed Int     @default(1)
+    creditsUsed Int     @default(0)
     isCompleted Boolean @default(false)
 
     // Timestamps
@@ -148,6 +156,10 @@ model Analysis {
     creditTransactions CreditTransaction[]
     improvements       Improvement[]
 
+    // Crucial indexes for dashboard queries
+    @@index([userId, isCompleted, createdAt(sort: Desc)])
+    @@index([resumeId, isCompleted, createdAt(sort: Desc)])
+    @@index([userId, resumeId, isCompleted])
     @@map("analyses")
 }
 
@@ -170,7 +182,7 @@ model Improvement {
     generatedFileUrl String? // UploadThing URL for generated resume
 
     // Status & Credits
-    creditsUsed      Int     @default(2) // Improvements cost more
+    creditsUsed      Int     @default(0)
     isCompleted      Boolean @default(false)
     processingTimeMs Int?
 
@@ -184,6 +196,9 @@ model Improvement {
     analysis           Analysis?           @relation(fields: [analysisId], references: [id])
     creditTransactions CreditTransaction[]
 
+    @@index([userId, createdAt(sort: Desc)])
+    @@index([resumeId, createdAt(sort: Desc)])
+    @@index([analysisId])
     @@map("improvements")
 }
 
@@ -217,7 +232,7 @@ model ImprovedResume {
     fileName         String? // Generated file name
 
     // Processing details
-    creditsUsed      Int     @default(3) // Credits used for this improvement
+    creditsUsed      Int     @default(0)
     processingTimeMs Int?
     modelUsed        String? // AI model used (for future tracking)
 
@@ -238,6 +253,10 @@ model ImprovedResume {
 
     // Ensure version uniqueness per resume
     @@unique([resumeId, version])
+    // Performance indexes for dashboard
+    @@index([userId, isCompleted, createdAt(sort: Desc)])
+    @@index([resumeId, isCompleted, createdAt(sort: Desc)])
+    @@index([userId, isActive, isFavorite])
     @@map("improved_resumes")
 }
 
@@ -306,6 +325,8 @@ model Subscription {
     // Relations
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+    @@index([userId, status, createdAt(sort: Desc)])
+    @@index([status, currentPeriodEnd])
     @@map("subscriptions")
 }
 
@@ -314,7 +335,9 @@ enum SubscriptionStatus {
     CANCELED
     PAST_DUE
     INCOMPLETE
+    INCOMPLETE_EXPIRED
     TRIALING
+    UNPAID
 }
 
 // ===== USAGE TRACKING & ANALYTICS =====

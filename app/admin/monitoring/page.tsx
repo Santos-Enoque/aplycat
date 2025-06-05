@@ -1,39 +1,39 @@
 // app/admin/monitoring/page.tsx (Internal monitoring dashboard)
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  AlertTriangle, 
-  CheckCircle, 
-  XCircle, 
-  RefreshCw, 
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
   TrendingUp,
   TrendingDown,
   Clock,
   Database,
   Cpu,
   Activity,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface HealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   timestamp: string;
   service: string;
   version: string;
   environment: string;
+  uptime: number;
   checks: {
-    database: 'healthy' | 'degraded' | 'down';
-    openai: 'healthy' | 'degraded' | 'down';
+    database: "healthy" | "degraded" | "down";
+    openai: "healthy" | "degraded" | "down";
     memory: {
       heapUsed: number;
       heapTotal: number;
       external: number;
       rss: number;
     };
-    uptime: number;
     responseTime?: number;
   };
   errors?: Array<{
@@ -67,8 +67,8 @@ export default function MonitoringDashboard() {
     setLoading(true);
     try {
       const [healthRes, statsRes] = await Promise.all([
-        fetch('/api/monitoring/health'),
-        fetch('/api/monitoring/stats')
+        fetch("/api/monitoring/health"),
+        fetch("/api/monitoring/stats"),
       ]);
 
       const healthData = await healthRes.json();
@@ -78,7 +78,7 @@ export default function MonitoringDashboard() {
       setStats(statsData.statistics);
       setLastRefresh(new Date());
     } catch (error) {
-      console.error('Failed to fetch monitoring data:', error);
+      console.error("Failed to fetch monitoring data:", error);
     } finally {
       setLoading(false);
     }
@@ -103,21 +103,30 @@ export default function MonitoringDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'text-green-600 bg-green-100';
-      case 'degraded': return 'text-yellow-600 bg-yellow-100';
-      case 'unhealthy':
-      case 'down': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case "healthy":
+        return "text-green-600 bg-green-100";
+      case "degraded":
+        return "text-yellow-600 bg-yellow-100";
+      case "unhealthy":
+      case "down":
+        return "text-red-600 bg-red-100";
+      default:
+        return "text-gray-600 bg-gray-100";
     }
   };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return <XCircle className="h-4 w-4 text-red-600" />;
-      case 'high': return <AlertTriangle className="h-4 w-4 text-orange-600" />;
-      case 'medium': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'low': return <CheckCircle className="h-4 w-4 text-blue-600" />;
-      default: return <Activity className="h-4 w-4 text-gray-600" />;
+      case "critical":
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      case "high":
+        return <AlertTriangle className="h-4 w-4 text-orange-600" />;
+      case "medium":
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+      case "low":
+        return <CheckCircle className="h-4 w-4 text-blue-600" />;
+      default:
+        return <Activity className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -152,7 +161,9 @@ export default function MonitoringDashboard() {
               Last updated: {lastRefresh.toLocaleTimeString()}
             </div>
             <Button onClick={fetchData} disabled={loading} size="sm">
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
@@ -165,17 +176,21 @@ export default function MonitoringDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Overall Status</p>
-                  <p className={`text-lg font-semibold ${
-                    health?.status === 'healthy' ? 'text-green-600' :
-                    health?.status === 'degraded' ? 'text-yellow-600' :
-                    'text-red-600'
-                  }`}>
-                    {health?.status?.toUpperCase() || 'UNKNOWN'}
+                  <p
+                    className={`text-lg font-semibold ${
+                      health?.status === "healthy"
+                        ? "text-green-600"
+                        : health?.status === "degraded"
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {health?.status?.toUpperCase() || "UNKNOWN"}
                   </p>
                 </div>
-                {health?.status === 'healthy' ? (
+                {health?.status === "healthy" ? (
                   <CheckCircle className="h-8 w-8 text-green-600" />
-                ) : health?.status === 'degraded' ? (
+                ) : health?.status === "degraded" ? (
                   <AlertTriangle className="h-8 w-8 text-yellow-600" />
                 ) : (
                   <XCircle className="h-8 w-8 text-red-600" />
@@ -189,8 +204,12 @@ export default function MonitoringDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Database</p>
-                  <Badge className={getStatusColor(health?.checks.database || 'unknown')}>
-                    {health?.checks.database || 'Unknown'}
+                  <Badge
+                    className={getStatusColor(
+                      health?.checks.database || "unknown"
+                    )}
+                  >
+                    {health?.checks.database || "Unknown"}
                   </Badge>
                 </div>
                 <Database className="h-8 w-8 text-blue-600" />
@@ -203,8 +222,12 @@ export default function MonitoringDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">OpenAI API</p>
-                  <Badge className={getStatusColor(health?.checks.openai || 'unknown')}>
-                    {health?.checks.openai || 'Unknown'}
+                  <Badge
+                    className={getStatusColor(
+                      health?.checks.openai || "unknown"
+                    )}
+                  >
+                    {health?.checks.openai || "Unknown"}
                   </Badge>
                 </div>
                 <Cpu className="h-8 w-8 text-purple-600" />
@@ -218,7 +241,7 @@ export default function MonitoringDashboard() {
                 <div>
                   <p className="text-sm text-gray-600">Uptime</p>
                   <p className="text-lg font-semibold text-green-600">
-                    {health?.checks.uptime ? formatUptime(health.checks.uptime) : 'Unknown'}
+                    {health?.uptime ? formatUptime(health.uptime) : "Unknown"}
                   </p>
                 </div>
                 <Clock className="h-8 w-8 text-green-600" />
@@ -264,7 +287,10 @@ export default function MonitoringDashboard() {
                     <h4 className="font-medium mb-2">Errors by Type</h4>
                     <div className="space-y-2">
                       {Object.entries(stats.byType).map(([type, count]) => (
-                        <div key={type} className="flex justify-between items-center">
+                        <div
+                          key={type}
+                          className="flex justify-between items-center"
+                        >
                           <span className="text-sm text-gray-600">{type}</span>
                           <Badge variant="outline">{count}</Badge>
                         </div>
@@ -275,20 +301,29 @@ export default function MonitoringDashboard() {
                   <div className="border-t pt-4">
                     <h4 className="font-medium mb-2">Severity Distribution</h4>
                     <div className="space-y-2">
-                      {Object.entries(stats.severityDistribution).map(([severity, count]) => (
-                        <div key={severity} className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            {getSeverityIcon(severity)}
-                            <span className="text-sm capitalize">{severity}</span>
+                      {Object.entries(stats.severityDistribution).map(
+                        ([severity, count]) => (
+                          <div
+                            key={severity}
+                            className="flex justify-between items-center"
+                          >
+                            <div className="flex items-center gap-2">
+                              {getSeverityIcon(severity)}
+                              <span className="text-sm capitalize">
+                                {severity}
+                              </span>
+                            </div>
+                            <Badge variant="outline">{count}</Badge>
                           </div>
-                          <Badge variant="outline">{count}</Badge>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-gray-500">No statistics available</div>
+                <div className="text-center text-gray-500">
+                  No statistics available
+                </div>
               )}
             </CardContent>
           </Card>
@@ -307,14 +342,19 @@ export default function MonitoringDashboard() {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600">Heap Usage</span>
                       <span className="text-sm font-medium">
-                        {formatBytes(health.checks.memory.heapUsed)} / {formatBytes(health.checks.memory.heapTotal)}
+                        {formatBytes(health.checks.memory.heapUsed)} /{" "}
+                        {formatBytes(health.checks.memory.heapTotal)}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                        style={{ 
-                          width: `${(health.checks.memory.heapUsed / health.checks.memory.heapTotal) * 100}%` 
+                        style={{
+                          width: `${
+                            (health.checks.memory.heapUsed /
+                              health.checks.memory.heapTotal) *
+                            100
+                          }%`,
                         }}
                       />
                     </div>
@@ -323,17 +363,23 @@ export default function MonitoringDashboard() {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <div className="text-gray-600">RSS Memory</div>
-                      <div className="font-medium">{formatBytes(health.checks.memory.rss)}</div>
+                      <div className="font-medium">
+                        {formatBytes(health.checks.memory.rss)}
+                      </div>
                     </div>
                     <div>
                       <div className="text-gray-600">External Memory</div>
-                      <div className="font-medium">{formatBytes(health.checks.memory.external)}</div>
+                      <div className="font-medium">
+                        {formatBytes(health.checks.memory.external)}
+                      </div>
                     </div>
                   </div>
 
                   {health.checks.responseTime && (
                     <div className="border-t pt-4">
-                      <div className="text-gray-600 text-sm">Average Response Time</div>
+                      <div className="text-gray-600 text-sm">
+                        Average Response Time
+                      </div>
                       <div className="text-lg font-semibold">
                         {(health.checks.responseTime / 1000).toFixed(1)}s
                       </div>
@@ -341,7 +387,9 @@ export default function MonitoringDashboard() {
                   )}
                 </div>
               ) : (
-                <div className="text-center text-gray-500">No memory data available</div>
+                <div className="text-center text-gray-500">
+                  No memory data available
+                </div>
               )}
             </CardContent>
           </Card>
@@ -364,10 +412,17 @@ export default function MonitoringDashboard() {
                       <div className="flex items-center gap-2">
                         {getSeverityIcon(error.severity)}
                         <span className="font-medium">{error.type}</span>
-                        <Badge className={`${error.severity === 'critical' ? 'bg-red-100 text-red-800' : 
-                                        error.severity === 'high' ? 'bg-orange-100 text-orange-800' : 
-                                        error.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' : 
-                                        'bg-blue-100 text-blue-800'}`}>
+                        <Badge
+                          className={`${
+                            error.severity === "critical"
+                              ? "bg-red-100 text-red-800"
+                              : error.severity === "high"
+                              ? "bg-orange-100 text-orange-800"
+                              : error.severity === "medium"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
                           {error.severity}
                         </Badge>
                       </div>
@@ -382,7 +437,9 @@ export default function MonitoringDashboard() {
             ) : (
               <div className="text-center py-8">
                 <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900">No Recent Errors</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  No Recent Errors
+                </h3>
                 <p className="text-gray-600">System is running smoothly!</p>
               </div>
             )}
@@ -399,22 +456,34 @@ export default function MonitoringDashboard() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Service:</span>
-                  <span className="font-medium">{health?.service || 'Unknown'}</span>
+                  <span className="font-medium">
+                    {health?.service || "Unknown"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Version:</span>
-                  <span className="font-medium">{health?.version || 'Unknown'}</span>
+                  <span className="font-medium">
+                    {health?.version || "Unknown"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Environment:</span>
-                  <Badge className={health?.environment === 'production' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
-                    {health?.environment || 'Unknown'}
+                  <Badge
+                    className={
+                      health?.environment === "production"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-blue-100 text-blue-800"
+                    }
+                  >
+                    {health?.environment || "Unknown"}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Last Check:</span>
                   <span className="font-medium">
-                    {health?.timestamp ? new Date(health.timestamp).toLocaleTimeString() : 'Unknown'}
+                    {health?.timestamp
+                      ? new Date(health.timestamp).toLocaleTimeString()
+                      : "Unknown"}
                   </span>
                 </div>
               </div>
@@ -427,26 +496,30 @@ export default function MonitoringDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Button 
-                  onClick={fetchData} 
-                  className="w-full" 
+                <Button
+                  onClick={fetchData}
+                  className="w-full"
                   variant="outline"
                   disabled={loading}
                 >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  <RefreshCw
+                    className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+                  />
                   Refresh Data
                 </Button>
-                <Button 
-                  onClick={() => window.open('/api/monitoring/metrics', '_blank')} 
-                  className="w-full" 
+                <Button
+                  onClick={() =>
+                    window.open("/api/monitoring/metrics", "_blank")
+                  }
+                  className="w-full"
                   variant="outline"
                 >
                   <Activity className="h-4 w-4 mr-2" />
                   View Metrics
                 </Button>
-                <Button 
-                  onClick={() => window.location.reload()} 
-                  className="w-full" 
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="w-full"
                   variant="outline"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
@@ -464,15 +537,21 @@ export default function MonitoringDashboard() {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span><strong>Healthy:</strong> All systems operational</span>
+                  <span>
+                    <strong>Healthy:</strong> All systems operational
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  <span><strong>Degraded:</strong> Some issues detected</span>
+                  <span>
+                    <strong>Degraded:</strong> Some issues detected
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <XCircle className="h-4 w-4 text-red-600" />
-                  <span><strong>Unhealthy:</strong> Critical issues present</span>
+                  <span>
+                    <strong>Unhealthy:</strong> Critical issues present
+                  </span>
                 </div>
               </div>
             </CardContent>

@@ -1,16 +1,9 @@
 // app/page.tsx
-import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+// Auth redirects are now handled by middleware
 import { LandingPage } from "@/components/landing-page";
 
-export default async function HomePage() {
-  const user = await currentUser();
-
-  // If user is authenticated, redirect to dashboard
-  if (user) {
-    redirect("/dashboard");
-  }
-
+export default function HomePage() {
   // Show landing page for unauthenticated users
+  // Authenticated users are redirected by middleware
   return <LandingPage />;
 }

@@ -766,7 +766,7 @@ interface ErrorContext {
       checkAlertConditions(stats, health);
     } catch (err) {
       // Alerting system not available or error in alerting
-      console.warn('[ERROR_MONITOR] Could not trigger alerts:', err.message);
+      console.warn('[ERROR_MONITOR] Could not trigger alerts:', err instanceof Error ? err.message : String(err));
     }
   }
   
@@ -785,9 +785,9 @@ interface ErrorContext {
       memory: process.memoryUsage(),
       cpu: process.cpuUsage(),
       uptime: process.uptime(),
-      loadAverage: typeof process.loadavg === 'function' ? process.loadavg() : undefined,
-      freeMemory: typeof process.freemem === 'function' ? process.freemem() : undefined,
-      totalMemory: typeof process.totalmem === 'function' ? process.totalmem() : undefined
+      loadAverage: typeof (process as any).loadavg === 'function' ? (process as any).loadavg() : undefined,
+      freeMemory: typeof (process as any).freemem === 'function' ? (process as any).freemem() : undefined,
+      totalMemory: typeof (process as any).totalmem === 'function' ? (process as any).totalmem() : undefined
     };
   }
   
@@ -857,7 +857,7 @@ interface ErrorContext {
     }
     
     if (options.since) {
-      errors = errors.filter(err => new Date(err.context.timestamp) >= options.since);
+      errors = errors.filter(err => new Date(err.context.timestamp) >= options.since!);
     }
     
     return errors;
@@ -878,7 +878,7 @@ interface ErrorContext {
     }
     
     if (options.since) {
-      metrics = metrics.filter(metric => new Date(metric.timestamp) >= options.since);
+      metrics = metrics.filter(metric => new Date(metric.timestamp) >= options.since!);
     }
     
     return metrics;
@@ -1042,7 +1042,7 @@ interface ErrorContext {
           average: `${(responseTimeStats.average / 1000).toFixed(1)}s`
         },
         memoryUsage: health.checks.memory,
-        cpuUsage: health.checks.cpu,
+        cpuUsage: health.checks.cpu || process.cpuUsage(),
         strategyStats
       },
       health,

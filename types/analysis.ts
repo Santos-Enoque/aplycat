@@ -107,10 +107,15 @@ export interface ResumeSection {
   }
   
   export interface AnalysisResponse {
-    success: boolean;
-    analysis: ResumeAnalysis;
-    fileName: string;
-    resumeId?: string;
-    error?: string;
-    details?: string;
-  }
+  success: boolean;
+  analysis: ResumeAnalysis;
+  fileName: string;
+  resumeId?: string;
+  analysisId?: string;
+  processingTimeMs?: number;
+  timestamp?: string;
+  cached?: boolean;
+  message?: string;
+  error?: string;
+  details?: string;
+}

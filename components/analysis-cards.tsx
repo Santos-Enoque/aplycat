@@ -127,6 +127,13 @@ export function AnalysisCards({
     return "text-red-600 bg-red-100";
   };
 
+  const getRoastColor = (score: number) => {
+    if (score >= 80) return "bg-green-50 border-green-200 text-green-700";
+    if (score >= 60) return "bg-yellow-50 border-yellow-200 text-yellow-700";
+    if (score >= 40) return "bg-orange-50 border-orange-200 text-orange-700";
+    return "bg-red-50 border-red-200 text-red-700";
+  };
+
   const getColorClasses = (color: string) => {
     const colors: Record<string, string> = {
       red: "bg-red-100 text-red-800 border-red-200",
@@ -355,10 +362,12 @@ export function AnalysisCards({
               </div>
 
               <div className="space-y-4">
-                <div className="bg-red-50 p-3 rounded border border-red-200">
-                  <p className="text-red-700 font-medium italic">
-                    "{section.roast}"
-                  </p>
+                <div
+                  className={`p-3 rounded border ${getRoastColor(
+                    section.score
+                  )}`}
+                >
+                  <p className="font-medium italic">"{section.roast}"</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -490,10 +499,12 @@ export function AnalysisCards({
                 </div>
 
                 <div className="space-y-4">
-                  <div className="bg-red-50 p-3 rounded border border-red-200">
-                    <p className="text-red-700 font-medium italic">
-                      "{section.roast}"
-                    </p>
+                  <div
+                    className={`p-3 rounded border ${getRoastColor(
+                      section.score
+                    )}`}
+                  >
+                    <p className="font-medium italic">"{section.roast}"</p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
