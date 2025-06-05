@@ -423,10 +423,13 @@ SKILL MATCHING APPROACH:
 - If minimal overlap exists: create the best possible version emphasizing the closest relevant skills
 - Always be honest about what the candidate brings to the table
 
-KEYWORD INTEGRATION:
+KEYWORD INTEGRATION & TRACKING:
 - Naturally integrate job-specific keywords only where they accurately describe existing experience
 - Use industry terminology that aligns with both the resume content and job requirements
 - Ensure ATS optimization while maintaining authenticity
+- IMPORTANT: Track all keywords from the job description that you successfully integrate into the resume
+- List these keywords in the keywordAlignment array for user visibility
+- Prioritize high-impact keywords that relate to core job requirements
 
 CONTENT PRIORITIZATION:
 - Lead with most relevant existing experience for the target role
@@ -475,8 +478,14 @@ OUTPUT: Return ONLY valid JSON with this structure:
   "coverLetter": "[Generated only if includeCoverLetter is true. Professional cover letter based on existing qualifications and honest assessment of fit]",
   "tailoringAnalysis": {
     "jobMatchScore": "[Honest percentage 60-95% based on actual alignment between existing skills and job requirements]",
+    "keywordAlignment": [
+      "[List of specific keywords from the job description that were integrated into the resume]"
+    ],
     "emphasizedSkills": [
       "[Existing skills that were prioritized for this role]"
+    ],
+    "prioritizedExperience": [
+      "[Specific experience bullets or achievements that were moved up or emphasized for this role]"
     ],
     "transferableExperience": [
       "[Existing experience that transfers well to the target role]"
@@ -484,7 +493,7 @@ OUTPUT: Return ONLY valid JSON with this structure:
     "gaps": [
       "[Honest assessment of areas where the candidate lacks required skills - for internal analysis]"
     ],
-    "recommendations": [
+    "recommendedAdjustments": [
       "[Suggestions for the candidate to strengthen their profile for this type of role]"
     ]
   }
@@ -511,6 +520,8 @@ TAILORING REQUIREMENTS:
 - Reorganize and emphasize existing content to match job requirements
 - Use job-specific keywords where they accurately describe existing experience
 - Prioritize relevant achievements and skills
+- TRACK all keywords from the job description that you integrate into the resume
+- List integrated keywords in keywordAlignment for user visibility
 - Maintain complete authenticity - never add skills or experience not already present
 - Provide honest assessment of fit and areas for improvement
 ${includeCoverLetter ? '- Create a compelling cover letter highlighting the best matches between existing qualifications and job requirements' : ''}

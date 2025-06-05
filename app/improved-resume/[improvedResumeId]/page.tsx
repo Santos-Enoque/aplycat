@@ -80,6 +80,9 @@ function ResumePreview({
 
   const isHighlighted = (field: string) => {
     return highlightedFields.some((highlightedField) => {
+      // Skip keyword highlights for field-level highlighting
+      if (highlightedField.startsWith("keyword:")) return false;
+
       // Exact match
       if (highlightedField === field) return true;
 
@@ -101,6 +104,26 @@ function ResumePreview({
 
       return false;
     });
+  };
+
+  const highlightKeywords = (text: string) => {
+    const keywords = highlightedFields
+      .filter((field) => field.startsWith("keyword:"))
+      .map((field) => field.replace("keyword:", ""));
+
+    if (keywords.length === 0) return text;
+
+    let highlightedText = text;
+    keywords.forEach((keyword) => {
+      // Escape special regex characters
+      const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`\\b(${escapedKeyword})\\b`, "gi");
+      highlightedText = highlightedText.replace(
+        regex,
+        '<span class="bg-green-200 text-green-800 px-1 rounded font-medium">$1</span>'
+      );
+    });
+    return highlightedText;
   };
 
   const EditableText = ({
@@ -162,6 +185,13 @@ function ResumePreview({
       );
     }
 
+    const hasKeywordHighlights = highlightedFields.some((field) =>
+      field.startsWith("keyword:")
+    );
+    const displayValue = hasKeywordHighlights
+      ? highlightKeywords(value)
+      : value;
+
     return (
       <div
         className={`${className} cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5 transition-colors group relative ${
@@ -170,7 +200,11 @@ function ResumePreview({
         onClick={() => setEditingField(field)}
         title="Click to edit"
       >
-        {value}
+        {hasKeywordHighlights ? (
+          <span dangerouslySetInnerHTML={{ __html: displayValue }} />
+        ) : (
+          value
+        )}
         <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-0 right-0 transition-opacity" />
         {isHighlighted(field) && (
           <Badge
@@ -619,6 +653,7 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
   );
   const [coverLetter, setCoverLetter] = useState<string | null>(null);
   const [highlightedFields, setHighlightedFields] = useState<string[]>([]);
+  const [tailoringAnalysis, setTailoringAnalysis] = useState<any>(null);
 
   useEffect(() => {
     async function getParams() {
@@ -764,17 +799,26 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
     if (tailoringResult.tailoredResume) {
       setEditableResume(tailoringResult.tailoredResume);
     }
+
+    // Store tailoring analysis for keyword highlighting and display
+    if (tailoringResult.tailoringAnalysis) {
+      setTailoringAnalysis(tailoringResult.tailoringAnalysis);
+      // Set highlighted fields based on emphasized skills and keywords
+      const keywords = tailoringResult.tailoringAnalysis.keywordAlignment || [];
+      setHighlightedFields(
+        keywords.map((keyword: string) => `keyword:${keyword}`)
+      );
+    }
+
     if (tailoringResult.coverLetter) {
       setCoverLetter(tailoringResult.coverLetter);
       setActiveTab("coverLetter");
     }
 
-    // If a new version was created, navigate to it
+    // Store the tailoring result for display instead of redirecting
     if (tailoringResult.tailoredResumeId) {
-      // Give user a moment to see the result, then navigate
-      setTimeout(() => {
-        router.push(`/improved-resume/${tailoringResult.tailoredResumeId}`);
-      }, 2000);
+      // Store in local state instead of redirecting immediately
+      console.log("Tailored resume created:", tailoringResult.tailoredResumeId);
     }
   };
 
@@ -783,12 +827,13 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
       setEditableResume(improvementResult.improvedResume);
     }
 
-    // If a new version was created, navigate to it
+    // Store the improvement result for display instead of redirecting
     if (improvementResult.improvedResumeId) {
-      // Give user a moment to see the result, then navigate
-      setTimeout(() => {
-        router.push(`/improved-resume/${improvementResult.improvedResumeId}`);
-      }, 2000);
+      // Store in local state instead of redirecting immediately
+      console.log(
+        "Improved resume created:",
+        improvementResult.improvedResumeId
+      );
     }
   };
 
@@ -947,9 +992,41 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
                 ) : (
                   <div className="p-6 bg-white">
                     <div className="prose max-w-none">
-                      <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
-                        {coverLetter}
-                      </pre>
+                      {highlightedFields.some((field) =>
+                        field.startsWith("keyword:")
+                      ) ? (
+                        <div
+                          className="whitespace-pre-wrap text-sm text-gray-700 font-sans"
+                          dangerouslySetInnerHTML={{
+                            __html: (() => {
+                              const keywords = highlightedFields
+                                .filter((field) => field.startsWith("keyword:"))
+                                .map((field) => field.replace("keyword:", ""));
+
+                              let highlightedText = coverLetter || "";
+                              keywords.forEach((keyword) => {
+                                const escapedKeyword = keyword.replace(
+                                  /[.*+?^${}()|[\]\\]/g,
+                                  "\\$&"
+                                );
+                                const regex = new RegExp(
+                                  `\\b(${escapedKeyword})\\b`,
+                                  "gi"
+                                );
+                                highlightedText = highlightedText.replace(
+                                  regex,
+                                  '<span class="bg-green-200 text-green-800 px-1 rounded font-medium">$1</span>'
+                                );
+                              });
+                              return highlightedText;
+                            })(),
+                          }}
+                        />
+                      ) : (
+                        <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
+                          {coverLetter}
+                        </pre>
+                      )}
                     </div>
                   </div>
                 )}
@@ -975,6 +1052,94 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
                   improvedResumeId={improvedResumeId}
                 />
               </>
+            )}
+
+            {/* Tailoring Analysis - Show keywords and analysis */}
+            {tailoringAnalysis && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-green-600" />
+                    Tailoring Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {tailoringAnalysis.jobMatchScore && (
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600 mb-1">
+                        {tailoringAnalysis.jobMatchScore}
+                      </div>
+                      <p className="text-sm text-gray-600">Job Match Score</p>
+                    </div>
+                  )}
+
+                  {tailoringAnalysis.keywordAlignment &&
+                    tailoringAnalysis.keywordAlignment.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-green-800 mb-2">
+                          🎯 Keywords Integrated:
+                        </h4>
+                        <div className="flex flex-wrap gap-1">
+                          {tailoringAnalysis.keywordAlignment.map(
+                            (keyword: string, index: number) => (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="bg-green-100 text-green-800 text-xs"
+                              >
+                                {keyword}
+                              </Badge>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {tailoringAnalysis.emphasizedSkills &&
+                    tailoringAnalysis.emphasizedSkills.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-blue-800 mb-2">
+                          ⭐ Emphasized Skills:
+                        </h4>
+                        <ul className="space-y-1">
+                          {tailoringAnalysis.emphasizedSkills.map(
+                            (skill: string, index: number) => (
+                              <li
+                                key={index}
+                                className="text-sm text-blue-700 flex items-start gap-2"
+                              >
+                                <span className="text-blue-600 mt-1">•</span>
+                                <span>{skill}</span>
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+
+                  {tailoringAnalysis.prioritizedExperience &&
+                    tailoringAnalysis.prioritizedExperience.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-purple-800 mb-2">
+                          🔝 Prioritized Experience:
+                        </h4>
+                        <ul className="space-y-1">
+                          {tailoringAnalysis.prioritizedExperience
+                            .slice(0, 3)
+                            .map((exp: string, index: number) => (
+                              <li
+                                key={index}
+                                className="text-sm text-purple-700 flex items-start gap-2"
+                              >
+                                <span className="text-purple-600 mt-1">•</span>
+                                <span>{exp}</span>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                </CardContent>
+              </Card>
             )}
 
             {/* Version Stats - Priority 3 */}
