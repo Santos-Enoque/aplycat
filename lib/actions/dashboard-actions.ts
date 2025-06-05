@@ -245,4 +245,64 @@ export async function getUserCredits(): Promise<number> {
     console.error('[DASHBOARD_ACTIONS] Error getting user credits:', error);
     return 0;
   }
+}
+
+/**
+ * Get complete dashboard data with full user details (for the polished dashboard)
+ */
+export async function getCompleteDashboardData() {
+  try {
+    const user = await getCurrentUserFromDB();
+    if (!user) {
+      return null;
+    }
+
+    // Fetch comprehensive user data with all relationships
+    const userData = await db.user.findUnique({
+      where: { id: user.id },
+      include: {
+        resumes: {
+          include: {
+            analyses: {
+              orderBy: { createdAt: "desc" },
+              take: 1, // Get latest analysis for each resume
+            },
+            improvedResumes: {
+              orderBy: { createdAt: "desc" },
+              take: 1, // Get latest improvement for each resume
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        analyses: {
+          include: {
+            resume: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10, // Recent analyses
+        },
+        improvedResumes: {
+          include: {
+            resume: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10, // Recent improvements
+        },
+        creditTransactions: {
+          orderBy: { createdAt: "desc" },
+          take: 5, // Recent transactions
+        },
+        subscriptions: {
+          where: { status: "ACTIVE" },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
+    });
+
+    return userData;
+  } catch (error) {
+    console.error('[DASHBOARD_ACTIONS] Error getting complete dashboard data:', error);
+    return null;
+  }
 } 
