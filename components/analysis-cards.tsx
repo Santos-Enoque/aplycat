@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Zap, Lock, Eye, ArrowRight, LogIn } from "lucide-react";
@@ -105,9 +106,17 @@ interface AnalysisData {
 interface AnalysisCardsProps {
   analysis: AnalysisData;
   fileName: string;
+  resumeId?: string;
+  fileData?: string;
 }
 
-export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
+export function AnalysisCards({
+  analysis,
+  fileName,
+  resumeId,
+  fileData,
+}: AnalysisCardsProps) {
+  const router = useRouter();
   const { user, isSignedIn, isLoaded } = useUser();
   const [showFullAnalysis, setShowFullAnalysis] = useState(false);
 
@@ -180,13 +189,8 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
           <h4 className="text-lg font-semibold text-purple-900 mb-2">
             Sign in to unlock {sectionName.toLowerCase()}
           </h4>
-          <p className="text-purple-700 mb-4 text-sm">
-            {description}
-          </p>
-          <SignInButton 
-            mode="modal"
-            fallbackRedirectUrl={window.location.href}
-          >
+          <p className="text-purple-700 mb-4 text-sm">{description}</p>
+          <SignInButton mode="modal" fallbackRedirectUrl={window.location.href}>
             <Button className="bg-purple-600 hover:bg-purple-700 text-white">
               <LogIn className="h-4 w-4 mr-2" />
               Sign In to View
@@ -196,6 +200,28 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
       </div>
     </div>
   );
+
+  const handleImproveResume = () => {
+    if (resumeId) {
+      // New approach: use resume ID
+      const params = new URLSearchParams({
+        resumeId: resumeId,
+        fileName: encodeURIComponent(fileName),
+      });
+      router.push(`/improve?${params.toString()}`);
+    } else if (fileData) {
+      // Backward compatibility: use file data
+      const params = new URLSearchParams({
+        fileData: encodeURIComponent(fileData),
+        fileName: encodeURIComponent(fileName),
+      });
+      router.push(`/improve?${params.toString()}`);
+    } else {
+      // Show error - no data available
+      console.error("No resume data available for improvement");
+      alert("Unable to improve resume. Please upload and analyze again.");
+    }
+  };
 
   // Show loading state while auth is being determined
   if (!isLoaded) {
@@ -223,7 +249,7 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
         <p className="text-gray-600">Analysis for: {fileName}</p>
         {isSignedIn && user && (
           <p className="text-sm text-green-600 mt-1">
-            Welcome back, {user.firstName || 'there'}! 
+            Welcome back, {user.firstName || "there"}!
           </p>
         )}
       </div>
@@ -240,9 +266,7 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
             </p>
           </div>
           <Button
-            onClick={() =>
-              window.dispatchEvent(new CustomEvent("openImprovementModal"))
-            }
+            onClick={handleImproveResume}
             className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 whitespace-nowrap"
           >
             <Zap className="h-5 w-5 mr-2" />
@@ -396,41 +420,43 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
           ))}
 
           {/* Show locked sections OR full sections based on auth status */}
-          {!isSignedIn && analysis.resume_sections && analysis.resume_sections.length > 1 && (
-            <div className="space-y-6">
-              {/* Preview of locked sections */}
-              <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-purple-50/50">
-                <div className="text-center py-6">
-                  <Lock className="h-12 w-12 text-purple-600 mx-auto mb-3" />
-                  <h4 className="text-lg font-semibold text-purple-900 mb-2">
-                    {analysis.resume_sections.length - 1} More Sections Locked
-                  </h4>
-                  <p className="text-purple-700 mb-4">
-                    Get detailed analysis for all sections including:
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-2 mb-4">
-                    {analysis.resume_sections.slice(1).map((section, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        {section.section_name}
-                      </span>
-                    ))}
+          {!isSignedIn &&
+            analysis.resume_sections &&
+            analysis.resume_sections.length > 1 && (
+              <div className="space-y-6">
+                {/* Preview of locked sections */}
+                <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-purple-50/50">
+                  <div className="text-center py-6">
+                    <Lock className="h-12 w-12 text-purple-600 mx-auto mb-3" />
+                    <h4 className="text-lg font-semibold text-purple-900 mb-2">
+                      {analysis.resume_sections.length - 1} More Sections Locked
+                    </h4>
+                    <p className="text-purple-700 mb-4">
+                      Get detailed analysis for all sections including:
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-2 mb-4">
+                      {analysis.resume_sections.slice(1).map((section, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
+                        >
+                          {section.section_name}
+                        </span>
+                      ))}
+                    </div>
+                    <SignInButton
+                      mode="modal"
+                      fallbackRedirectUrl={window.location.href}
+                    >
+                      <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Sign In to View All Sections Free
+                      </Button>
+                    </SignInButton>
                   </div>
-                  <SignInButton 
-                    mode="modal"
-                    fallbackRedirectUrl={window.location.href}
-                  >
-                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Sign In to View All Sections Free
-                    </Button>
-                  </SignInButton>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Show all sections if signed in */}
           {isSignedIn &&
@@ -534,17 +560,50 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
       {!isSignedIn ? (
         <div className="space-y-6">
           {/* Show locked versions of all sections */}
-          {renderLockedSection("🕳️ Missing Sections", "See what critical resume sections you're missing")}
-          {renderLockedSection("🔍 Keyword Autopsy", "Get industry-specific keyword analysis")}
-          {renderLockedSection("🎨 Formatting Disasters", "Fix formatting issues that hurt your chances")}
-          {renderLockedSection("📊 Numbers Don't Lie", "Learn how to quantify your achievements")}
-          {renderLockedSection("🏭 Industry Standards", "Understand what your industry expects")}
-          {renderLockedSection("✅ What Doesn't Suck", "See what you're doing right")}
-          {renderLockedSection("⚠️ Needs Work", "Get specific improvement suggestions")}
-          {renderLockedSection("🚨 Critical Disasters", "Fix resume-killing issues")}
-          {renderLockedSection("📱 Viral-Worthy Roasts", "Get shareable feedback")}
-          {renderLockedSection("🤖 ATS Issues", "Make your resume robot-friendly")}
-          {renderLockedSection("📋 Action Plan", "Get step-by-step improvement plan")}
+          {renderLockedSection(
+            "🕳️ Missing Sections",
+            "See what critical resume sections you're missing"
+          )}
+          {renderLockedSection(
+            "🔍 Keyword Autopsy",
+            "Get industry-specific keyword analysis"
+          )}
+          {renderLockedSection(
+            "🎨 Formatting Disasters",
+            "Fix formatting issues that hurt your chances"
+          )}
+          {renderLockedSection(
+            "📊 Numbers Don't Lie",
+            "Learn how to quantify your achievements"
+          )}
+          {renderLockedSection(
+            "🏭 Industry Standards",
+            "Understand what your industry expects"
+          )}
+          {renderLockedSection(
+            "✅ What Doesn't Suck",
+            "See what you're doing right"
+          )}
+          {renderLockedSection(
+            "⚠️ Needs Work",
+            "Get specific improvement suggestions"
+          )}
+          {renderLockedSection(
+            "🚨 Critical Disasters",
+            "Fix resume-killing issues"
+          )}
+          {renderLockedSection(
+            "📱 Viral-Worthy Roasts",
+            "Get shareable feedback"
+          )}
+          {renderLockedSection(
+            "🤖 ATS Issues",
+            "Make your resume robot-friendly"
+          )}
+          {renderLockedSection(
+            "📋 Action Plan",
+            "Get step-by-step improvement plan"
+          )}
 
           {/* Final Sign In CTA */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-8 text-white text-center">
@@ -557,7 +616,7 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
               improvements, ATS optimization tips, and everything else Aplycat
               found.
             </p>
-            <SignInButton 
+            <SignInButton
               mode="modal"
               fallbackRedirectUrl={window.location.href}
             >
@@ -1050,9 +1109,7 @@ export function AnalysisCards({ analysis, fileName }: AnalysisCardsProps) {
             make it actually good.
           </p>
           <button
-            onClick={() =>
-              window.dispatchEvent(new CustomEvent("openImprovementModal"))
-            }
+            onClick={handleImproveResume}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
             <span className="flex items-center gap-2">

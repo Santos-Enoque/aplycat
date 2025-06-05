@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileUpload } from "@/components/file-upload";
+import { FileUploadWithUploadThing } from "@/components/file-upload-with-uploadthing";
 import {
   Zap,
   Target,
@@ -25,16 +26,24 @@ import {
   Lightbulb,
 } from "lucide-react";
 
-interface LandingPageProps {
-  onStartAnalysis: (fileData: string, fileName: string) => void;
-}
-
-export function LandingPage({ onStartAnalysis }: LandingPageProps) {
+export function LandingPage() {
+  const router = useRouter();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const handleFileSelect = async (fileData: string, fileName: string) => {
+  const handleFileUploaded = async (resumeId: string, fileName: string) => {
+    console.log("[LANDING_PAGE] File uploaded, navigating to analysis:", {
+      resumeId,
+      fileName,
+    });
     setIsAnalyzing(true);
-    onStartAnalysis(fileData, fileName);
+
+    // Navigate to analyze page with resume ID
+    const params = new URLSearchParams({
+      resumeId: resumeId,
+      fileName: encodeURIComponent(fileName),
+    });
+
+    router.push(`/analyze?${params.toString()}`);
   };
 
   const features = [
@@ -264,8 +273,8 @@ export function LandingPage({ onStartAnalysis }: LandingPageProps) {
                   🐱 Try Aplycat Now
                 </h3>
                 <div id="upload-section">
-                  <FileUpload
-                    onFileSelect={handleFileSelect}
+                  <FileUploadWithUploadThing
+                    onFileUploaded={handleFileUploaded}
                     isLoading={isAnalyzing}
                   />
                 </div>

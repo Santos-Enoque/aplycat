@@ -12,14 +12,22 @@ import {
   Sparkles,
   ArrowRight,
   Lightbulb,
+  FileText,
+  MessageSquare,
 } from "lucide-react";
 
 interface ImprovementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (targetRole: string, targetIndustry: string) => void;
+  onSubmit: (
+    targetRole: string,
+    targetIndustry: string,
+    customPrompt?: string,
+    versionName?: string
+  ) => void;
   isLoading: boolean;
   fileName: string;
+  existingVersions?: number[];
 }
 
 export function ImprovementModal({
@@ -28,16 +36,25 @@ export function ImprovementModal({
   onSubmit,
   isLoading,
   fileName,
+  existingVersions = [],
 }: ImprovementModalProps) {
   const [targetRole, setTargetRole] = useState("");
   const [targetIndustry, setTargetIndustry] = useState("");
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [versionName, setVersionName] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (targetRole.trim() && targetIndustry.trim()) {
-      onSubmit(targetRole.trim(), targetIndustry.trim());
+      onSubmit(
+        targetRole.trim(),
+        targetIndustry.trim(),
+        customPrompt.trim() || undefined,
+        versionName.trim() || undefined
+      );
     }
   };
 
@@ -76,6 +93,10 @@ export function ImprovementModal({
     "Retail",
   ];
 
+  const nextVersion =
+    existingVersions.length > 0 ? Math.max(...existingVersions) + 1 : 1;
+  const defaultVersionName = `Version ${nextVersion}`;
+
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget && !isLoading) {
       onClose();
@@ -103,6 +124,12 @@ export function ImprovementModal({
                   Get an AI-optimized, ATS-compliant version tailored to your
                   target role
                 </p>
+                {existingVersions.length > 0 && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    Creating version {nextVersion} • {existingVersions.length}{" "}
+                    existing version{existingVersions.length !== 1 ? "s" : ""}
+                  </p>
+                )}
               </div>
             </div>
             <Button
@@ -122,6 +149,25 @@ export function ImprovementModal({
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="font-medium text-gray-900 mb-2">Current Resume</h3>
               <p className="text-sm text-gray-600">{fileName}</p>
+            </div>
+
+            {/* Version Name */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                <FileText className="h-4 w-4" />
+                Version Name (Optional)
+              </label>
+              <input
+                type="text"
+                value={versionName}
+                onChange={(e) => setVersionName(e.target.value)}
+                placeholder={defaultVersionName}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Give this version a memorable name (e.g., "Software Engineer
+                Focus", "Tech Company Version")
+              </p>
             </div>
 
             {/* Target Role */}
@@ -192,6 +238,38 @@ export function ImprovementModal({
               </div>
             </div>
 
+            {/* Advanced Options Toggle */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {showAdvanced ? "Hide" : "Show"} Advanced Options
+              </button>
+            </div>
+
+            {/* Custom Prompt (Advanced) */}
+            {showAdvanced && (
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                  <MessageSquare className="h-4 w-4" />
+                  Custom Instructions (Optional)
+                </label>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="Add any specific requirements or preferences for this version (e.g., 'Focus on leadership experience', 'Emphasize technical skills', 'Include volunteer work')"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-24 resize-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  These custom instructions will be added to the AI optimization
+                  process
+                </p>
+              </div>
+            )}
+
             {/* What We'll Do */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <div className="flex items-start gap-3">
@@ -209,6 +287,12 @@ export function ImprovementModal({
                     </li>
                     <li>• ATS-friendly formatting and keywords</li>
                     <li>• Content filtered for maximum relevance</li>
+                    {customPrompt && (
+                      <li>
+                        • Custom requirements: {customPrompt.slice(0, 50)}
+                        {customPrompt.length > 50 ? "..." : ""}
+                      </li>
+                    )}
                   </ul>
                 </div>
               </div>
@@ -230,10 +314,15 @@ export function ImprovementModal({
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
                 <div className="flex items-center gap-2">
-                  <span>Improve My Resume</span>
+                  <span>Create {versionName || defaultVersionName}</span>
                   <ArrowRight className="h-4 w-4" />
                 </div>
               </Button>
+            </div>
+
+            {/* Credits Info */}
+            <div className="text-center text-xs text-gray-500 border-t pt-4">
+              This improvement will use 3 credits
             </div>
           </form>
         </CardContent>

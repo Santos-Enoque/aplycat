@@ -21,7 +21,7 @@ export default async function DashboardPage() {
             orderBy: { createdAt: "desc" },
             take: 1, // Get latest analysis for each resume
           },
-          improvements: {
+          improvedResumes: {
             orderBy: { createdAt: "desc" },
             take: 1, // Get latest improvement for each resume
           },
@@ -35,12 +35,12 @@ export default async function DashboardPage() {
         orderBy: { createdAt: "desc" },
         take: 10, // Recent analyses
       },
-      improvements: {
+      improvedResumes: {
         include: {
           resume: true,
         },
         orderBy: { createdAt: "desc" },
-        take: 10, // Recent improvements
+        take: 10, // Recent improvements (using new ImprovedResume model)
       },
       creditTransactions: {
         orderBy: { createdAt: "desc" },

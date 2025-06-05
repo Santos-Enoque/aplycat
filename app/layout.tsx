@@ -3,8 +3,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { ResumeProvider } from "@/hooks/use-resume-context";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { extractRouterConfig } from "uploadthing/server";
+import { ourFileRouter } from "@/app/api/uploadthing/core";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,12 +48,11 @@ export default function RootLayout({
           colorText: "#374151", // Gray-700
         },
         elements: {
-          formButtonPrimary: 
+          formButtonPrimary:
             "bg-purple-600 hover:bg-purple-700 text-white font-medium",
-          formFieldInput: 
+          formFieldInput:
             "border-gray-300 focus:border-purple-500 focus:ring-purple-500",
-          footerActionLink: 
-            "text-purple-600 hover:text-purple-500",
+          footerActionLink: "text-purple-600 hover:text-purple-500",
         },
       }}
     >
@@ -58,9 +61,20 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           suppressHydrationWarning={true}
         >
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
+          <NextSSRPlugin
+            /**
+             * The `extractRouterConfig` will extract **only** the route configs
+             * from the router to prevent additional information from being
+             * leaked to the client. The data passed to the client is the same
+             * as if you were to fetch `/api/uploadthing` directly.
+             */
+            routerConfig={extractRouterConfig(ourFileRouter)}
+          />
+          <ResumeProvider>
+            <Navbar />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </ResumeProvider>
         </body>
       </html>
     </ClerkProvider>

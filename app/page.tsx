@@ -1,7 +1,7 @@
 // app/page.tsx
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { LandingPageWrapper } from "@/components/landing-page-wrapper";
+import { LandingPage } from "@/components/landing-page";
 
 export default async function HomePage() {
   const user = await currentUser();
@@ -12,5 +12,5 @@ export default async function HomePage() {
   }
 
   // Show landing page for unauthenticated users
-  return <LandingPageWrapper />;
+  return <LandingPage />;
 }

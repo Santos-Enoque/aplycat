@@ -1,6 +1,6 @@
-# 🔥 Applica - AI-Powered Resume Analyzer
+# 🔥 Applycat- AI-Powered Resume Generator & Analyzer
 
-**The brutally honest resume feedback tool that tells you what recruiters are really thinking.**
+**The brutally honest AI Cate that tells you what recruiters are really thinking.**
 
 Applica is a cutting-edge resume analysis platform that provides savage, viral-worthy feedback on your resume while offering professional improvements. Using advanced AI models, it identifies critical issues, provides ATS optimization, and generates improved resumes with multiple professional templates.
 

@@ -1,7 +1,11 @@
 // app/api/analyze-resume/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { currentUser } from '@clerk/nextjs/server';
 import OpenAI from 'openai';
 import { parseOpenAIResponse } from '@/lib/json-parser';
+import { getResumeData } from '@/lib/resume-storage';
+import { db } from '@/lib/db';
+import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -213,13 +217,13 @@ OUTPUT FORMAT: Return ONLY valid JSON with this exact structure. Ensure all scor
       }
     ]
   },
-  "industry_specific_advice": {
-    "detected_industry": "[What industry you think they're targeting]",
-    "industry_standards": [
-      "[What's expected in their industry]"
-    ],
-    "industry_keywords": [
-      "[Keywords they should include for their industry]"
+  "recommendations": {
+    "priority": "[High/Medium/Low priority recommendations]",
+    "timeline": "[Suggested timeframe for improvements]",
+    "next_steps": [
+      "[Specific action step 1]",
+      "[Specific action step 2]",
+      "[Specific action step 3]"
     ]
   }
 }
@@ -230,18 +234,130 @@ CRITICAL: Keep all text content simple and avoid complex escape sequences. Use s
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
+  console.log('[RESUME_ANALYSIS] Starting analysis request...');
   
   try {
-    const { fileData, fileName } = await request.json();
-
-    if (!fileData) {
+    const user = await currentUser();
+    console.log('[RESUME_ANALYSIS] Clerk user:', user ? `${user.id} (${user.emailAddresses?.[0]?.emailAddress})` : 'null');
+    
+    if (!user) {
+      console.log('[RESUME_ANALYSIS] No authenticated user found');
       return NextResponse.json(
-        { error: 'No file data provided' },
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Get database user
+    const dbUser = await getCurrentUserFromDB();
+    if (!dbUser) {
+      console.log('[RESUME_ANALYSIS] Database user not found');
+      return NextResponse.json(
+        { error: 'User not found in database' },
+        { status: 404 }
+      );
+    }
+
+    const requestBody = await request.json();
+    console.log('[RESUME_ANALYSIS] Request body:', {
+      hasResumeId: !!requestBody.resumeId,
+      resumeId: requestBody.resumeId,
+      hasFileData: !!requestBody.fileData,
+      fileDataLength: requestBody.fileData?.length || 0,
+      fileName: requestBody.fileName,
+      forceReanalysis: requestBody.forceReanalysis
+    });
+
+    const { resumeId, fileName, fileData, forceReanalysis = false } = requestBody;
+
+    let actualFileData: string;
+    let actualFileName: string;
+    let actualResumeId: string;
+
+    // Support both new (resumeId) and old (direct fileData) approaches for backward compatibility
+    if (resumeId) {
+      console.log('[RESUME_ANALYSIS] Using new approach with resumeId:', resumeId);
+      
+      // Check if analysis already exists and is not being forced to re-run
+      if (!forceReanalysis) {
+        console.log('[RESUME_ANALYSIS] Checking for existing analysis...');
+        const existingAnalysis = await db.analysis.findFirst({
+          where: {
+            resumeId: resumeId,
+            userId: dbUser.id,
+            isCompleted: true,
+          },
+          orderBy: {
+            createdAt: 'desc', // Get the most recent analysis
+          },
+        });
+
+        if (existingAnalysis) {
+          console.log('[RESUME_ANALYSIS] Found existing analysis:', {
+            analysisId: existingAnalysis.id,
+            createdAt: existingAnalysis.createdAt,
+            overallScore: existingAnalysis.overallScore,
+            atsScore: existingAnalysis.atsScore
+          });
+
+          const processingTime = Date.now() - startTime;
+          return NextResponse.json({
+            success: true,
+            analysis: existingAnalysis.analysisData,
+            fileName: existingAnalysis.fileName,
+            resumeId: resumeId,
+            analysisId: existingAnalysis.id,
+            processingTimeMs: processingTime,
+            timestamp: existingAnalysis.createdAt.toISOString(),
+            cached: true,
+            message: 'Retrieved existing analysis'
+          });
+        } else {
+          console.log('[RESUME_ANALYSIS] No existing analysis found, proceeding with new analysis');
+        }
+      } else {
+        console.log('[RESUME_ANALYSIS] Force reanalysis requested, skipping cache check');
+      }
+      
+      // New approach: get resume data from database using resumeId
+      const storedResume = await getResumeData(resumeId, user.id);
+      console.log('[RESUME_ANALYSIS] Retrieved resume data:', storedResume ? {
+        resumeId: storedResume.resumeId,
+        fileName: storedResume.fileName,
+        fileDataLength: storedResume.fileData.length
+      } : 'null');
+      
+      if (!storedResume) {
+        console.log('[RESUME_ANALYSIS] Resume not found - returning 404');
+        return NextResponse.json(
+          { error: 'Resume not found or you do not have access to it.' },
+          { status: 404 }
+        );
+      }
+
+      actualFileData = storedResume.fileData;
+      actualFileName = storedResume.fileName;
+      actualResumeId = storedResume.resumeId;
+    } else if (fileData && fileName) {
+      console.log('[RESUME_ANALYSIS] Using legacy approach with direct file data');
+      // Backward compatibility: direct file data (will be deprecated)
+      actualFileData = fileData;
+      actualFileName = fileName;
+      actualResumeId = 'legacy-upload';
+    } else {
+      console.log('[RESUME_ANALYSIS] Invalid request - missing required data');
+      return NextResponse.json(
+        { error: 'Either resumeId or fileData with fileName is required' },
         { status: 400 }
       );
     }
 
-    console.log(`[RESUME_ANALYSIS] Starting analysis for file: ${fileName}, timestamp: ${new Date().toISOString()}`);
+    console.log(`[RESUME_ANALYSIS] Analysis setup complete:`, {
+      resumeId: actualResumeId,
+      fileName: actualFileName,
+      fileDataLength: actualFileData.length,
+      timestamp: new Date().toISOString()
+    });
 
     const USER_PROMPT = `REAL RESUME ANALYSIS REQUEST
 
@@ -284,8 +400,8 @@ FORMATTING REQUIREMENTS:
           content: [
             {
               type: 'input_file',
-              filename: fileName || 'resume.pdf',
-              file_data: `data:application/pdf;base64,${fileData}`,
+              filename: actualFileName || 'resume.pdf',
+              file_data: `data:application/pdf;base64,${actualFileData}`,
             },
             {
               type: 'input_text',
@@ -317,7 +433,8 @@ FORMATTING REQUIREMENTS:
       return NextResponse.json({
         success: true, // Still return success since we have fallback data
         analysis,
-        fileName,
+        fileName: actualFileName,
+        resumeId: actualResumeId,
         processingTimeMs: processingTime,
         timestamp: new Date().toISOString(),
         parseStrategy: 'fallback',
@@ -328,15 +445,77 @@ FORMATTING REQUIREMENTS:
     const analysis = parseResult.data;
     const processingTime = Date.now() - startTime;
     
-    console.log(`[RESUME_ANALYSIS] Analysis completed successfully in ${processingTime}ms for file: ${fileName} using strategy: ${parseResult.strategy}`);
+    console.log(`[RESUME_ANALYSIS] Analysis completed successfully in ${processingTime}ms for resume: ${actualResumeId} using strategy: ${parseResult.strategy}`);
+
+    // Save analysis to database (only for new resume analyses, not legacy ones)
+    let savedAnalysisId: string | null = null;
+    if (actualResumeId !== 'legacy-upload') {
+      try {
+        console.log('[RESUME_ANALYSIS] Saving analysis to database...');
+        
+        const savedAnalysis = await db.analysis.create({
+          data: {
+            userId: dbUser.id,
+            resumeId: actualResumeId,
+            fileName: actualFileName,
+            processingTimeMs: processingTime,
+            overallScore: analysis.overall_score || 0,
+            atsScore: analysis.ats_score || 0,
+            scoreCategory: analysis.score_category || 'Unknown',
+            mainRoast: analysis.main_roast || 'Analysis completed',
+            analysisData: analysis,
+            creditsUsed: 2, // Cost for analysis
+            isCompleted: true,
+          },
+        });
+
+        savedAnalysisId = savedAnalysis.id;
+        console.log('[RESUME_ANALYSIS] Analysis saved to database:', {
+          analysisId: savedAnalysisId,
+          overallScore: savedAnalysis.overallScore,
+          atsScore: savedAnalysis.atsScore,
+          creditsUsed: savedAnalysis.creditsUsed
+        });
+
+        // Record credit transaction
+        await db.creditTransaction.create({
+          data: {
+            userId: dbUser.id,
+            type: 'ANALYSIS_USE',
+            amount: -2, // Deduct 2 credits
+            description: `Resume analysis: ${actualFileName}`,
+            relatedAnalysisId: savedAnalysisId,
+          },
+        });
+
+        // Update user's credit count
+        await db.user.update({
+          where: { id: dbUser.id },
+          data: {
+            credits: { decrement: 2 },
+            totalCreditsUsed: { increment: 2 },
+          },
+        });
+
+        console.log('[RESUME_ANALYSIS] Credits deducted and transaction recorded');
+
+      } catch (dbError: any) {
+        console.error('[RESUME_ANALYSIS] Failed to save analysis to database:', dbError);
+        // Don't fail the entire request if database save fails
+        // The user still gets their analysis result
+      }
+    }
 
     return NextResponse.json({
       success: true,
       analysis,
-      fileName,
+      fileName: actualFileName,
+      resumeId: actualResumeId,
+      analysisId: savedAnalysisId,
       processingTimeMs: processingTime,
       timestamp: new Date().toISOString(),
-      parseStrategy: parseResult.strategy
+      parseStrategy: parseResult.strategy,
+      cached: false
     });
 
   } catch (error: any) {
@@ -374,7 +553,7 @@ FORMATTING REQUIREMENTS:
     
     return NextResponse.json(
       { 
-        error: 'Failed to analyze resume',
+        error: 'Analysis failed', 
         details: error.message,
         errorType,
         processingTimeMs: processingTime,

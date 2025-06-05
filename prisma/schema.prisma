@@ -36,6 +36,8 @@ model User {
     resumes            Resume[]
     analyses           Analysis[]
     improvements       Improvement[]
+    improvedResumes    ImprovedResume[]
+    resumeComparisons  ResumeComparison[]
     creditTransactions CreditTransaction[]
     subscriptions      Subscription[]
     usageEvents        UsageEvent[]
@@ -55,16 +57,18 @@ model CreditTransaction {
     description String
 
     // Context
-    relatedAnalysisId    String? // If credit used for analysis
-    relatedImprovementId String? // If credit used for improvement
+    relatedAnalysisId       String? // If credit used for analysis
+    relatedImprovementId    String? // If credit used for improvement
+    relatedImprovedResumeId String? // If credit used for improved resume
 
     // Timestamps
     createdAt DateTime @default(now())
 
     // Relations
-    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-    analysis    Analysis?    @relation(fields: [relatedAnalysisId], references: [id])
-    improvement Improvement? @relation(fields: [relatedImprovementId], references: [id])
+    user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+    analysis       Analysis?       @relation(fields: [relatedAnalysisId], references: [id])
+    improvement    Improvement?    @relation(fields: [relatedImprovementId], references: [id])
+    improvedResume ImprovedResume? @relation(fields: [relatedImprovedResumeId], references: [id])
 
     @@map("credit_transactions")
 }
@@ -102,9 +106,11 @@ model Resume {
     updatedAt DateTime @updatedAt
 
     // Relations
-    user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-    analyses     Analysis[]
-    improvements Improvement[]
+    user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+    analyses          Analysis[]
+    improvements      Improvement[]
+    improvedResumes   ImprovedResume[]
+    resumeComparisons ResumeComparison[]
 
     @@map("resumes")
 }
@@ -179,6 +185,95 @@ model Improvement {
     creditTransactions CreditTransaction[]
 
     @@map("improvements")
+}
+
+// ===== VERSIONED IMPROVED RESUMES =====
+model ImprovedResume {
+    id       String @id @default(cuid())
+    userId   String
+    resumeId String
+
+    // Versioning
+    version     Int
+    versionName String? // Optional user-defined name for this version
+
+    // Improvement parameters
+    targetRole     String
+    targetIndustry String
+    customPrompt   String? // Additional custom instructions from user
+
+    // Generated content
+    improvedResumeData Json // Complete improved resume data
+    improvementSummary String? // AI-generated summary of changes made
+    keyChanges         Json? // Structured list of key changes made
+
+    // Quality metrics
+    originalScore         Int? // Original resume score
+    improvedScore         Int? // Estimated improved score
+    improvementPercentage Float? // Percentage improvement
+
+    // File output
+    generatedFileUrl String? // UploadThing URL for generated resume PDF
+    fileName         String? // Generated file name
+
+    // Processing details
+    creditsUsed      Int     @default(3) // Credits used for this improvement
+    processingTimeMs Int?
+    modelUsed        String? // AI model used (for future tracking)
+
+    // Status & metadata
+    isCompleted Boolean @default(false)
+    isActive    Boolean @default(true) // Can be soft deleted
+    isFavorite  Boolean @default(false) // User can mark favorites
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    resume             Resume              @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+    creditTransactions CreditTransaction[]
+    comparisons        ResumeComparison[]  @relation("ImprovedResumeComparisons")
+
+    // Ensure version uniqueness per resume
+    @@unique([resumeId, version])
+    @@map("improved_resumes")
+}
+
+// ===== RESUME VERSION COMPARISONS =====
+model ResumeComparison {
+    id String @id @default(cuid())
+
+    // Comparison details
+    userId           String
+    originalResumeId String
+    improvedResumeId String
+    comparisonType   ComparisonType
+
+    // Comparison results
+    comparisonData Json // Detailed comparison results
+    summary        String? // AI-generated summary of differences
+
+    // Metadata
+    isActive Boolean @default(true)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    originalResume Resume         @relation(fields: [originalResumeId], references: [id], onDelete: Cascade)
+    improvedResume ImprovedResume @relation("ImprovedResumeComparisons", fields: [improvedResumeId], references: [id], onDelete: Cascade)
+
+    @@map("resume_comparisons")
+}
+
+enum ComparisonType {
+    VERSION_TO_VERSION // Comparing two improved versions
+    ORIGINAL_TO_IMPROVED // Comparing original to improved
+    BULK_COMPARISON // Comparing multiple versions
 }
 
 // ===== SUBSCRIPTION & BILLING =====

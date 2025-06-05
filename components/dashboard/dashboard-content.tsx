@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileUpload } from "@/components/file-upload";
+import { FileUploadWithUploadThing } from "@/components/file-upload-with-uploadthing";
 import { AnalysisDetail } from "@/components/dashboard/analysis-detail";
 import {
   Brain,
@@ -47,10 +48,12 @@ interface DashboardUser {
       mainRoast: string;
       createdAt: Date;
     }>;
-    improvements: Array<{
+    improvedResumes: Array<{
       id: string;
       targetRole: string;
       targetIndustry: string;
+      version: number;
+      versionName: string | null;
       createdAt: Date;
     }>;
   }>;
@@ -69,10 +72,12 @@ interface DashboardUser {
       fileUrl: string;
     };
   }>;
-  improvements: Array<{
+  improvedResumes: Array<{
     id: string;
     targetRole: string;
     targetIndustry: string;
+    version: number;
+    versionName: string | null;
     creditsUsed: number;
     createdAt: Date;
     resume: {
@@ -99,32 +104,66 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ user }: DashboardContentProps) {
+  const router = useRouter();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [selectedAnalysis, setSelectedAnalysis] = useState<string | null>(null);
 
-  const handleFileSelect = async (fileData: string, fileName: string) => {
+  const handleFileUploaded = async (resumeId: string, fileName: string) => {
+    console.log("[DASHBOARD] File uploaded, navigating to analysis:", {
+      resumeId,
+      fileName,
+    });
     setIsAnalyzing(true);
-    // TODO: Implement analysis upload logic
-    console.log("Starting analysis for:", fileName);
+
+    // Navigate to analyze page with resume ID
+    const params = new URLSearchParams({
+      resumeId: resumeId,
+      fileName: encodeURIComponent(fileName),
+    });
+
+    router.push(`/analyze?${params.toString()}`);
+  };
+
+  const handleStartAnalysis = () => {
+    // This could trigger the file upload dialog or navigate to a dedicated upload page
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    fileInput?.click();
+  };
+
+  const handleStartImprovement = () => {
+    // Check if user has existing resumes
+    if (user.resumes.length === 0) {
+      alert(
+        "You need to analyze a resume first before you can improve it. Please upload and analyze a resume!"
+      );
+      handleStartAnalysis();
+      return;
+    }
+    // Navigate to improve page or show modal to select existing resume
+    router.push("/improve");
+  };
+
+  const handleStartTailoring = () => {
+    // Check if user has existing resumes
+    if (user.resumes.length === 0) {
+      alert(
+        "You need to analyze a resume first before you can tailor it. Please upload and analyze a resume!"
+      );
+      handleStartAnalysis();
+      return;
+    }
+    // Navigate to tailor page or show modal
+    router.push("/improve"); // Could be a separate tailor page
   };
 
   const handleViewAnalysis = (analysisId: string) => {
-    setSelectedAnalysis(analysisId);
+    // Navigate to analyze page with saved analysis ID
+    const params = new URLSearchParams({
+      analysisId: analysisId,
+    });
+    router.push(`/analyze?${params.toString()}`);
   };
-
-  const handleBackToDashboard = () => {
-    setSelectedAnalysis(null);
-  };
-
-  // If viewing a specific analysis, show the detail view
-  if (selectedAnalysis) {
-    const analysis = user.analyses.find((a) => a.id === selectedAnalysis);
-    if (analysis) {
-      return (
-        <AnalysisDetail analysis={analysis} onBack={handleBackToDashboard} />
-      );
-    }
-  }
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600";
@@ -144,7 +183,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
     addSuffix: true,
   });
   const totalAnalyses = user.analyses.length;
-  const totalImprovements = user.improvements.length;
+  const totalImprovements = user.improvedResumes.length;
   const averageScore =
     totalAnalyses > 0
       ? Math.round(
@@ -260,26 +299,85 @@ export function DashboardContent({ user }: DashboardContentProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  <FileUpload
-                    onFileSelect={handleFileSelect}
-                    isLoading={isAnalyzing}
-                  />
+                {/* Primary Upload Action */}
+                <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50/50 hover:bg-purple-50 transition-colors">
+                  <div className="text-center">
+                    <Zap className="h-8 w-8 text-purple-600 mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-purple-900 mb-2">
+                      Upload & Analyze Resume
+                    </h3>
+                    <p className="text-purple-700 text-sm mb-4">
+                      Get instant AI-powered feedback in seconds
+                    </p>
+                    <FileUploadWithUploadThing
+                      onFileUploaded={handleFileUploaded}
+                      isLoading={isAnalyzing}
+                    />
+                    {user.credits < 2 && (
+                      <p className="text-red-600 text-xs mt-2">
+                        ⚠️ Need 2 credits to analyze
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 gap-2">
-                  <Button className="w-full" variant="outline">
-                    <Brain className="h-4 w-4 mr-2" />
-                    Analyze Resume (2 credits)
-                  </Button>
-                  <Button className="w-full" variant="outline">
+
+                {/* Other Actions */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Other Actions
+                  </h4>
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    onClick={handleStartImprovement}
+                    disabled={user.credits < 3}
+                  >
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Improve Resume (3 credits)
+                    <div className="flex-1 text-left">
+                      <div>Improve Existing Resume</div>
+                      <div className="text-xs text-gray-500">3 credits</div>
+                    </div>
+                    {user.credits < 3 && (
+                      <span className="text-xs text-red-500">Need credits</span>
+                    )}
                   </Button>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full justify-start"
+                    variant="outline"
+                    onClick={handleStartTailoring}
+                    disabled={user.credits < 4}
+                  >
                     <Target className="h-4 w-4 mr-2" />
-                    Tailor for Job (4 credits)
+                    <div className="flex-1 text-left">
+                      <div>Tailor for Specific Job</div>
+                      <div className="text-xs text-gray-500">4 credits</div>
+                    </div>
+                    {user.credits < 4 && (
+                      <span className="text-xs text-red-500">Need credits</span>
+                    )}
                   </Button>
                 </div>
+
+                {/* Credit Status */}
+                {user.credits < 4 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-yellow-600" />
+                      <span className="text-sm font-medium text-yellow-800">
+                        Low on credits
+                      </span>
+                    </div>
+                    <p className="text-yellow-700 text-xs mt-1">
+                      You have {user.credits} credits remaining
+                    </p>
+                    <Button
+                      size="sm"
+                      className="mt-2 bg-yellow-600 hover:bg-yellow-700"
+                    >
+                      Get More Credits
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -328,6 +426,113 @@ export function DashboardContent({ user }: DashboardContentProps) {
 
           {/* Right Column - Recent Activity */}
           <div className="lg:col-span-2 space-y-6">
+            {/* My Resumes */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  My Resumes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {user.resumes.length > 0 ? (
+                  <div className="space-y-4">
+                    {user.resumes.slice(0, 5).map((resume) => (
+                      <div
+                        key={resume.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:border-purple-300 transition-colors"
+                      >
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">
+                            {resume.title || resume.fileName}
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {resume.fileName}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <p className="text-xs text-gray-500">
+                              Uploaded{" "}
+                              {formatDistanceToNow(new Date(resume.createdAt), {
+                                addSuffix: true,
+                              })}
+                            </p>
+                            {resume.analyses.length > 0 && (
+                              <p className="text-xs text-blue-600">
+                                {resume.analyses.length} analysis
+                                {resume.analyses.length > 1 ? "es" : ""}
+                              </p>
+                            )}
+                            {resume.improvedResumes.length > 0 && (
+                              <p className="text-xs text-green-600">
+                                {resume.improvedResumes.length} improvement
+                                {resume.improvedResumes.length > 1 ? "s" : ""}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const params = new URLSearchParams({
+                                resumeId: resume.id,
+                                fileName: encodeURIComponent(resume.fileName),
+                              });
+                              router.push(`/analyze?${params.toString()}`);
+                            }}
+                            disabled={user.credits < 2}
+                          >
+                            <Brain className="h-4 w-4 mr-1" />
+                            Re-analyze
+                          </Button>
+                          {resume.analyses.length > 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                // Navigate to the most recent analysis
+                                const latestAnalysis = resume.analyses[0];
+                                handleViewAnalysis(latestAnalysis.id);
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {user.resumes.length > 5 && (
+                      <div className="text-center pt-4">
+                        <Button variant="outline" size="sm">
+                          View All Resumes ({user.resumes.length})
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No resumes uploaded yet
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Upload your first resume to start building your
+                      collection!
+                    </p>
+                    <Button
+                      onClick={handleStartAnalysis}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Upload Your First Resume
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Recent Analyses */}
             <Card>
               <CardHeader>
@@ -342,7 +547,8 @@ export function DashboardContent({ user }: DashboardContentProps) {
                     {user.analyses.slice(0, 5).map((analysis) => (
                       <div
                         key={analysis.id}
-                        className="flex items-center justify-between p-4 border rounded-lg"
+                        className="flex items-center justify-between p-4 border rounded-lg hover:border-purple-300 hover:bg-purple-50/50 transition-all cursor-pointer"
+                        onClick={() => handleViewAnalysis(analysis.id)}
                       >
                         <div className="flex-1">
                           <h4 className="font-medium text-gray-900">
@@ -351,11 +557,19 @@ export function DashboardContent({ user }: DashboardContentProps) {
                           <p className="text-sm text-gray-600 mt-1">
                             "{analysis.mainRoast}"
                           </p>
-                          <p className="text-xs text-gray-500 mt-2">
-                            {formatDistanceToNow(new Date(analysis.createdAt), {
-                              addSuffix: true,
-                            })}
-                          </p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <p className="text-xs text-gray-500">
+                              {formatDistanceToNow(
+                                new Date(analysis.createdAt),
+                                {
+                                  addSuffix: true,
+                                }
+                              )}
+                            </p>
+                            <p className="text-xs text-purple-600">
+                              {analysis.creditsUsed} credits used
+                            </p>
+                          </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-center">
@@ -381,13 +595,31 @@ export function DashboardContent({ user }: DashboardContentProps) {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleViewAnalysis(analysis.id)}
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent card click
+                              handleViewAnalysis(analysis.id);
+                            }}
+                            className="opacity-60 hover:opacity-100"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     ))}
+                    {user.analyses.length > 5 && (
+                      <div className="text-center pt-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // TODO: Navigate to full analyses list page
+                            console.log("Navigate to all analyses page");
+                          }}
+                        >
+                          View All Analyses ({user.analyses.length})
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-8">
@@ -399,6 +631,19 @@ export function DashboardContent({ user }: DashboardContentProps) {
                       Upload your resume to get started with AI-powered
                       feedback!
                     </p>
+                    <Button
+                      onClick={handleStartAnalysis}
+                      className="bg-purple-600 hover:bg-purple-700"
+                      disabled={user.credits < 2}
+                    >
+                      <Brain className="h-4 w-4 mr-2" />
+                      Analyze Your First Resume
+                    </Button>
+                    {user.credits < 2 && (
+                      <p className="text-red-600 text-xs mt-2">
+                        Need 2 credits to analyze
+                      </p>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -413,9 +658,9 @@ export function DashboardContent({ user }: DashboardContentProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {user.improvements.length > 0 ? (
+                {user.improvedResumes.length > 0 ? (
                   <div className="space-y-4">
-                    {user.improvements.slice(0, 3).map((improvement) => (
+                    {user.improvedResumes.slice(0, 3).map((improvement) => (
                       <div
                         key={improvement.id}
                         className="flex items-center justify-between p-4 border rounded-lg"
@@ -436,11 +681,27 @@ export function DashboardContent({ user }: DashboardContentProps) {
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              router.push(`/improved-resume/${improvement.id}`);
+                            }}
+                          >
                             <Eye className="h-4 w-4 mr-1" />
                             View
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              // TODO: Implement download functionality
+                              console.log(
+                                "Download improvement:",
+                                improvement.id
+                              );
+                            }}
+                          >
                             <Download className="h-4 w-4 mr-1" />
                             Download
                           </Button>

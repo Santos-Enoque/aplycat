@@ -110,6 +110,7 @@ export interface ResumeSection {
     success: boolean;
     analysis: ResumeAnalysis;
     fileName: string;
+    resumeId?: string;
     error?: string;
     details?: string;
   }

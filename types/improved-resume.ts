@@ -47,6 +47,53 @@ export interface PersonalInfo {
     skills: Skills;
     improvementsAnalysis: ImprovementsAnalysis;
   }
+
+  // Database-stored improved resume with versioning
+  export interface ImprovedResumeVersion {
+    id: string;
+    resumeId: string;
+    version: number;
+    versionName?: string;
+    targetRole: string;
+    targetIndustry: string;
+    customPrompt?: string;
+    improvedResumeData: ImprovedResume;
+    improvementSummary?: string;
+    keyChanges?: { changes: string[] };
+    originalScore?: number;
+    improvedScore?: number;
+    improvementPercentage?: number;
+    fileName?: string;
+    generatedFileUrl?: string;
+    creditsUsed: number;
+    processingTimeMs?: number;
+    modelUsed?: string;
+    isFavorite: boolean;
+    isCompleted: boolean;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+    resume?: {
+      id: string;
+      fileName: string;
+      title?: string;
+      fileUrl?: string;
+    };
+  }
+
+  // Grouped versions by resume
+  export interface ResumeVersionGroup {
+    resumeId: string;
+    resume: {
+      id: string;
+      fileName: string;
+      title?: string;
+      fileUrl?: string;
+    };
+    versions: ImprovedResumeVersion[];
+    totalVersions: number;
+    latestVersion: ImprovedResumeVersion | null;
+  }
   
   export interface ImprovementResponse {
     success: boolean;
@@ -54,6 +101,47 @@ export interface PersonalInfo {
     targetRole: string;
     targetIndustry: string;
     fileName: string;
+    resumeId?: string;
+    improvedResumeId?: string; // New: ID of the saved improved resume
+    version?: number; // New: Version number
+    versionName?: string; // New: Version name
+    processingTimeMs?: number;
+    timestamp?: string;
+    cached?: boolean;
     error?: string;
     details?: string;
+  }
+
+  // Request interface for creating improvements
+  export interface ImprovementRequest {
+    resumeId?: string; // New approach
+    fileData?: string; // Legacy approach
+    fileName: string;
+    targetRole: string;
+    targetIndustry: string;
+    customPrompt?: string; // New: Custom instructions
+    versionName?: string; // New: Version name
+  }
+
+  // Improved resumes list response
+  export interface ImprovedResumesResponse {
+    success: boolean;
+    improvedResumes: ImprovedResumeVersion[];
+    groupedByResume?: ResumeVersionGroup[] | null;
+    pagination: {
+      page: number;
+      limit: number;
+      totalCount: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+    timestamp: string;
+  }
+
+  // Single improved resume response
+  export interface ImprovedResumeResponse {
+    success: boolean;
+    improvedResume: ImprovedResumeVersion;
+    timestamp: string;
   }
