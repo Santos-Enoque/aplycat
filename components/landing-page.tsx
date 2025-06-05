@@ -1,712 +1,874 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileUploadWithUploadThing } from "@/components/file-upload-with-uploadthing";
 import {
-  Zap,
-  Target,
-  Brain,
-  FileText,
-  CheckCircle,
-  Star,
   ArrowRight,
-  PlayCircle,
+  Upload,
+  Flame,
+  FileCheck,
   Users,
-  Award,
-  TrendingUp,
-  Sparkles,
-  Clock,
-  Shield,
-  Eye,
+  Star,
+  Zap,
+  CheckCircle,
   AlertTriangle,
+  Brain,
+  Sparkles,
+  Target,
+  FileText,
+  Award,
   Lightbulb,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function LandingPage() {
-  const router = useRouter();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const router = useRouter();
 
-  const handleFileUploaded = async (resumeId: string, fileName: string) => {
-    console.log("[LANDING_PAGE] File uploaded, navigating to analysis:", {
-      resumeId,
-      fileName,
-    });
+  const handleFileUploaded = async (result: any) => {
     setIsAnalyzing(true);
-
-    // Navigate to analyze page with resume ID
-    const params = new URLSearchParams({
-      resumeId: resumeId,
-      fileName: encodeURIComponent(fileName),
-    });
-
-    router.push(`/analyze?${params.toString()}`);
+    try {
+      console.log("File uploaded:", result);
+      if (result?.serverData?.resumeId) {
+        router.push(`/analysis/${result.serverData.resumeId}`);
+      }
+    } catch (error) {
+      console.error("Error handling file upload:", error);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
-  const features = [
-    {
-      icon: AlertTriangle,
-      title: "Brutally Honest Analysis",
-      description:
-        "Get Gordon Ramsay-style feedback that tells you exactly what's wrong and how to fix it.",
-      color: "red",
-    },
-    {
-      icon: Brain,
-      title: "AI-Powered Intelligence",
-      description:
-        "Advanced AI analyzes every section and provides industry-specific insights.",
-      color: "purple",
-    },
-    {
-      icon: Target,
-      title: "ATS Optimization",
-      description:
-        "Ensure your resume passes Applicant Tracking Systems with smart keyword optimization.",
-      color: "green",
-    },
-    {
-      icon: Sparkles,
-      title: "Smart Improvements",
-      description:
-        "Get an AI-optimized version tailored to your target role and industry.",
-      color: "blue",
-    },
-    {
-      icon: FileText,
-      title: "Section-by-Section Breakdown",
-      description:
-        "Detailed analysis of every resume section with specific improvement suggestions.",
-      color: "orange",
-    },
-    {
-      icon: Eye,
-      title: "Keyword Highlighting",
-      description:
-        "See which keywords are working and which ones you're missing for your target role.",
-      color: "teal",
-    },
-  ];
-
-  const testimonials = [
-    {
-      name: "Sarah Chen",
-      role: "Software Engineer",
-      company: "Google",
-      content:
-        "Aplycat's brutal honesty was exactly what I needed. Went from 0 responses to 5 interviews in 2 weeks!",
-      rating: 5,
-    },
-    {
-      name: "Marcus Rodriguez",
-      role: "Marketing Manager",
-      company: "Spotify",
-      content:
-        "The AI-powered improvements were spot on. My resume finally shows the impact I've made.",
-      rating: 5,
-    },
-    {
-      name: "Priya Patel",
-      role: "Data Scientist",
-      company: "Meta",
-      content:
-        "The section-by-section analysis helped me identify gaps I never knew existed. Game changer!",
-      rating: 5,
-    },
-  ];
-
-  const stats = [
-    { number: "50,000+", label: "Resumes Analyzed" },
-    { number: "89%", label: "Get More Interviews" },
-    { number: "4.9", label: "Average Rating" },
-    { number: "2x", label: "Faster Job Search" },
-  ];
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   const pricingPlans = [
     {
-      name: "Free Trial",
-      price: "$0",
-      period: "one-time only",
-      credits: "10 credits",
-      description: "Experience the complete Aplycat transformation",
+      name: "🥉 Starter Pack",
+      price: "$4.99",
+      originalPrice: "$9.99",
+      credits: "3 credits",
       features: [
-        "1× Resume Analysis (2 credits)",
-        "1× Resume Improvement (3 credits)",
-        "1× Job Tailoring (4 credits)",
-        "1 credit for updates",
-        "See your resume go from terrible to hired-worthy",
+        "1 Resume Analysis",
+        "1 Resume Improvement",
+        "1 Resume Template selection",
       ],
-      cta: "Transform Your Resume Free!",
+      cta: "Get Started",
       popular: false,
-      highlight: "Complete transformation included",
+      buttonClass: "bg-purple-600 hover:bg-purple-700",
     },
     {
-      name: "Starter Pack",
-      price: "$9",
-      period: "25 credits",
-      credits: "25 credits",
-      description: "Perfect for polishing one resume",
+      name: "🥈 Professional Pack",
+      price: "$12.49",
+      originalPrice: "$24.99",
+      credits: "15 credits",
       features: [
-        "2-3 complete resume analyses",
-        "2-3 resume improvements",
-        "5-10 custom updates",
-        "Basic optimization",
-        "Great for testing improvements",
+        "6 Resume Analyses",
+        "5 Resume Improvements",
+        "4 Job-Tailored Resume + Cover Letter combos",
       ],
-      cta: "Get Starter",
-      popular: false,
-      highlight: "Perfect for beginners",
-    },
-    {
-      name: "Professional Pack",
-      price: "$19",
-      period: "60 credits + 10 bonus",
-      credits: "70 credits total",
-      description: "Everything you need for your job search",
-      features: [
-        "5-8 resume analyses",
-        "5-8 resume improvements",
-        "3-5 job-specific tailorings",
-        "10-15 custom updates",
-        "Cover letter generation",
-        "Bonus: +10 extra credits (16% more value)",
-      ],
-      cta: "Get Professional",
+      cta: "Choose Professional",
       popular: true,
-      highlight: "Most Popular - Best Value",
+      buttonClass: "bg-purple-600 hover:bg-purple-700",
     },
     {
-      name: "Power User Pack",
-      price: "$39",
-      period: "140 credits + 25 bonus",
-      credits: "165 credits total",
-      description: "For serious career advancement",
+      name: "🥇 Power User Pack",
+      price: "$24.99",
+      originalPrice: "$49.99",
+      credits: "40 credits",
       features: [
-        "10+ resume analyses",
-        "10+ resume improvements",
-        "10+ job-specific tailorings",
-        "30+ custom updates",
-        "Unlimited cover letters",
-        "Priority support",
-        "Bonus: +25 extra credits (22% more value)",
+        "15 Resume Analyses",
+        "13 Resume Improvements",
+        "12 Job-Tailored Resume + Cover Letter combos",
       ],
       cta: "Go Power User",
       popular: false,
-      highlight: "Career Changer Special",
+      buttonClass: "bg-purple-600 hover:bg-purple-700",
+      badge: "Best Value",
     },
   ];
 
-  const beforeAfterExample = {
-    before:
-      "Experienced professional with strong communication skills and a passion for technology. Seeking opportunities to contribute to a dynamic team.",
-    after:
-      "Full-stack developer with 5+ years building scalable web applications, increasing user engagement by 40% at previous role. Led development of React-based dashboard serving 10K+ daily users.",
+  // Sample data for demonstrations
+  const sampleAnalysis = {
+    overall_score: 6,
+    ats_score: 4,
+    score_category: "Needs Major Improvement",
+    main_roast:
+      "Your resume reads like a grocery list written by someone who's never been grocery shopping. Generic, uninspiring, and about as memorable as yesterday's lunch.",
+    sections: {
+      professional_summary: {
+        score: 3,
+        feedback:
+          "Your summary is more generic than store-brand cereal. 'Experienced professional' tells me nothing. What do you actually DO?",
+      },
+      experience: {
+        score: 5,
+        feedback:
+          "Job descriptions masquerading as achievements. Where are the numbers? The impact? The proof you didn't just show up and breathe?",
+      },
+    },
+  };
+
+  const sampleImprovement = {
+    personalInfo: {
+      name: "John Smith",
+      email: "john.smith@email.com",
+      phone: "(555) 123-4567",
+      location: "San Francisco, CA",
+    },
+    professionalSummary:
+      "Results-driven Software Engineer with 5+ years building scalable web applications that serve 100K+ users daily. Increased system performance by 40% and led cross-functional teams of 8 developers to deliver projects 20% ahead of schedule.",
+    experience: [
+      {
+        title: "Senior Software Engineer",
+        company: "TechCorp",
+        achievements: [
+          "• Architected microservices infrastructure serving 500K+ daily users, reducing load times by 45%",
+          "• Led development of React-based dashboard that increased user engagement by 60%",
+          "• Mentored 3 junior developers, resulting in 100% team retention and 2 promotions",
+        ],
+      },
+    ],
   };
 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section className="pt-20 sm:pt-24 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
-              <Badge className="bg-purple-600 text-white mb-6">
-                <Zap className="h-3 w-3 mr-1" />
-                AI-Powered Resume Analysis
-              </Badge>
-
-              <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
-                Get Brutally Honest
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
-                  {" "}
-                  Resume Feedback
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight mb-6">
+                I'll tell you what recruiters wish they could say{" "}
+                <span className="text-purple-600 relative">
+                  to your face
+                  <span className="absolute -bottom-1 left-0 w-full h-3 bg-purple-200 -z-10 transform -rotate-1"></span>
                 </span>
+                .
               </h1>
 
-              <p className="text-xl lg:text-2xl text-purple-100 mb-8 leading-relaxed">
-                Stop getting ignored by recruiters. Our AI gives you the harsh
-                truth about your resume and tells you exactly how to fix it.
+              <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
+                Get savage, AI-powered feedback that recruiters are too polite
+                to give. Turn your cringeworthy resume into a job-landing
+                machine.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="space-y-4">
                 <Button
+                  onClick={() => scrollToSection("upload")}
                   size="lg"
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold text-lg px-8 py-4"
-                  onClick={() =>
-                    document
-                      .getElementById("upload-section")
-                      ?.scrollIntoView({ behavior: "smooth" })
-                  }
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-lg w-full sm:w-auto"
                 >
-                  <PlayCircle className="h-5 w-5 mr-2" />
-                  Analyze My Resume Free
+                  Upload Resume & Get Roasted
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-purple-900 text-lg px-8 py-4"
-                >
-                  <PlayCircle className="h-5 w-5 mr-2" />
-                  Watch Demo
-                </Button>
-              </div>
 
-              <div className="flex items-center gap-4 text-purple-200">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
-                </div>
-                <span>4.9/5 from 10,000+ job seekers</span>
-              </div>
-            </div>
-
-            <div className="lg:pl-8">
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-                <h3 className="text-2xl font-bold mb-6 text-center">
-                  🐱 Try Aplycat Now
-                </h3>
-                <div id="upload-section">
-                  <FileUploadWithUploadThing
-                    onFileUploaded={handleFileUploaded}
-                    isLoading={isAnalyzing}
-                  />
-                </div>
-                <p className="text-purple-200 text-sm text-center mt-4">
-                  Upload your resume and get instant feedback
+                <p className="text-sm text-gray-500">
+                  {"It's free to get your initial roast & score!"}
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl lg:text-5xl font-bold text-purple-600 mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Why Aplycat Works
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our AI doesn't just give you generic advice. It provides brutally
-              honest, actionable feedback that actually gets you hired.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card
-                key={index}
-                className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-purple-200"
-              >
-                <CardHeader>
-                  <div
-                    className={`w-12 h-12 rounded-lg bg-${feature.color}-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
-                  >
-                    <feature.icon
-                      className={`h-6 w-6 text-${feature.color}-600`}
-                    />
+            <div className="relative mt-8 lg:mt-0">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 sm:p-8 relative">
+                <div className="w-full h-80 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-purple-300">
+                  <div className="text-6xl mb-4">😾</div>
+                  <div className="text-center px-4">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                      AplyCat
+                    </h3>
+                    <p className="text-gray-600">
+                      "This resume makes me want to use my litter box instead."
+                    </p>
                   </div>
-                  <CardTitle className="text-xl font-bold text-gray-900">
-                    {feature.title}
+                </div>
+                <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 bg-red-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold transform rotate-12">
+                  YIKES!
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Problem Section */}
+      <section className="py-16 bg-gray-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            {"Let's Be Honest, Your Resume Is Probably The Problem."}
+          </h2>
+
+          <p className="text-xl text-gray-600 mb-12">
+            Still sending resumes into the void? {"Here's why."}
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="border-2 border-gray-200 hover:border-red-300 transition-colors">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🤖</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {"Robots can't read it"}
+                </h3>
+                <p className="text-gray-600">
+                  ATS systems are rejecting you before humans even see your
+                  resume.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-gray-200 hover:border-red-300 transition-colors">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">😴</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  More boring than watching paint dry
+                </h3>
+                <p className="text-gray-600">
+                  Generic bullet points that make recruiters fall asleep.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-gray-200 hover:border-red-300 transition-colors">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">👻</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Full of fluff, zero impact
+                </h3>
+                <p className="text-gray-600">
+                  {
+                    "Buzzwords and responsibilities instead of achievements that matter."
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Solution Section */}
+      <section id="value-prop" className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                Fine.{" "}
+                <span className="text-purple-600">AplyCat Will Help.</span> (You
+                Clearly Need It.)
+              </h2>
+
+              <p className="text-xl text-gray-600 mb-8">
+                Brutal honesty. Better resume. Actual interviews.
+              </p>
+
+              <p className="text-lg text-gray-600 mb-8">
+                {
+                  "He's seen thousands of terrible resumes. He knows what works (and what makes him gag). "
+                }
+                Get unfiltered, actionable feedback that leads to genuinely
+                improved resumes.
+              </p>
+
+              <div className="flex items-center space-x-4 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <Users className="h-4 w-4 mr-1" />
+                  <span>50,000+ resumes roasted</span>
+                </div>
+                <div className="flex items-center">
+                  <Star className="h-4 w-4 mr-1 text-yellow-500" />
+                  <span>4.9/5 rating</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="bg-gradient-to-r from-gray-100 to-blue-50 rounded-2xl p-8">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-red-100 p-4 rounded-lg">
+                    <h4 className="font-semibold text-red-800 mb-2">Before</h4>
+                    <div className="space-y-2">
+                      <div className="h-2 bg-red-300 rounded w-full"></div>
+                      <div className="h-2 bg-red-300 rounded w-3/4"></div>
+                      <div className="h-2 bg-red-300 rounded w-1/2"></div>
+                    </div>
+                    <span className="text-xs text-red-600">😾 Terrible</span>
+                  </div>
+                  <div className="bg-green-100 p-4 rounded-lg">
+                    <h4 className="font-semibold text-green-800 mb-2">After</h4>
+                    <div className="space-y-2">
+                      <div className="h-2 bg-green-500 rounded w-full"></div>
+                      <div className="h-2 bg-green-500 rounded w-full"></div>
+                      <div className="h-2 bg-green-500 rounded w-4/5"></div>
+                    </div>
+                    <span className="text-xs text-green-600">
+                      😼 Acceptable
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 bg-gray-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            {"It's Not Brain Surgery. (Even You Can Do This.)"}
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8 mt-12">
+            <div className="relative">
+              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Upload className="h-8 w-8 text-white" />
+              </div>
+              <div className="absolute -top-2 -left-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                1
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Upload Your PDF
+              </h3>
+              <p className="text-gray-600">
+                Drag & drop your current disasterpiece.
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Flame className="h-8 w-8 text-white" />
+              </div>
+              <div className="absolute -top-2 -left-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                2
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Get Roasted & Scored
+              </h3>
+              <p className="text-gray-600">
+                AplyCat unleashes his brutal AI analysis in seconds.
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileCheck className="h-8 w-8 text-white" />
+              </div>
+              <div className="absolute -top-2 -left-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                3
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Improve & Conquer
+              </h3>
+              <p className="text-gray-600">
+                {
+                  "Choose a pro template & get an AI-revamped resume that doesn't suck."
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 px-2">
+              What You Get (Besides a Bruised Ego):
+            </h2>
+          </div>
+
+          {/* Feature 1 - AI Analysis Demo */}
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-16 sm:mb-20">
+            <div className="order-2 lg:order-1">
+              <Card className="w-full border-2 border-red-200 bg-red-50">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-bold text-red-800">
+                      Resume Analysis Results
+                    </CardTitle>
+                    <Badge className="bg-red-600 text-white">
+                      Score: {sampleAnalysis.overall_score}/10
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      AplyCat's Verdict:
+                    </h4>
+                    <p className="text-sm text-gray-700 italic bg-white p-3 rounded border-l-4 border-red-500">
+                      "{sampleAnalysis.main_roast}"
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-2 bg-white rounded">
+                      <span className="text-sm font-medium">
+                        Professional Summary
+                      </span>
+                      <Badge variant="destructive">3/10</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-white rounded">
+                      <span className="text-sm font-medium">
+                        Experience Section
+                      </span>
+                      <Badge variant="destructive">5/10</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-white rounded">
+                      <span className="text-sm font-medium">
+                        ATS Compatibility
+                      </span>
+                      <Badge variant="destructive">4/10</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="order-1 lg:order-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                Brutally Honest AI Analysis
+              </h3>
+              <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
+                No sugar-coating, no participation trophies. AplyCat tells you
+                exactly what's wrong with your resume and why nobody's calling
+                you back. Get specific, actionable feedback that actually helps.
+              </p>
+              <ul className="space-y-2 text-sm sm:text-base text-gray-600">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>Section-by-section detailed breakdown</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>ATS compatibility scoring</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>Specific improvement recommendations</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Feature 2 - AI Improvements Demo */}
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-16 sm:mb-20">
+            <div className="order-1">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                AI-Powered Improvements
+              </h3>
+              <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
+                Watch AplyCat transform your boring job descriptions into
+                compelling success stories. Quantified achievements,
+                impact-driven bullet points, and one-page optimization that
+                actually gets noticed.
+              </p>
+              <ul className="space-y-2 text-sm sm:text-base text-gray-600">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>Quantified achievements with real numbers</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>Action-oriented bullet points</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>One-page optimization</span>
+                </li>
+              </ul>
+            </div>
+            <div className="order-2">
+              <Card className="w-full border-2 border-green-200 bg-green-50">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold text-green-800">
+                    Improved Resume Preview
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">{feature.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Before/After Example */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              See the Transformation
-            </h2>
-            <p className="text-xl text-gray-600">
-              Watch how Aplycat transforms weak resume content into compelling
-              achievements
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="border-2 border-red-200">
-              <CardHeader>
-                <CardTitle className="text-red-600 flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5" />
-                  Before: Generic & Weak
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 leading-relaxed">
-                  {beforeAfterExample.before}
-                </p>
-                <div className="mt-4 flex gap-2">
-                  <Badge variant="destructive">No metrics</Badge>
-                  <Badge variant="destructive">Vague claims</Badge>
-                  <Badge variant="destructive">Generic language</Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-green-200">
-              <CardHeader>
-                <CardTitle className="text-green-600 flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5" />
-                  After: Specific & Powerful
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 leading-relaxed">
-                  <span className="bg-green-200 px-1 rounded">
-                    Full-stack developer
-                  </span>{" "}
-                  with{" "}
-                  <span className="bg-green-200 px-1 rounded">5+ years</span>{" "}
-                  building scalable web applications, increasing user engagement
-                  by <span className="bg-green-200 px-1 rounded">40%</span> at
-                  previous role. Led development of{" "}
-                  <span className="bg-green-200 px-1 rounded">
-                    React-based dashboard
-                  </span>{" "}
-                  serving{" "}
-                  <span className="bg-green-200 px-1 rounded">
-                    10K+ daily users
-                  </span>
-                  .
-                </p>
-                <div className="mt-4 flex gap-2">
-                  <Badge className="bg-green-100 text-green-800">
-                    Quantified results
-                  </Badge>
-                  <Badge className="bg-green-100 text-green-800">
-                    Specific technologies
-                  </Badge>
-                  <Badge className="bg-green-100 text-green-800">
-                    Clear impact
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Success Stories
-            </h2>
-            <p className="text-xl text-gray-600">
-              Join thousands who transformed their careers with Aplycat
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card
-                key={index}
-                className="border-2 hover:shadow-lg transition-shadow"
-              >
-                <CardContent className="pt-6">
-                  <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-gray-700 mb-6 italic">
-                    "{testimonial.content}"
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                      <span className="font-semibold text-purple-600">
-                        {testimonial.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </span>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">
+                        Professional Summary
+                        <span className="ml-2 bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                          ENHANCED
+                        </span>
+                      </h4>
+                      <p className="text-sm text-gray-700 bg-white p-3 rounded border-l-4 border-green-500">
+                        Results-driven Software Engineer with{" "}
+                        <span className="bg-yellow-200 px-1 rounded">
+                          5+ years
+                        </span>{" "}
+                        building scalable web applications that serve{" "}
+                        <span className="bg-yellow-200 px-1 rounded">
+                          100K+ users daily
+                        </span>
+                        . Increased system performance by{" "}
+                        <span className="bg-yellow-200 px-1 rounded">40%</span>{" "}
+                        and led cross-functional teams of{" "}
+                        <span className="bg-yellow-200 px-1 rounded">
+                          8 developers
+                        </span>{" "}
+                        to deliver projects{" "}
+                        <span className="bg-yellow-200 px-1 rounded">
+                          20% ahead of schedule
+                        </span>
+                        .
+                      </p>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900">
-                        {testimonial.name}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {testimonial.role} at {testimonial.company}
+                      <h4 className="font-semibold text-gray-900 mb-2">
+                        Experience Highlights
+                        <span className="ml-2 bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                          QUANTIFIED
+                        </span>
+                      </h4>
+                      <div className="bg-white p-3 rounded border-l-4 border-green-500">
+                        <p className="font-medium text-sm text-gray-800 mb-1">
+                          Senior Software Engineer at TechCorp
+                        </p>
+                        <ul className="space-y-1">
+                          <li className="text-xs text-gray-700">
+                            • Architected microservices infrastructure serving{" "}
+                            <span className="bg-yellow-200 px-1 rounded">
+                              500K+ daily users
+                            </span>
+                            , reducing load times by{" "}
+                            <span className="bg-yellow-200 px-1 rounded">
+                              45%
+                            </span>
+                          </li>
+                          <li className="text-xs text-gray-700">
+                            • Led development of React-based dashboard that
+                            increased user engagement by{" "}
+                            <span className="bg-yellow-200 px-1 rounded">
+                              60%
+                            </span>
+                          </li>
+                          <li className="text-xs text-gray-700">
+                            • Mentored{" "}
+                            <span className="bg-yellow-200 px-1 rounded">
+                              3 junior developers
+                            </span>
+                            , resulting in{" "}
+                            <span className="bg-yellow-200 px-1 rounded">
+                              100% team retention
+                            </span>{" "}
+                            and{" "}
+                            <span className="bg-yellow-200 px-1 rounded">
+                              2 promotions
+                            </span>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Credit Costs Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              💳 How Credits Work
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Credits give you flexibility to use Aplycat's features as needed.
-              Here's what each feature costs:
-            </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="border-2 border-blue-200 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6 text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Brain className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Resume Analysis
-                </h3>
-                <div className="text-3xl font-bold text-blue-600 mb-2">
-                  2 credits
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Detailed section-by-section analysis with brutal honesty
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-purple-200 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6 text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Resume Improvement
-                </h3>
-                <div className="text-3xl font-bold text-purple-600 mb-2">
-                  3 credits
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Full resume regeneration with AI optimization
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-green-200 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Target className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Job Tailoring
-                </h3>
-                <div className="text-3xl font-bold text-green-600 mb-2">
-                  4 credits
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Role-specific optimization + cover letter
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-orange-200 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6 text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FileText className="h-8 w-8 text-orange-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Cover Letter
-                </h3>
-                <div className="text-3xl font-bold text-orange-600 mb-2">
-                  2 credits
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Professional cover letter generation
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-teal-200 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6 text-center">
-                <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Lightbulb className="h-8 w-8 text-teal-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Custom Update
-                </h3>
-                <div className="text-3xl font-bold text-teal-600 mb-2">
-                  1 credit
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Targeted modifications and tweaks
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-indigo-200 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6 text-center">
-                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Award className="h-8 w-8 text-indigo-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Value</h3>
-                <div className="text-3xl font-bold text-indigo-600 mb-2">
-                  $200+
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Professional resume service equivalent
-                </p>
-              </CardContent>
-            </Card>
+          {/* Feature 3 - Job Tailoring Demo */}
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div className="order-2 lg:order-1">
+              <Card className="w-full border-2 border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold text-blue-800">
+                    Job-Tailored Resume + Cover Letter
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-900">
+                          Target Job
+                        </h4>
+                        <Badge className="bg-blue-100 text-blue-800">
+                          Senior Frontend Dev
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-700 bg-white p-3 rounded">
+                        🎯 Resume optimized for React, TypeScript, and team
+                        leadership keywords
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">
+                        Tailored Achievements
+                      </h4>
+                      <div className="bg-white p-3 rounded space-y-1">
+                        <p className="text-xs text-gray-700">
+                          • Built React applications serving 500K+ users daily
+                        </p>
+                        <p className="text-xs text-gray-700">
+                          • Led frontend team of 5 developers using Agile
+                          methodology
+                        </p>
+                        <p className="text-xs text-gray-700">
+                          • Implemented TypeScript, reducing bugs by 35%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-purple-100 p-3 rounded">
+                      <h5 className="font-medium text-purple-800 text-sm mb-1">
+                        + Custom Cover Letter
+                      </h5>
+                      <p className="text-xs text-purple-700">
+                        Personalized for company culture and role requirements
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="order-1 lg:order-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                Job-Specific Tailoring
+              </h3>
+              <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
+                Stop sending the same generic resume everywhere. AplyCat
+                analyzes job descriptions and tailors your resume to match what
+                employers are actually looking for, plus throws in a custom
+                cover letter.
+              </p>
+              <ul className="space-y-2 text-sm sm:text-base text-gray-600">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>Job description keyword analysis</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>Experience reordering for relevance</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-3 flex-shrink-0"></div>
+                  <span>Custom cover letters included</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Simple, Honest Pricing
+      <section id="pricing" className="py-16 bg-gray-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="mb-8">
+            <div className="inline-flex items-center bg-purple-100 text-purple-800 px-4 py-2 rounded-full mb-4">
+              <span className="font-semibold text-sm">
+                🎉 EARLY MEMBER SALE - 50% OFF
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Pick Your Poison (Pricing That Won't Break The Bank)
             </h2>
-            <p className="text-xl text-gray-600">
-              Choose the plan that fits your career goals
+            <p className="text-xl text-gray-600 mb-4">
+              Choose how much truth you can handle.
+            </p>
+            <p className="text-sm text-purple-600 font-medium">
+              Limited time launch pricing - lock in these rates forever!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, index) => (
               <Card
                 key={index}
-                className={`relative border-2 ${
+                className={`border-2 transition-colors relative ${
                   plan.popular
-                    ? "border-purple-500 shadow-lg scale-105"
-                    : "border-gray-200 hover:border-gray-300"
-                } transition-all duration-300`}
+                    ? "border-purple-500 hover:border-purple-600 transform scale-105"
+                    : "border-gray-200 hover:border-purple-300"
+                }`}
               >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-purple-600 text-white px-4 py-1">
-                      {plan.highlight}
-                    </Badge>
+                {(plan.popular || plan.badge) && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <span
+                      className={`text-white px-4 py-1 rounded-full text-sm font-semibold ${
+                        plan.popular ? "bg-purple-500" : "bg-green-500"
+                      }`}
+                    >
+                      {plan.popular ? "Most Popular" : plan.badge}
+                    </span>
                   </div>
                 )}
-
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl font-bold text-gray-900">
-                    {plan.name}
-                  </CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-gray-900">
-                      {plan.price}
-                    </span>
-                    <span className="text-gray-600">/{plan.period}</span>
-                  </div>
-                  {plan.credits && (
-                    <div className="mt-2">
-                      <Badge className="bg-blue-100 text-blue-800 text-sm px-3 py-1">
-                        {plan.credits}
-                      </Badge>
+                <CardContent className="p-6">
+                  <div className="text-center mb-6">
+                    <div className="text-3xl mb-2">
+                      {plan.name.split(" ")[0]}
                     </div>
-                  )}
-                  <p className="text-gray-600 mt-2">{plan.description}</p>
-                </CardHeader>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      {plan.name.slice(2)}
+                    </h3>
+                    <div className="mb-4">
+                      <span className="text-3xl font-bold text-purple-600">
+                        {plan.price}
+                      </span>
+                      <span className="text-lg text-gray-500 line-through ml-2">
+                        {plan.originalPrice}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      ({plan.credits})
+                    </p>
+                  </div>
 
-                <CardContent>
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li
-                        key={featureIndex}
-                        className="flex items-center gap-3"
-                      >
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
+                  <ul className="space-y-3 text-left mb-6">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center">
+                        <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
+                        <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <Button
-                    className={`w-full ${
-                      plan.popular
-                        ? "bg-purple-600 hover:bg-purple-700 text-white"
-                        : "bg-gray-900 hover:bg-gray-800 text-white"
-                    }`}
-                    size="lg"
-                  >
+                  <Button className={`w-full text-white ${plan.buttonClass}`}>
                     {plan.cta}
-                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
+
+          <p className="text-sm text-gray-500 mt-8">
+            All plans include AplyCat's brutally honest feedback. No refunds for
+            hurt feelings.
+          </p>
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section className="py-16 bg-gray-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            {"Fresh from the Fire Pit: See What AplyCat Is Saying"}
+          </h2>
+
+          <p className="text-xl text-gray-600 mb-12">
+            {"Don't just take our word for it... See the carnage!"}
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-white border-2 border-purple-200 transform hover:scale-105 transition-transform">
+              <CardContent className="p-6">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm">😾</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">AplyCat</div>
+                    <div className="text-sm text-gray-500">@aplycat_ai</div>
+                  </div>
+                </div>
+                <p className="text-gray-800 italic">
+                  {
+                    "Your 'Skills' section includes 'Microsoft Word'? Did you also list 'Breathing' and 'Existing'? Wow. So hirable."
+                  }
+                </p>
+                <div className="flex items-center mt-4 text-sm text-gray-500">
+                  <Flame className="h-4 w-4 mr-1 text-purple-500" />
+                  <span>Roast Level: Savage</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-2 border-purple-200 transform hover:scale-105 transition-transform">
+              <CardContent className="p-6">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm">😾</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">AplyCat</div>
+                    <div className="text-sm text-gray-500">@aplycat_ai</div>
+                  </div>
+                </div>
+                <p className="text-gray-800 italic">
+                  {
+                    "This resume is so dense, it's bending spacetime. Three pages to say you answered emails? Impressive. Not."
+                  }
+                </p>
+                <div className="flex items-center mt-4 text-sm text-gray-500">
+                  <Flame className="h-4 w-4 mr-1 text-purple-500" />
+                  <span>Roast Level: Nuclear</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-2 border-purple-200 transform hover:scale-105 transition-transform">
+              <CardContent className="p-6">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-sm">😾</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">AplyCat</div>
+                    <div className="text-sm text-gray-500">@aplycat_ai</div>
+                  </div>
+                </div>
+                <p className="text-gray-800 italic">
+                  {
+                    "Comic Sans font? Really? What's next, glitter? This isn't a birthday invitation, it's supposed to get you hired."
+                  }
+                </p>
+                <div className="flex items-center mt-4 text-sm text-gray-500">
+                  <Flame className="h-4 w-4 mr-1 text-purple-500" />
+                  <span>Roast Level: Brutal</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center bg-purple-100 px-4 py-2 rounded-full">
+              <Zap className="h-4 w-4 text-purple-600 mr-2" />
+              <span className="text-purple-800 font-semibold">
+                Over 50,000 Resumes Roasted Into Shape!
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-            Ready to Transform Your Resume?
+      <section id="upload" className="py-8 sm:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 px-2">
+            Ready to Stop Sucking at Resumes?
           </h2>
-          <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
-            Join 50,000+ job seekers who've gotten brutally honest feedback and
-            landed their dream jobs.
+
+          <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 px-2">
+            Let AplyCat give your resume the tough love it desperately needs.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold text-lg px-8 py-4"
-              onClick={() =>
-                document
-                  .getElementById("upload-section")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
-            >
-              <Zap className="h-5 w-5 mr-2" />
-              Start Free Analysis
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-purple-600 text-lg px-8 py-4"
-            >
-              View Pricing
-            </Button>
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-4 sm:p-8 mb-6 sm:mb-8 mx-2 sm:mx-0">
+            <div id="upload-section">
+              <FileUploadWithUploadThing
+                onFileUploaded={handleFileUploaded}
+                isLoading={isAnalyzing}
+              />
+            </div>
+            <p className="text-sm text-gray-500 mt-4">
+              PDF files only. Max 5MB. Prepare for impact.
+            </p>
           </div>
 
-          <p className="text-purple-200 text-sm mt-6">
-            No credit card required • Free forever plan available
+          <p className="text-sm text-gray-500 px-4">
+            Or,{" "}
+            <button className="text-purple-600 hover:underline">
+              see example AplyCat-improved resumes
+            </button>
           </p>
         </div>
       </section>

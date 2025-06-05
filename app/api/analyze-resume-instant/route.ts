@@ -199,7 +199,7 @@ async function saveToDatabase(
         scoreCategory: analysis.score_category || 'Unknown',
         mainRoast: analysis.main_roast || 'Analysis completed',
         analysisData: analysis,
-        creditsUsed: 2, // Cost for analysis
+        creditsUsed: 1, // Cost for analysis
         isCompleted: true,
       },
     });
@@ -211,7 +211,7 @@ async function saveToDatabase(
       data: {
         userId,
         type: 'ANALYSIS_USE',
-        amount: -2, // Deduct 2 credits
+        amount: -1, // Deduct 1 credit
         description: `Resume analysis: ${fileName}`,
         relatedAnalysisId: savedAnalysis.id,
       },
@@ -221,8 +221,8 @@ async function saveToDatabase(
     await db.user.update({
       where: { id: userId },
       data: {
-        credits: { decrement: 2 },
-        totalCreditsUsed: { increment: 2 },
+        credits: { decrement: 1 },
+        totalCreditsUsed: { increment: 1 },
       },
     });
 

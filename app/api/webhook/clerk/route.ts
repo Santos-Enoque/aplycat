@@ -97,7 +97,7 @@ async function handleUserCreated(data: ClerkEvent['data']) {
         firstName: data.first_name,
         lastName: data.last_name,
         imageUrl: data.image_url,
-        credits: 10, // Free trial credits
+        credits: 7, // Welcome bonus credits
         isPremium: false,
         isActive: true,
       },
@@ -106,9 +106,9 @@ async function handleUserCreated(data: ClerkEvent['data']) {
     // Add signup bonus credits transaction
     await creditHelpers.addCredits(
       user.id,
-      10,
+      7,
       'BONUS_CREDIT',
-      'Welcome bonus - 10 free credits for new users'
+      'Welcome bonus - 7 free credits for new users'
     );
 
     console.log(`[WEBHOOK] User created successfully: ${user.id}`);

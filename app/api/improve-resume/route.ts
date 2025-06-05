@@ -306,7 +306,7 @@ async function saveToDatabase(
           parseInt(improvedScore.split('-')[0]) : improvedScore) : null,
         improvementPercentage,
         fileName,
-        creditsUsed: 3, // Cost for improvement
+        creditsUsed: 2, // Cost for improvement
         processingTimeMs: processingTime,
         modelUsed: 'Model Service',
         isCompleted: true,
@@ -324,7 +324,7 @@ async function saveToDatabase(
       data: {
         userId,
         type: 'IMPROVEMENT_USE',
-        amount: -3, // Deduct 3 credits
+        amount: -2, // Deduct 2 credits
         description: `Resume improvement: ${targetRole} role`,
         relatedImprovedResumeId: savedImprovedResume.id,
       },
@@ -334,8 +334,8 @@ async function saveToDatabase(
     await db.user.update({
       where: { id: userId },
       data: {
-        credits: { decrement: 3 },
-        totalCreditsUsed: { increment: 3 },
+        credits: { decrement: 2 },
+        totalCreditsUsed: { increment: 2 },
       },
     });
 

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ResumePreview } from "@/components/resume-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, Info } from "lucide-react";
+import { CheckCircle, Info } from "lucide-react";
 import type { ImprovedResume } from "@/types/improved-resume";
 
 interface PreviewData {
@@ -208,7 +208,7 @@ export default function PreviewPage() {
               <div className="flex items-center gap-3">
                 {dbSaveStatus === "pending" && isCheckingDB && (
                   <>
-                    <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                    <div className="h-5 w-5 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                     <div>
                       <p className="font-medium text-gray-900">
                         Resume Improved Successfully!

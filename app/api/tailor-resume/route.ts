@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
             improvedScore,
             improvementPercentage: null, // Not applicable for tailoring
             fileName: `tailored-resume-v${nextVersion}.json`,
-            creditsUsed: 2, // Cost for tailoring
+            creditsUsed: 3, // Cost for tailoring
             processingTimeMs: processingTime,
             modelUsed: 'Model Service',
             isCompleted: true,
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
           data: {
             userId: dbUser.id,
             type: 'IMPROVEMENT_USE',
-            amount: -2, // Deduct 2 credits for tailoring
+            amount: -3, // Deduct 3 credits for tailoring
             description: `Resume tailoring: ${jobTitle || 'Position'}${companyName ? ` at ${companyName}` : ''}`,
             relatedImprovedResumeId: savedTailoredResumeId,
           },
@@ -227,8 +227,8 @@ export async function POST(request: NextRequest) {
         await db.user.update({
           where: { id: dbUser.id },
           data: {
-            credits: { decrement: 2 },
-            totalCreditsUsed: { increment: 2 },
+            credits: { decrement: 3 },
+            totalCreditsUsed: { increment: 3 },
           },
         });
 

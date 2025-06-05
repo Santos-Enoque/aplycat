@@ -6,23 +6,23 @@ async function main() {
   console.log('🌱 Starting database seed...')
 
   // Create pricing plans
-  const freeTrialPlan = await prisma.pricingPlan.upsert({
-    where: { name: 'Free Trial' },
+  const welcomeBonusPlan = await prisma.pricingPlan.upsert({
+    where: { name: 'Welcome Bonus' },
     update: {},
     create: {
-      name: 'Free Trial',
-      description: 'Experience the complete Aplycat transformation',
-      monthlyCredits: 10,
-      analysisCredits: 2,
-      improvementCredits: 3,
+      name: 'Welcome Bonus',
+      description: 'Experience the complete Aplycat journey',
+      monthlyCredits: 7,
+      analysisCredits: 1,
+      improvementCredits: 2,
       price: 0,
       currency: 'USD',
       features: [
-        '1× Resume Analysis (2 credits)',
-        '1× Resume Improvement (3 credits)',
-        '1× Job Tailoring (4 credits)',
-        '1 credit for updates',
-        'See your resume go from terrible to hired-worthy'
+        '1× Resume Analysis (1 credit)',
+        '1× Resume Improvement (2 credits)',
+        '1× Job-Tailored Resume + Cover Letter (3 credits)',
+        '1 bonus credit for flexibility',
+        'Complete transformation included'
       ],
       isActive: true,
       isPopular: false
@@ -34,18 +34,16 @@ async function main() {
     update: {},
     create: {
       name: 'Starter Pack',
-      description: 'Perfect for polishing one resume',
-      monthlyCredits: 25,
-      analysisCredits: 2,
-      improvementCredits: 3,
-      price: 9,
+      description: 'Perfect for getting started',
+      monthlyCredits: 3,
+      analysisCredits: 1,
+      improvementCredits: 2,
+      price: 4.99,
       currency: 'USD',
       features: [
-        '2-3 complete resume analyses',
-        '2-3 resume improvements',
-        '5-10 custom updates',
-        'Basic optimization',
-        'Great for testing improvements'
+        '1 Resume Analysis',
+        '1 Resume Improvement',
+        '1 Resume Template selection'
       ],
       isActive: true,
       isPopular: false
@@ -58,18 +56,16 @@ async function main() {
     create: {
       name: 'Professional Pack',
       description: 'Everything you need for your job search',
-      monthlyCredits: 70, // 60 + 10 bonus
-      analysisCredits: 2,
-      improvementCredits: 3,
-      price: 19,
+      monthlyCredits: 15,
+      analysisCredits: 1,
+      improvementCredits: 2,
+      price: 12.49,
       currency: 'USD',
       features: [
-        '5-8 resume analyses',
-        '5-8 resume improvements',
-        '3-5 job-specific tailorings',
-        '10-15 custom updates',
-        'Cover letter generation',
-        'Bonus: +10 extra credits (16% more value)'
+        '6 Resume Analyses',
+        '5 Resume Improvements',
+        '4 Job-Tailored Resume + Cover Letter combos',
+        'Priority Support'
       ],
       isActive: true,
       isPopular: true
@@ -81,20 +77,18 @@ async function main() {
     update: {},
     create: {
       name: 'Power User Pack',
-      description: 'For serious career advancement',
-      monthlyCredits: 165, // 140 + 25 bonus
-      analysisCredits: 2,
-      improvementCredits: 3,
-      price: 39,
+      description: 'Best value for power users',
+      monthlyCredits: 40,
+      analysisCredits: 1,
+      improvementCredits: 2,
+      price: 24.99,
       currency: 'USD',
       features: [
-        '10+ resume analyses',
-        '10+ resume improvements',
-        '10+ job-specific tailorings',
-        '30+ custom updates',
-        'Unlimited cover letters',
-        'Priority support',
-        'Bonus: +25 extra credits (22% more value)'
+        '15 Resume Analyses',
+        '13 Resume Improvements',
+        '12 Job-Tailored Resume + Cover Letter combos',
+        'Premium Support',
+        'Career change optimization'
       ],
       isActive: true,
       isPopular: false
@@ -102,7 +96,7 @@ async function main() {
   })
 
   console.log('✅ Created pricing plans:', { 
-    freeTrialPlan: freeTrialPlan.name, 
+    welcomeBonusPlan: welcomeBonusPlan.name, 
     starterPack: starterPack.name,
     proPlan: proPlan.name, 
     powerUserPlan: powerUserPlan.name 
@@ -124,26 +118,26 @@ async function main() {
     },
     {
       key: 'free_signup_credits',
-      value: '10',
+      value: '7',
       description: 'Number of free credits new users receive on signup',
       category: 'credits'
     },
     {
       key: 'analysis_cost',
-      value: '2',
+      value: '1',
       description: 'Number of credits required for resume analysis',
       category: 'credits'
     },
     {
       key: 'improvement_cost',
-      value: '3',
+      value: '2',
       description: 'Number of credits required for resume improvement',
       category: 'credits'
     },
     {
       key: 'job_tailoring_cost',
-      value: '4',
-      description: 'Number of credits required for job-specific tailoring',
+      value: '3',
+      description: 'Number of credits required for job-specific tailoring with cover letter',
       category: 'credits'
     },
     {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ImprovementModal } from "@/components/improvement-modal";
+import { EnhancedLoading } from "@/components/enhanced-loading";
 import { Button } from "@/components/ui/button";
 import type { ImprovementResponse } from "@/types/improved-resume";
 
@@ -13,6 +14,12 @@ export default function ImprovePage() {
   const [error, setError] = useState<string | null>(null);
   const [showImprovementModal, setShowImprovementModal] = useState(true);
   const [existingVersions, setExistingVersions] = useState<number[]>([]);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [improvementData, setImprovementData] = useState<{
+    targetRole: string;
+    targetIndustry: string;
+    fileName: string;
+  } | null>(null);
 
   useEffect(() => {
     // Check for new resumeId approach
@@ -71,7 +78,16 @@ export default function ImprovePage() {
     }
 
     setIsImproving(true);
+    setIsSubmitted(true);
+    setShowImprovementModal(false);
     setError(null);
+
+    // Store improvement data for the loading screen
+    setImprovementData({
+      targetRole,
+      targetIndustry,
+      fileName: decodeURIComponent(fileName || ""),
+    });
 
     try {
       let requestBody;
@@ -124,40 +140,90 @@ export default function ImprovePage() {
         versionName: result.versionName,
       });
 
-      // Always use the immediate redirect approach for better UX
-      // The API now returns a preview URL or the improved resume data immediately
+      // Direct redirect to the final improved resume page
       if (result.improvedResumeId) {
-        // Background save completed - redirect to full editor
+        // Database save completed - redirect directly to the improved resume page
         router.push(`/improved-resume/${result.improvedResumeId}`);
-      } else {
-        // Immediate response - show preview with smart redirect
-        // Store data in sessionStorage to avoid URL length issues
-        const previewData = {
-          improvedResume: result.improvedResume,
-          targetRole: result.targetRole,
-          targetIndustry: result.targetIndustry,
-          fileName: result.fileName,
-          resumeId: resumeId || "",
-          version: result.version || 1,
-          versionName: result.versionName || "",
-          immediate: true,
-        };
-
-        // Use sessionStorage instead of URL params to avoid length issues
-        sessionStorage.setItem(
-          "aplycat_preview_data",
-          JSON.stringify(previewData)
+      } else if (result.improvedResume) {
+        // If we have the improved resume data but no ID yet, we'll need to wait
+        // for the background save to complete or implement a different strategy
+        console.log(
+          "[IMPROVE_PAGE] No improvedResumeId yet, checking for database save..."
         );
 
-        // Navigate to preview with minimal URL
-        router.push("/preview");
+        // Poll for the saved resume in database
+        await waitForDatabaseSave(resumeId!, result.version || 1);
+      } else {
+        throw new Error("No improved resume data received");
       }
     } catch (err: any) {
       console.error("[IMPROVE_PAGE] Improvement failed:", err);
       setError(err.message || "An error occurred while improving your resume");
+      setIsSubmitted(false);
+      setShowImprovementModal(true);
+      setImprovementData(null);
     } finally {
       setIsImproving(false);
     }
+  };
+
+  const waitForDatabaseSave = async (resumeId: string, version: number) => {
+    let attempts = 0;
+    const maxAttempts = 30; // Wait up to 60 seconds (30 * 2 seconds)
+
+    const checkDatabase = async (): Promise<string | null> => {
+      try {
+        const response = await fetch(
+          `/api/improved-resumes?resumeId=${resumeId}&version=${version}`
+        );
+
+        if (response.ok) {
+          const result = await response.json();
+          const savedResume = result.improvedResumes?.find(
+            (ir: any) => ir.resumeId === resumeId && ir.version === version
+          );
+
+          if (savedResume) {
+            return savedResume.id;
+          }
+        }
+      } catch (error) {
+        console.error("[IMPROVE_PAGE] Error checking database:", error);
+      }
+      return null;
+    };
+
+    return new Promise<void>((resolve, reject) => {
+      const interval = setInterval(async () => {
+        attempts++;
+
+        const savedResumeId = await checkDatabase();
+
+        if (savedResumeId) {
+          clearInterval(interval);
+          console.log(
+            "[IMPROVE_PAGE] Found saved resume, redirecting:",
+            savedResumeId
+          );
+          router.push(`/improved-resume/${savedResumeId}`);
+          resolve();
+          return;
+        }
+
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          console.error("[IMPROVE_PAGE] Timeout waiting for database save");
+          setError(
+            "Resume improved but taking longer to save. Please check your dashboard in a moment."
+          );
+          setIsSubmitted(false);
+          setShowImprovementModal(true);
+          setImprovementData(null);
+          reject(new Error("Database save timeout"));
+          return;
+        }
+      }, 2000); // Check every 2 seconds
+    });
   };
 
   const handleGoBack = () => {
@@ -192,6 +258,19 @@ export default function ImprovePage() {
 
   const fileName = searchParams.get("fileName") || "";
 
+  // Show loading screen if submitted and improving
+  if (isSubmitted && isImproving && improvementData) {
+    return (
+      <EnhancedLoading
+        title="AI is Optimizing Your Resume"
+        type="improvement"
+        fileName={improvementData.fileName}
+        targetRole={improvementData.targetRole}
+        targetIndustry={improvementData.targetIndustry}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto py-12 px-4">
@@ -208,22 +287,33 @@ export default function ImprovePage() {
                 <Button onClick={handleGoBack} variant="outline">
                   ← Back to Analysis
                 </Button>
-                <Button onClick={() => setError(null)}>Try Again</Button>
+                <Button
+                  onClick={() => {
+                    setError(null);
+                    setIsSubmitted(false);
+                    setShowImprovementModal(true);
+                    setImprovementData(null);
+                  }}
+                >
+                  Try Again
+                </Button>
               </div>
             </div>
           </div>
         )}
 
         {/* Back Button */}
-        <div className="flex justify-center mb-6">
-          <Button onClick={handleGoBack} variant="outline">
-            ← Back to Analysis
-          </Button>
-        </div>
+        {!isImproving && !isSubmitted && (
+          <div className="flex justify-center mb-6">
+            <Button onClick={handleGoBack} variant="outline">
+              ← Back to Analysis
+            </Button>
+          </div>
+        )}
 
         {/* Improvement Modal */}
         <ImprovementModal
-          isOpen={showImprovementModal}
+          isOpen={showImprovementModal && !error && !isSubmitted}
           onClose={handleGoBack}
           onSubmit={handleImproveResume}
           isLoading={isImproving}

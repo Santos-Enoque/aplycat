@@ -13,6 +13,7 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { ConditionalFooter } from "@/components/conditional-footer";
 import { PostHogProvider } from "@/components/providers/PostHogProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -84,6 +85,7 @@ export default function RootLayout({
               </ResumeProvider>
             </QueryProvider>
           </PostHogProvider>
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

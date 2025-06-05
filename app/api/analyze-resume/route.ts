@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
             scoreCategory: analysis.score_category || 'Unknown',
             mainRoast: analysis.main_roast || 'Analysis completed',
             analysisData: analysis,
-            creditsUsed: 2, // Cost for analysis
+            creditsUsed: 1, // Cost for analysis
             isCompleted: true,
           },
         });
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
           data: {
             userId: dbUser.id,
             type: 'ANALYSIS_USE',
-            amount: -2, // Deduct 2 credits
+            amount: -1, // Deduct 1 credit
             description: `Resume analysis: ${actualFileName}`,
             relatedAnalysisId: savedAnalysisId,
           },
@@ -238,8 +238,8 @@ export async function POST(request: NextRequest) {
         await db.user.update({
           where: { id: dbUser.id },
           data: {
-            credits: { decrement: 2 },
-            totalCreditsUsed: { increment: 2 },
+            credits: { decrement: 1 },
+            totalCreditsUsed: { increment: 1 },
           },
         });
 

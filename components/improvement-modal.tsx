@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { EnhancedLoading } from "@/components/enhanced-loading";
 import {
   X,
@@ -14,6 +15,7 @@ import {
   Lightbulb,
   FileText,
   MessageSquare,
+  Code,
 } from "lucide-react";
 
 interface ImprovementModalProps {
@@ -43,12 +45,14 @@ export function ImprovementModal({
   const [customPrompt, setCustomPrompt] = useState("");
   const [versionName, setVersionName] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (targetRole.trim() && targetIndustry.trim()) {
+      setIsSubmitted(true);
       onSubmit(
         targetRole.trim(),
         targetIndustry.trim(),
@@ -58,17 +62,10 @@ export function ImprovementModal({
     }
   };
 
-  // Show enhanced loading if processing
-  if (isLoading) {
-    return (
-      <EnhancedLoading
-        title="AI is Optimizing Your Resume"
-        type="improvement"
-        fileName={fileName}
-        targetRole={targetRole}
-        targetIndustry={targetIndustry}
-      />
-    );
+  // Show enhanced loading if processing or submitted
+  if (isLoading || isSubmitted) {
+    // Return null - let the parent page handle the loading display
+    return null;
   }
 
   const popularRoles = [

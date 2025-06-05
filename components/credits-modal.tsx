@@ -21,64 +21,54 @@ interface CreditsModalProps {
 const creditPacks = [
   {
     id: "starter",
-    name: "Starter Pack",
-    credits: 10,
-    price: 9.99,
+    name: "🥉 Starter Pack",
+    credits: 3,
+    price: 4.99,
+    originalPrice: 9.99,
     popular: false,
     description: "Perfect for getting started",
-    features: ["10 Resume Analyses", "10 Resume Improvements", "Basic Support"],
-    pricePerCredit: 0.999,
+    features: [
+      "1 Resume Analysis",
+      "1 Resume Improvement",
+      "1 Resume Template selection",
+    ],
+    pricePerCredit: 1.66,
+    discount: "50% OFF",
   },
   {
     id: "professional",
-    name: "Professional Pack",
-    credits: 25,
-    price: 19.99,
+    name: "🥈 Professional Pack",
+    credits: 15,
+    price: 12.49,
+    originalPrice: 24.99,
     popular: true,
     description: "Most popular choice",
     features: [
-      "25 Resume Analyses",
-      "25 Resume Improvements",
+      "6 Resume Analyses",
+      "5 Resume Improvements",
+      "4 Job-Tailored Resume + Cover Letter combos",
       "Priority Support",
-      "Advanced AI Models",
     ],
-    pricePerCredit: 0.799,
-    savings: "20% savings",
+    pricePerCredit: 0.83,
+    discount: "50% OFF",
   },
   {
     id: "premium",
-    name: "Premium Pack",
-    credits: 50,
-    price: 34.99,
+    name: "🥇 Power User Pack",
+    credits: 40,
+    price: 24.99,
+    originalPrice: 49.99,
     popular: false,
-    description: "For power users",
+    description: "Best value for power users",
     features: [
-      "50 Resume Analyses",
-      "50 Resume Improvements",
-      "Priority Support",
-      "Advanced AI Models",
-      "Custom Templates",
-    ],
-    pricePerCredit: 0.699,
-    savings: "30% savings",
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise Pack",
-    credits: 100,
-    price: 59.99,
-    popular: false,
-    description: "Best value for teams",
-    features: [
-      "100 Resume Analyses",
-      "100 Resume Improvements",
+      "15 Resume Analyses",
+      "13 Resume Improvements",
+      "12 Job-Tailored Resume + Cover Letter combos",
       "Premium Support",
-      "All AI Models",
-      "Custom Templates",
-      "Team Dashboard",
+      "Career change optimization",
     ],
-    pricePerCredit: 0.599,
-    savings: "40% savings",
+    pricePerCredit: 0.62,
+    discount: "50% OFF",
   },
 ];
 
@@ -146,15 +136,23 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
                   {pack.name}
                 </CardTitle>
                 <div className="text-center">
+                  {pack.originalPrice && (
+                    <div className="text-lg text-gray-500 line-through">
+                      ${pack.originalPrice}
+                    </div>
+                  )}
                   <div className="text-3xl font-bold text-purple-600">
                     ${pack.price}
                   </div>
                   <div className="text-sm text-gray-500">
                     {pack.credits} credits
                   </div>
-                  {pack.savings && (
-                    <Badge variant="secondary" className="mt-1">
-                      {pack.savings}
+                  {pack.discount && (
+                    <Badge
+                      variant="secondary"
+                      className="mt-1 bg-red-100 text-red-800"
+                    >
+                      {pack.discount}
                     </Badge>
                   )}
                 </div>
@@ -214,7 +212,11 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
               • <strong>1 credit</strong> = 1 comprehensive resume analysis
             </li>
             <li>
-              • <strong>1 credit</strong> = 1 AI-powered resume improvement
+              • <strong>2 credits</strong> = 1 AI-powered resume improvement
+            </li>
+            <li>
+              • <strong>3 credits</strong> = 1 job-tailored resume + cover
+              letter
             </li>
             <li>• Credits never expire and can be used anytime</li>
             <li>• All features included regardless of pack size</li>

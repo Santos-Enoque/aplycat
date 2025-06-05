@@ -330,14 +330,14 @@ export function DashboardContent({ user }: DashboardContentProps) {
                     className="w-full justify-start"
                     variant="outline"
                     onClick={handleStartImprovement}
-                    disabled={user.credits < 3}
+                    disabled={user.credits < 2}
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
                     <div className="flex-1 text-left">
                       <div>Improve Existing Resume</div>
-                      <div className="text-xs text-gray-500">3 credits</div>
+                      <div className="text-xs text-gray-500">2 credits</div>
                     </div>
-                    {user.credits < 3 && (
+                    {user.credits < 2 && (
                       <span className="text-xs text-red-500">Need credits</span>
                     )}
                   </Button>
@@ -345,14 +345,14 @@ export function DashboardContent({ user }: DashboardContentProps) {
                     className="w-full justify-start"
                     variant="outline"
                     onClick={handleStartTailoring}
-                    disabled={user.credits < 4}
+                    disabled={user.credits < 3}
                   >
                     <Target className="h-4 w-4 mr-2" />
                     <div className="flex-1 text-left">
                       <div>Tailor for Specific Job</div>
-                      <div className="text-xs text-gray-500">4 credits</div>
+                      <div className="text-xs text-gray-500">3 credits</div>
                     </div>
-                    {user.credits < 4 && (
+                    {user.credits < 3 && (
                       <span className="text-xs text-red-500">Need credits</span>
                     )}
                   </Button>
@@ -676,14 +676,14 @@ export function DashboardContent({ user }: DashboardContentProps) {
                     <Button
                       onClick={handleStartAnalysis}
                       className="bg-purple-600 hover:bg-purple-700"
-                      disabled={user.credits < 2}
+                      disabled={user.credits < 1}
                     >
                       <Brain className="h-4 w-4 mr-2" />
                       Analyze Your First Resume
                     </Button>
-                    {user.credits < 2 && (
+                    {user.credits < 1 && (
                       <p className="text-red-600 text-xs mt-2">
-                        Need 2 credits to analyze
+                        Need 1 credit to analyze
                       </p>
                     )}
                   </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUser, SignInButton, UserButton, useClerk } from "@clerk/nextjs";
 import { CreditsModal } from "@/components/credits-modal";
+import { getUserCredits } from "@/lib/actions/dashboard-actions";
 import {
   Cat,
   Home,
@@ -33,10 +34,34 @@ import {
 export function UnifiedNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false);
+  const [userCredits, setUserCredits] = useState<number>(0);
+  const [creditsLoading, setCreditsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const { user, isSignedIn, isLoaded } = useUser();
   const { signOut } = useClerk();
+
+  // Fetch user credits when signed in
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (isSignedIn) {
+        try {
+          setCreditsLoading(true);
+          const credits = await getUserCredits();
+          setUserCredits(credits);
+        } catch (error) {
+          console.error("Failed to fetch credits:", error);
+          setUserCredits(0);
+        } finally {
+          setCreditsLoading(false);
+        }
+      } else {
+        setCreditsLoading(false);
+      }
+    };
+
+    fetchCredits();
+  }, [isSignedIn]);
 
   // Navigation items for authenticated users
   const navigation = [
@@ -108,18 +133,25 @@ export function UnifiedNavbar() {
             {isSignedIn ? (
               // Authenticated user UI
               <>
-                {/* Credits Badge */}
-                <Badge className="bg-purple-100 text-purple-800 px-3 py-1 hidden sm:flex">
-                  <CreditCard className="h-3 w-3 mr-1" />
-                  Credits
-                </Badge>
+                {/* Credits Display */}
+                <div className="hidden sm:flex items-center gap-2">
+                  {creditsLoading ? (
+                    <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    <Badge className="bg-purple-100 text-purple-800 px-3 py-1 font-medium">
+                      <CreditCard className="h-3 w-3 mr-1" />
+                      {userCredits} Credits
+                    </Badge>
+                  )}
+                </div>
 
                 {/* Buy Credits Button */}
                 <Button
                   size="sm"
                   onClick={() => setIsCreditsModalOpen(true)}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white hidden sm:flex"
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white hidden sm:flex"
                 >
+                  <Zap className="h-4 w-4 mr-2" />
                   Buy Credits
                 </Button>
 
@@ -132,6 +164,14 @@ export function UnifiedNavbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
+                      <div className="px-3 py-2 border-b">
+                        <div className="text-sm text-gray-500">Credits</div>
+                        <div className="font-medium text-purple-600">
+                          {creditsLoading
+                            ? "Loading..."
+                            : `${userCredits} Credits`}
+                        </div>
+                      </div>
                       {navigation.map((item) => (
                         <DropdownMenuItem
                           key={item.name}
@@ -147,79 +187,24 @@ export function UnifiedNavbar() {
                         onClick={() => setIsCreditsModalOpen(true)}
                         className="flex items-center gap-2"
                       >
-                        <CreditCard className="h-4 w-4" />
+                        <Zap className="h-4 w-4" />
                         Buy Credits
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Settings
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2">
-                        <HelpCircle className="h-4 w-4" />
-                        Help
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
 
-                {/* User Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-semibold text-purple-600">
-                          {user?.firstName?.charAt(0) ||
-                            user?.emailAddresses[0]?.emailAddress.charAt(0) ||
-                            "U"}
-                        </span>
-                      </div>
-                      <span className="hidden sm:block">
-                        {user?.firstName || "User"}
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard/profile")}
-                      className="flex items-center gap-2"
-                    >
-                      <User className="h-4 w-4" />
-                      Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard/settings")}
-                      className="flex items-center gap-2"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard/help")}
-                      className="flex items-center gap-2"
-                    >
-                      <HelpCircle className="h-4 w-4" />
-                      Help & Support
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => signOut(() => router.push("/"))}
-                      className="flex items-center gap-2 text-red-600"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Clerk UserButton for actual auth */}
-                <div className="hidden">
-                  <UserButton afterSignOutUrl="/" />
-                </div>
+                {/* Clerk UserButton */}
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                      userButtonPopoverCard: "shadow-lg border",
+                      userButtonPopoverActionButton: "hover:bg-gray-100",
+                    },
+                  }}
+                />
               </>
             ) : (
               // Non-authenticated user UI

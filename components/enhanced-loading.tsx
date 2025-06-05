@@ -1,24 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Brain, Zap, Target, CheckCircle, Star } from "lucide-react";
-
-interface ProgressStep {
-  id: string;
-  title: string;
-  description: string;
-  status: "pending" | "in-progress" | "completed" | "error";
-  timestamp?: Date;
-}
+import { FileText, Clock } from "lucide-react";
 
 interface EnhancedLoadingProps {
   title: string;
-  type: "analysis" | "improvement";
+  type: "analysis" | "improvement" | "tailoring" | "general";
   fileName?: string;
   targetRole?: string;
   targetIndustry?: string;
-  realTimeSteps?: ProgressStep[];
-  apiLogs?: string[];
 }
 
 export function EnhancedLoading({
@@ -27,351 +17,222 @@ export function EnhancedLoading({
   fileName,
   targetRole,
   targetIndustry,
-  realTimeSteps = [],
-  apiLogs = [],
 }: EnhancedLoadingProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [currentMessage, setCurrentMessage] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [currentJoke, setCurrentJoke] = useState(0);
 
-  const analysisSteps = [
-    {
-      icon: "📄",
-      title: "Reading Your Resume",
-      description: "Parsing every section with precision",
-      duration: 8000,
-    },
-    {
-      icon: "🧠",
-      title: "AI Analysis in Progress",
-      description: "Examining content quality and structure",
-      duration: 15000,
-    },
-    {
-      icon: "🔍",
-      title: "Identifying Issues",
-      description: "Finding areas for improvement",
-      duration: 12000,
-    },
-    {
-      icon: "📊",
-      title: "Calculating Scores",
-      description: "Evaluating ATS compatibility",
-      duration: 8000,
-    },
-    {
-      icon: "✨",
-      title: "Generating Roasts",
-      description: "Preparing brutally honest feedback",
-      duration: 10000,
-    },
-  ];
-
-  const improvementSteps = [
-    {
-      icon: "🎯",
-      title: "Understanding Requirements",
-      description: `Analyzing ${targetRole} role requirements`,
-      duration: 8000,
-    },
-    {
-      icon: "🏭",
-      title: "Industry Research",
-      description: `Researching ${targetIndustry} industry standards`,
-      duration: 10000,
-    },
-    {
-      icon: "🔄",
-      title: "Content Optimization",
-      description: "Rewriting sections for maximum impact",
-      duration: 15000,
-    },
-    {
-      icon: "🤖",
-      title: "ATS Optimization",
-      description: "Ensuring robot-friendly formatting",
-      duration: 10000,
-    },
-    {
-      icon: "🎨",
-      title: "Final Polish",
-      description: "Adding finishing touches",
-      duration: 8000,
-    },
-  ];
-
-  const floatingEmojis = [
-    "🐱",
-    "💼",
-    "📄",
-    "✨",
-    "🚀",
-    "💪",
-    "🎯",
-    "🔥",
-    "💡",
-    "⭐",
-    "🏆",
-    "📈",
-    "💯",
-    "🎉",
-    "⚡",
-    "🌟",
+  const cvJokes = [
+    "While we wait... there's a guy that says Microsoft was his top skill... damn 💀",
+    "Fun fact: Someone once listed 'breathing' as a skill... technically not wrong 🫁",
+    "Meanwhile... a recruiter just read 'I'm a people person' for the 1000th time today 😴",
+    "Plot twist: Someone put their horoscope sign under 'Technical Skills' ♈",
+    "Breaking news: Another resume claims 15 years of React experience... React is 11 years old 📅",
+    "Somewhere out there: A CV lists 'Google' as a programming language 🔍",
+    "Reality check: 'I work well under pressure' = 'I procrastinate everything' ⏰",
+    "True story: Someone wrote 'I have excellent attention to detial' 🤦‍♂️",
+    "Meanwhile... another cover letter starts with 'To Whom It May Concern' in 2024 📧",
+    "Fun observation: 'Team player' appears on 99% of resumes but team sports on 2% 🏆",
+    "Quick fact: If everyone was 'results-driven', we'd have solved world hunger by now 🌍",
+    "Gentle reminder: Your font choice says more about you than your achievements 🔤",
+    "Hot take: 'I'm a fast learner' usually means 'I don't know this yet' 🎓",
+    "Reality: Someone just listed 'Adobe' without specifying which of the 50+ products 🎨",
+    "Confession: A recruiter once got a resume written entirely in Comic Sans... they hired them 😂",
+    "Truth bomb: 'Proficient in Office' used to be impressive... in 1995 💼",
+    "Plot twist: The best CV ever had a typo in the header 📝",
+    "Fun fact: 'I'm passionate about...' followed by the most boring job description ever 🔥",
+    "Reality check: Someone's greatest achievement was 'improved efficiency by 300%'... of what? 📊",
+    "Breaking: Another person claims to be 'fluent' in a language they learned on Duolingo 🦉",
   ];
 
   const encouragingMessages = [
-    "Hang tight! Our AI cat is working its magic 🐱✨",
-    "Good things take time... and your resume is worth it! 💼",
-    "Almost there! Quality analysis takes patience 🎯",
-    "The AI is being extra thorough just for you 🔍",
+    "Our AI is reading every single word... carefully 🤖",
+    "Quality analysis takes time, but it's worth it! 💎",
+    "The AI is putting on its best reading glasses 👓",
+    "We're being extra thorough just for you ✨",
+    "Good things come to those who wait... and yours is coming! 🚀",
+    "Almost there! Excellence can't be rushed 🎯",
+    "The AI is having deep thoughts about your career 🧠",
     "Brewing the perfect feedback... ☕",
-    "Your future employer will thank you for this wait! 🙏",
-    "Excellence is in progress... 🌟",
-    "The AI is putting on its reading glasses 👓",
-    "Crafting insights that actually matter 💡",
-    "This level of analysis usually costs $200+ 💰",
   ];
 
-  const steps = type === "analysis" ? analysisSteps : improvementSteps;
+  const [currentEncouragement, setCurrentEncouragement] = useState(0);
 
   useEffect(() => {
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) return 100;
-        // Smooth progress with occasional pauses to feel more realistic
-        const increment = Math.random() > 0.3 ? Math.random() * 2 + 0.5 : 0;
-        return Math.min(prev + increment, 100);
-      });
-    }, 500);
+    // Seconds counter
+    const secondsTimer = setInterval(() => {
+      setSeconds((prev) => prev + 1);
+    }, 1000);
 
-    return () => clearInterval(progressInterval);
+    return () => clearInterval(secondsTimer);
   }, []);
 
   useEffect(() => {
-    let messageTimer: NodeJS.Timeout;
+    // Rotate jokes every 4 seconds
+    const jokesTimer = setInterval(() => {
+      setCurrentJoke((prev) => (prev + 1) % cvJokes.length);
+    }, 4000);
 
-    // Update message rotation
-    const updateMessage = () => {
-      setCurrentMessage((prev) => (prev + 1) % encouragingMessages.length);
-      messageTimer = setTimeout(updateMessage, 4000 + Math.random() * 2000);
-    };
+    return () => clearInterval(jokesTimer);
+  }, [cvJokes.length]);
 
-    messageTimer = setTimeout(updateMessage, 4000);
+  useEffect(() => {
+    // Rotate encouragement every 6 seconds
+    const encouragementTimer = setInterval(() => {
+      setCurrentEncouragement(
+        (prev) => (prev + 1) % encouragingMessages.length
+      );
+    }, 6000);
 
-    return () => {
-      clearTimeout(messageTimer);
-    };
+    return () => clearInterval(encouragementTimer);
   }, [encouragingMessages.length]);
 
-  // Update progress based on real-time steps
-  useEffect(() => {
-    if (realTimeSteps.length > 0) {
-      const completedSteps = realTimeSteps.filter(
-        (step) => step.status === "completed"
-      ).length;
-      const inProgressSteps = realTimeSteps.filter(
-        (step) => step.status === "in-progress"
-      ).length;
-      const totalSteps = realTimeSteps.length;
-
-      if (totalSteps > 0) {
-        const progressPercentage =
-          ((completedSteps + inProgressSteps * 0.5) / totalSteps) * 100;
-        setProgress(Math.min(progressPercentage, 95)); // Cap at 95% until fully complete
-
-        // Set current step to the first in-progress or pending step
-        const activeStepIndex = realTimeSteps.findIndex(
-          (step) => step.status === "in-progress" || step.status === "pending"
-        );
-        if (activeStepIndex !== -1) {
-          setCurrentStep(activeStepIndex);
-        }
-      }
+  const getTypeIcon = () => {
+    switch (type) {
+      case "analysis":
+        return "🔍";
+      case "improvement":
+        return "✨";
+      case "tailoring":
+        return "🎯";
+      default:
+        return "⚡";
     }
-  }, [realTimeSteps]);
+  };
+
+  const getTypeDescription = () => {
+    switch (type) {
+      case "analysis":
+        return "Analyzing your resume with AI precision";
+      case "improvement":
+        return `Optimizing for ${targetRole || "your target role"}`;
+      case "tailoring":
+        return "Tailoring your resume for this specific job";
+      default:
+        return "Processing your request";
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      {/* Floating Emojis */}
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-50 to-white backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      {/* Floating elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {floatingEmojis.map((emoji, index) => (
+        {[...Array(8)].map((_, index) => (
           <div
             key={index}
-            className="absolute text-2xl opacity-20 animate-float"
+            className="absolute text-4xl opacity-10 animate-float text-blue-300"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`,
+              animationDuration: `${4 + Math.random() * 3}s`,
             }}
           >
-            {emoji}
+            {index % 2 === 0 ? "📄" : "💼"}
           </div>
         ))}
       </div>
 
       {/* Main Loading Card */}
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 relative overflow-hidden">
-        {/* Progress Bar Background */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200">
-          <div
-            className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
+      <div className="bg-white rounded-xl shadow-xl border border-blue-100 p-8 max-w-lg w-full mx-4 relative">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4 animate-bounce">
-            {steps[currentStep]?.icon}
-          </div>
+          <div className="text-6xl mb-4 animate-pulse">{getTypeIcon()}</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
+          <p className="text-sm text-blue-600 font-medium">
+            {getTypeDescription()}
+          </p>
           {fileName && (
-            <p className="text-sm text-gray-600">Processing: {fileName}</p>
+            <p className="text-xs text-gray-500 mt-2">File: {fileName}</p>
           )}
         </div>
 
-        {/* Real-time Steps or Default Steps */}
-        <div className="mb-8">
-          {realTimeSteps.length > 0 ? (
-            <>
-              {/* Real-time Progress */}
-              <div className="space-y-3 mb-6">
-                {realTimeSteps.map((step, index) => (
-                  <div key={step.id} className="flex items-center gap-3">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        step.status === "completed"
-                          ? "bg-green-100"
-                          : step.status === "in-progress"
-                          ? "bg-purple-100"
-                          : step.status === "error"
-                          ? "bg-red-100"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      {step.status === "completed" ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : step.status === "in-progress" ? (
-                        <div className="w-4 h-4 bg-purple-600 rounded-full animate-pulse" />
-                      ) : step.status === "error" ? (
-                        <span className="text-red-600">✕</span>
-                      ) : (
-                        <div className="w-4 h-4 bg-gray-400 rounded-full" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h3
-                        className={`font-semibold ${
-                          step.status === "completed"
-                            ? "text-green-900"
-                            : step.status === "in-progress"
-                            ? "text-purple-900"
-                            : step.status === "error"
-                            ? "text-red-900"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        {step.title}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {step.description}
-                      </p>
-                      {step.timestamp && (
-                        <p className="text-xs text-gray-500">
-                          {step.timestamp.toLocaleTimeString()}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Default Step Display */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <div className="w-4 h-4 bg-purple-600 rounded-full animate-pulse" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">
-                    {steps[currentStep]?.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {steps[currentStep]?.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Progress Steps */}
-              <div className="flex items-center gap-2 mb-6">
-                {steps.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`flex-1 h-2 rounded-full transition-all duration-500 ${
-                      index <= currentStep
-                        ? "bg-gradient-to-r from-purple-500 to-blue-500"
-                        : "bg-gray-200"
-                    }`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+        {/* Time Counter */}
+        <div className="flex items-center justify-center gap-2 mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+          <Clock className="h-5 w-5 text-blue-600" />
+          <span className="text-lg font-bold text-blue-800">
+            {Math.floor(seconds / 60)}:
+            {(seconds % 60).toString().padStart(2, "0")}
+          </span>
+          <span className="text-sm text-blue-600">elapsed</span>
         </div>
 
-        {/* API Logs Section */}
-        {apiLogs.length > 0 && (
-          <div className="mb-6">
-            <div className="bg-gray-900 rounded-lg p-4 max-h-32 overflow-y-auto">
-              <div className="space-y-1">
-                {apiLogs.slice(-5).map((log, index) => (
-                  <div key={index} className="text-xs font-mono text-green-400">
-                    {log}
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Spinner */}
+        <div className="flex justify-center mb-6">
+          <div className="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        </div>
+
+        {/* CV Jokes */}
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4 mb-6 border-l-4 border-blue-400">
+          <p className="text-sm text-gray-700 font-medium leading-relaxed animate-fade-in">
+            {cvJokes[currentJoke]}
+          </p>
+        </div>
+
+        {/* Encouragement */}
+        <div className="text-center mb-6">
+          <p className="text-sm text-blue-600 font-medium">
+            {encouragingMessages[currentEncouragement]}
+          </p>
+        </div>
+
+        {/* Status */}
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium">
+            <FileText className="h-4 w-4" />
+            Processing...
+          </div>
+        </div>
+
+        {/* Time Warning */}
+        {seconds > 30 && (
+          <div className="mt-4 text-center">
+            <p className="text-xs text-amber-600 font-medium">
+              ⏱️ This might take a while... our AI is being extra thorough!
+            </p>
           </div>
         )}
 
-        {/* Encouraging Message */}
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-center text-gray-700 font-medium animate-fade-in">
-            {encouragingMessages[currentMessage]}
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-purple-600">
-              {Math.round(progress)}%
-            </div>
-            <div className="text-xs text-gray-600">Complete</div>
+        {/* Really long wait */}
+        {seconds > 90 && (
+          <div className="mt-2 text-center">
+            <p className="text-xs text-orange-600 font-medium">
+              🍿 Grab some popcorn... we're doing deep analysis here!
+            </p>
           </div>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-blue-600">
-              {currentStep + 1}/{steps.length}
-            </div>
-            <div className="text-xs text-gray-600">Steps</div>
-          </div>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-green-600">
-              {Math.max(15, 60 - Math.round(progress * 0.6))}s
-            </div>
-            <div className="text-xs text-gray-600">Est. Time</div>
-          </div>
-        </div>
-
-        {/* Bottom Message */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            ✨ Pro tip: Quality analysis takes time, but it's worth the wait!
-          </p>
-        </div>
+        )}
       </div>
+
+      {/* CSS for animations */}
+      <style jsx>{`
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(180deg);
+          }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        @keyframes fade-in {
+          0% {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+        .border-3 {
+          border-width: 3px;
+        }
+      `}</style>
     </div>
   );
 }

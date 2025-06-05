@@ -1,22 +1,21 @@
 // components/resume-customization.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   MessageSquare,
   FileText,
   Send,
-  Loader2,
   Sparkles,
   Target,
   Building,
   ToggleLeft,
   ToggleRight,
   RefreshCw,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface ResumeCustomizationProps {
   currentResume: any;
@@ -26,31 +25,31 @@ interface ResumeCustomizationProps {
   onTailoredResume: (tailoredData: any) => void;
 }
 
-export function ResumeCustomization({ 
-  currentResume, 
-  targetRole, 
-  targetIndustry, 
+export function ResumeCustomization({
+  currentResume,
+  targetRole,
+  targetIndustry,
   onResumeUpdate,
-  onTailoredResume 
+  onTailoredResume,
 }: ResumeCustomizationProps) {
-  const [userFeedback, setUserFeedback] = useState('');
-  const [jobDescription, setJobDescription] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
+  const [userFeedback, setUserFeedback] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [includeCoverLetter, setIncludeCoverLetter] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isTailoring, setIsTailoring] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feedback' | 'tailor'>('feedback');
+  const [activeTab, setActiveTab] = useState<"feedback" | "tailor">("feedback");
 
   const handleUpdateResume = async () => {
     if (!userFeedback.trim()) return;
 
     setIsUpdating(true);
     try {
-      const response = await fetch('/api/update-resume', {
-        method: 'POST',
+      const response = await fetch("/api/update-resume", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           currentResume,
@@ -63,14 +62,14 @@ export function ResumeCustomization({
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to update resume');
+        throw new Error(result.error || "Failed to update resume");
       }
 
       onResumeUpdate(result.updatedResume);
-      setUserFeedback('');
+      setUserFeedback("");
     } catch (error: any) {
-      console.error('Error updating resume:', error);
-      alert('Failed to update resume. Please try again.');
+      console.error("Error updating resume:", error);
+      alert("Failed to update resume. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -81,10 +80,10 @@ export function ResumeCustomization({
 
     setIsTailoring(true);
     try {
-      const response = await fetch('/api/tailor-resume', {
-        method: 'POST',
+      const response = await fetch("/api/tailor-resume", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           currentResume,
@@ -98,13 +97,13 @@ export function ResumeCustomization({
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to tailor resume');
+        throw new Error(result.error || "Failed to tailor resume");
       }
 
       onTailoredResume(result);
     } catch (error: any) {
-      console.error('Error tailoring resume:', error);
-      alert('Failed to tailor resume. Please try again.');
+      console.error("Error tailoring resume:", error);
+      alert("Failed to tailor resume. Please try again.");
     } finally {
       setIsTailoring(false);
     }
@@ -115,22 +114,22 @@ export function ResumeCustomization({
       {/* Tab Navigation */}
       <div className="flex bg-gray-100 rounded-lg p-1">
         <button
-          onClick={() => setActiveTab('feedback')}
+          onClick={() => setActiveTab("feedback")}
           className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md transition-all ${
-            activeTab === 'feedback'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+            activeTab === "feedback"
+              ? "bg-white text-blue-600 shadow-sm"
+              : "text-gray-600 hover:text-gray-900"
           }`}
         >
           <MessageSquare className="h-4 w-4" />
           Update with Feedback
         </button>
         <button
-          onClick={() => setActiveTab('tailor')}
+          onClick={() => setActiveTab("tailor")}
           className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md transition-all ${
-            activeTab === 'tailor'
-              ? 'bg-white text-purple-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+            activeTab === "tailor"
+              ? "bg-white text-purple-600 shadow-sm"
+              : "text-gray-600 hover:text-gray-900"
           }`}
         >
           <Target className="h-4 w-4" />
@@ -139,7 +138,7 @@ export function ResumeCustomization({
       </div>
 
       {/* Feedback Tab */}
-      {activeTab === 'feedback' && (
+      {activeTab === "feedback" && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700">
@@ -188,7 +187,7 @@ export function ResumeCustomization({
             >
               {isUpdating ? (
                 <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <div className="h-4 w-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                   <span>Updating Resume...</span>
                 </div>
               ) : (
@@ -203,7 +202,7 @@ export function ResumeCustomization({
       )}
 
       {/* Tailor Tab */}
-      {activeTab === 'tailor' && (
+      {activeTab === "tailor" && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-purple-700">
@@ -267,8 +266,12 @@ export function ResumeCustomization({
               <div className="flex items-center gap-3">
                 <FileText className="h-5 w-5 text-gray-600" />
                 <div>
-                  <h4 className="font-medium text-gray-900">Include Cover Letter</h4>
-                  <p className="text-sm text-gray-600">Generate a tailored cover letter with your resume</p>
+                  <h4 className="font-medium text-gray-900">
+                    Include Cover Letter
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Generate a tailored cover letter with your resume
+                  </p>
                 </div>
               </div>
               <button
@@ -291,13 +294,15 @@ export function ResumeCustomization({
             >
               {isTailoring ? (
                 <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <div className="h-4 w-4 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
                   <span>Tailoring Resume...</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" />
-                  <span>Tailor Resume{includeCoverLetter ? ' + Cover Letter' : ''}</span>
+                  <span>
+                    Tailor Resume{includeCoverLetter ? " + Cover Letter" : ""}
+                  </span>
                 </div>
               )}
             </Button>

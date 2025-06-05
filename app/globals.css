@@ -66,6 +66,11 @@
   }
 }
 
+/* Custom border utility */
+.border-3 {
+  border-width: 3px;
+}
+
 /* Custom animations for enhanced loading */
 @keyframes float {
   0%, 100% { 

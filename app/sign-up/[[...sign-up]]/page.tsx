@@ -1,5 +1,5 @@
 // app/sign-up/[[...sign-up]]/page.tsx
-import { SignUp } from '@clerk/nextjs';
+import { SignUp } from "@clerk/nextjs";
 
 export default function SignUpPage() {
   return (
@@ -18,10 +18,10 @@ export default function SignUpPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <SignUp 
+          <SignUp
             appearance={{
               elements: {
-                formButtonPrimary: 
+                formButtonPrimary:
                   "bg-purple-600 hover:bg-purple-700 text-sm normal-case",
                 card: "shadow-none",
                 headerTitle: "hidden",
@@ -35,22 +35,25 @@ export default function SignUpPage() {
 
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-600">
-          Already have an account?{' '}
-          <a href="/sign-in" className="font-medium text-purple-600 hover:text-purple-500">
+          Already have an account?{" "}
+          <a
+            href="/sign-in"
+            className="font-medium text-purple-600 hover:text-purple-500"
+          >
             Sign in here
           </a>
         </p>
-        
+
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-sm font-semibold text-blue-900 mb-2">
-            🎁 What you get for free:
+            🎁 Welcome Bonus - Experience the Full Journey:
           </h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• 10 free credits (worth $20+)</li>
-            <li>• Complete resume analysis</li>
-            <li>• AI-powered improvements</li>
-            <li>• ATS optimization</li>
-            <li>• Industry-specific feedback</li>
+            <li>• 7 free credits to get started</li>
+            <li>• 1× Resume Analysis (1 credit)</li>
+            <li>• 1× Resume Improvement (2 credits)</li>
+            <li>• 1× Job-Tailored Resume + Cover Letter (3 credits)</li>
+            <li>• 1 bonus credit for flexibility</li>
           </ul>
         </div>
       </div>
