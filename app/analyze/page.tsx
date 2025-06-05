@@ -12,18 +12,20 @@ export default function OptimizedAnalyzePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
   const [backgroundStatus, setBackgroundStatus] = useState<{
-    upload: 'pending' | 'completed' | 'failed';
-    metadata: 'pending' | 'completed' | 'failed';
-  }>({ upload: 'pending', metadata: 'pending' });
+    upload: "pending" | "completed" | "failed";
+    metadata: "pending" | "completed" | "failed";
+  }>({ upload: "pending", metadata: "pending" });
 
   useEffect(() => {
-    const immediate = searchParams.get('immediate');
-    const fileName = searchParams.get('fileName');
+    const immediate = searchParams.get("immediate");
+    const fileName = searchParams.get("fileName");
 
-    if (immediate === 'true') {
+    if (immediate === "true") {
       // This is an immediate analysis request
       handleImmediateAnalysis(fileName);
     } else {
@@ -34,14 +36,14 @@ export default function OptimizedAnalyzePage() {
 
   const handleImmediateAnalysis = async (fileName: string | null) => {
     if (!fileName) {
-      setError('No file information found');
+      setError("No file information found");
       return;
     }
 
     // Get resume data from sessionStorage
-    const resumeDataStr = sessionStorage.getItem('alycat_resume_data');
+    const resumeDataStr = sessionStorage.getItem("alycat_resume_data");
     if (!resumeDataStr) {
-      setError('Resume data not found. Please upload again.');
+      setError("Resume data not found. Please upload again.");
       return;
     }
 
@@ -50,13 +52,13 @@ export default function OptimizedAnalyzePage() {
 
     try {
       const resumeData = JSON.parse(resumeDataStr);
-      
+
       // Start analysis immediately with raw file data
-      console.log('[ANALYSIS] Starting immediate analysis...');
-      
-      const response = await fetch('/api/analyze-resume-instant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      console.log("[ANALYSIS] Starting immediate analysis...");
+
+      const response = await fetch("/api/analyze-resume-instant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fileName: resumeData.fileName,
           fileData: resumeData.fileData,
@@ -67,21 +69,20 @@ export default function OptimizedAnalyzePage() {
       const result: AnalysisResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Analysis failed');
+        throw new Error(result.error || "Analysis failed");
       }
 
-      console.log('[ANALYSIS] Analysis completed successfully');
+      console.log("[ANALYSIS] Analysis completed successfully");
       setAnalysisResult(result);
 
       // Clean up sessionStorage
-      sessionStorage.removeItem('aplycat_resume_data');
+      sessionStorage.removeItem("aplycat_resume_data");
 
       // Start background status monitoring
       monitorBackgroundProcesses();
-
     } catch (err: any) {
-      console.error('[ANALYSIS] Analysis failed:', err);
-      setError(err.message || 'Analysis failed. Please try again.');
+      console.error("[ANALYSIS] Analysis failed:", err);
+      setError(err.message || "Analysis failed. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -94,31 +95,34 @@ export default function OptimizedAnalyzePage() {
 
     const checkStatus = async () => {
       attempts++;
-      
+
       try {
         // Check if we have a resumeId (indicates metadata save completed)
-        const resumeId = sessionStorage.getItem('aplycat_resume_id');
-        if (resumeId && backgroundStatus.metadata === 'pending') {
-          setBackgroundStatus(prev => ({ ...prev, metadata: 'completed' }));
-          console.log('[BACKGROUND] Metadata save completed');
+        const resumeId = sessionStorage.getItem("aplycat_resume_id");
+        if (resumeId && backgroundStatus.metadata === "pending") {
+          setBackgroundStatus((prev) => ({ ...prev, metadata: "completed" }));
+          console.log("[BACKGROUND] Metadata save completed");
         }
 
         // You could also check upload status via an API endpoint
         // For now, we'll simulate upload completion after some time
-        if (attempts > 10 && backgroundStatus.upload === 'pending') {
-          setBackgroundStatus(prev => ({ ...prev, upload: 'completed' }));
-          console.log('[BACKGROUND] File upload completed');
+        if (attempts > 10 && backgroundStatus.upload === "pending") {
+          setBackgroundStatus((prev) => ({ ...prev, upload: "completed" }));
+          console.log("[BACKGROUND] File upload completed");
         }
 
         // Continue monitoring if not all complete and under max attempts
-        if (attempts < maxAttempts && 
-            (backgroundStatus.upload === 'pending' || backgroundStatus.metadata === 'pending')) {
+        if (
+          attempts < maxAttempts &&
+          (backgroundStatus.upload === "pending" ||
+            backgroundStatus.metadata === "pending")
+        ) {
           setTimeout(checkStatus, 2000);
         }
       } catch (error) {
-        console.error('[BACKGROUND] Status check failed:', error);
+        console.error("[BACKGROUND] Status check failed:", error);
         // Mark as failed but don't interrupt user experience
-        setBackgroundStatus({ upload: 'failed', metadata: 'failed' });
+        setBackgroundStatus({ upload: "failed", metadata: "failed" });
       }
     };
 
@@ -144,22 +148,84 @@ export default function OptimizedAnalyzePage() {
   };
 
   const handleLoadSavedAnalysis = async (analysisId: string) => {
-    // Your existing saved analysis logic
-    console.log('[ANALYSIS] Loading saved analysis:', analysisId);
-    // Implementation here...
+    console.log("[ANALYSIS] Loading saved analysis:", analysisId);
+    setIsAnalyzing(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/saved-analyses/${analysisId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to load saved analysis");
+      }
+
+      console.log("[ANALYSIS] Saved analysis loaded successfully");
+
+      // Transform the saved analysis data to match the expected format
+      setAnalysisResult({
+        success: true,
+        analysis: result.analysis.analysisData,
+        fileName: result.analysis.fileName,
+        resumeId: "", // Not needed for saved analyses
+        analysisId: result.analysis.id,
+        processingTimeMs: result.analysis.processingTimeMs,
+        timestamp: result.analysis.createdAt,
+        cached: true,
+      });
+    } catch (err: any) {
+      console.error("[ANALYSIS] Failed to load saved analysis:", err);
+      setError(
+        err.message || "Failed to load saved analysis. Please try again."
+      );
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
-  const handleAnalysisWithResumeId = async (resumeId: string, fileName: string) => {
-    // Your existing resume ID analysis logic
-    console.log('[ANALYSIS] Analyzing with resume ID:', resumeId);
-    // Implementation here...
+  const handleAnalysisWithResumeId = async (
+    resumeId: string,
+    fileName: string
+  ) => {
+    console.log("[ANALYSIS] Analyzing with resume ID:", resumeId);
+    setIsAnalyzing(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/analyze-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resumeId: resumeId,
+          fileName: fileName,
+        }),
+      });
+
+      const result: AnalysisResponse = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Analysis failed");
+      }
+
+      console.log("[ANALYSIS] Analysis completed successfully");
+      setAnalysisResult(result);
+    } catch (err: any) {
+      console.error("[ANALYSIS] Analysis failed:", err);
+      setError(err.message || "Analysis failed. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleRetry = () => {
-    const immediate = searchParams.get('immediate');
-    const fileName = searchParams.get('fileName');
+    const immediate = searchParams.get("immediate");
+    const fileName = searchParams.get("fileName");
 
-    if (immediate === 'true') {
+    if (immediate === "true") {
       handleImmediateAnalysis(fileName);
     } else {
       handleLegacyAnalysis();
@@ -169,7 +235,7 @@ export default function OptimizedAnalyzePage() {
   // Show enhanced loading during analysis
   if (isAnalyzing) {
     const fileName = searchParams.get("fileName") || "";
-    
+
     return (
       <EnhancedLoading
         title="Aplycat is Analyzing Your Resume"
@@ -207,46 +273,6 @@ export default function OptimizedAnalyzePage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-6xl mx-auto py-12 px-4">
-          {/* Status Banner */}
-          {(backgroundStatus.upload === 'pending' || backgroundStatus.metadata === 'pending') && (
-            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                <div>
-                  <p className="font-medium text-blue-900">
-                    Analysis Complete! 
-                  </p>
-                  <p className="text-sm text-blue-700">
-                    File processing in background...
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Success Banner */}
-          {backgroundStatus.upload === 'completed' && backgroundStatus.metadata === 'completed' && (
-            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="text-green-600">✅</div>
-                <div>
-                  <p className="font-medium text-green-900">
-                    Resume Fully Processed!
-                  </p>
-                  <p className="text-sm text-green-700">
-                    Your resume has been saved and is ready for improvements.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center mb-6">
-            <Button onClick={() => router.push("/dashboard")} variant="outline">
-              ← Back to Dashboard
-            </Button>
-          </div>
-
           <AnalysisCards
             analysis={analysisResult.analysis}
             fileName={analysisResult.fileName}
