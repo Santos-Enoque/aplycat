@@ -1,31 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-
-interface RecentActivity {
-  recentAnalyses: Array<{
-    id: string;
-    overallScore: number;
-    atsScore: number;
-    createdAt: Date;
-    resume: {
-      fileName: string;
-      id: string;
-    };
-  }>;
-  recentImprovements: Array<{
-    id: string;
-    versionName: string | null;
-    targetRole: string | null;
-    createdAt: Date;
-    improvedScore: number | null;
-    originalScore: number | null;
-    resume: {
-      fileName: string;
-      id: string;
-    };
-  }>;
-}
+import { type RecentActivity } from "@/lib/actions/dashboard-actions";
 
 interface DashboardRecentActivityProps {
   activity: RecentActivity;

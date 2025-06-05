@@ -1,106 +1,21 @@
 // app/dashboard/page.tsx
 import { Suspense } from "react";
-import { getCurrentUserFromDB } from "@/lib/auth/user-sync";
 import { redirect } from "next/navigation";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent-activity";
-import { db } from "@/lib/db";
-import { getCachedData, cacheKeys } from "@/lib/cache";
-
-// Super fast user essentials - loads immediately with caching
-async function getUserEssentials(userId: string) {
-  return getCachedData(
-    cacheKeys.userEssentials(userId),
-    () =>
-      db.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          credits: true,
-          isPremium: true,
-          totalCreditsUsed: true,
-        },
-      }),
-    60 // Cache for 1 minute (short TTL for critical data)
-  );
-}
-
-// Stats data - loads quickly in parallel with caching
-async function getDashboardStats(userId: string) {
-  return getCachedData(
-    cacheKeys.dashboardStats(userId),
-    async () => {
-      const [analysesCount, improvementsCount, resumesCount] =
-        await Promise.all([
-          db.analysis.count({ where: { userId, isCompleted: true } }),
-          db.improvedResume.count({ where: { userId, isCompleted: true } }),
-          db.resume.count({ where: { userId, isActive: true } }),
-        ]);
-
-      return {
-        totalAnalyses: analysesCount,
-        totalImprovements: improvementsCount,
-        totalResumes: resumesCount,
-      };
-    },
-    300 // Cache for 5 minutes
-  );
-}
-
-// Recent activity - loads separately to not block main content with caching
-async function getRecentActivity(userId: string) {
-  return getCachedData(
-    cacheKeys.recentActivity(userId),
-    async () => {
-      const [recentAnalyses, recentImprovements] = await Promise.all([
-        db.analysis.findMany({
-          where: { userId, isCompleted: true },
-          include: {
-            resume: {
-              select: { fileName: true, id: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 3, // Just show recent 3
-        }),
-        db.improvedResume.findMany({
-          where: { userId, isCompleted: true },
-          select: {
-            id: true,
-            versionName: true,
-            targetRole: true,
-            createdAt: true,
-            improvedScore: true,
-            originalScore: true,
-            resume: {
-              select: { fileName: true, id: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 3, // Just show recent 3
-        }),
-      ]);
-
-      return { recentAnalyses, recentImprovements };
-    },
-    180 // Cache for 3 minutes (recent activity changes more frequently)
-  );
-}
+import {
+  getUserEssentials,
+  getDashboardStats,
+  getRecentActivity,
+  type UserEssentials,
+  type DashboardStats as DashboardStatsType,
+} from "@/lib/actions/dashboard-actions";
 
 export default async function DashboardPage() {
-  const user = await getCurrentUserFromDB();
-
-  if (!user) {
-    redirect("/sign-in");
-  }
-
   // Load user essentials immediately (this is super fast)
-  const userEssentials = await getUserEssentials(user.id);
+  const userEssentials = await getUserEssentials();
 
   if (!userEssentials) {
     redirect("/sign-in");
@@ -128,10 +43,7 @@ export default async function DashboardPage() {
             </div>
           }
         >
-          <DashboardStatsLoader
-            userId={user.id}
-            userCredits={userEssentials.credits}
-          />
+          <DashboardStatsLoader />
         </Suspense>
 
         {/* Recent activity loads last */}
@@ -154,27 +66,39 @@ export default async function DashboardPage() {
             </div>
           }
         >
-          <DashboardRecentActivityLoader userId={user.id} />
+          <DashboardRecentActivityLoader />
         </Suspense>
       </div>
     </div>
   );
 }
 
-// Separate component for stats loading
-async function DashboardStatsLoader({
-  userId,
-  userCredits,
-}: {
-  userId: string;
-  userCredits: number;
-}) {
-  const stats = await getDashboardStats(userId);
-  return <DashboardStats stats={{ ...stats, currentCredits: userCredits }} />;
+// Separate component for stats loading using server action
+async function DashboardStatsLoader() {
+  const stats = await getDashboardStats();
+
+  if (!stats) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p>Unable to load statistics</p>
+      </div>
+    );
+  }
+
+  return <DashboardStats stats={stats} />;
 }
 
-// Separate component for recent activity loading
-async function DashboardRecentActivityLoader({ userId }: { userId: string }) {
-  const activity = await getRecentActivity(userId);
+// Separate component for recent activity loading using server action
+async function DashboardRecentActivityLoader() {
+  const activity = await getRecentActivity();
+
+  if (!activity) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p>Unable to load recent activity</p>
+      </div>
+    );
+  }
+
   return <DashboardRecentActivity activity={activity} />;
 }

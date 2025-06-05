@@ -1,12 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { type DashboardStats } from "@/lib/actions/dashboard-actions";
 
 interface DashboardStatsProps {
-  stats: {
-    totalAnalyses: number;
-    totalImprovements: number;
-    totalResumes: number;
-    currentCredits: number;
-  };
+  stats: DashboardStats;
 }
 
 export function DashboardStats({ stats }: DashboardStatsProps) {

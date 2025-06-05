@@ -1,0 +1,22 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "SKIP_ENV_VALIDATION": "1"
+  },
+  "functions": {
+    "app/api/*/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/analyze-resume/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/improve-resume/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": []
+}

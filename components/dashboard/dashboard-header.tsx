@@ -1,16 +1,9 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-interface User {
-  firstName: string | null;
-  lastName: string | null;
-  email: string;
-  credits: number;
-  isPremium: boolean;
-}
+import { type UserEssentials } from "@/lib/actions/dashboard-actions";
 
 interface DashboardHeaderProps {
-  user: User;
+  user: UserEssentials;
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {

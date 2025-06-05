@@ -10,7 +10,7 @@ import {
   RESUME_ANALYSIS_SYSTEM_PROMPT, 
   RESUME_ANALYSIS_USER_PROMPT 
 } from '@/lib/prompts/resume-prompts';
-import { dashboardCache } from '@/lib/cache';
+import { dashboardCache } from '@/lib/redis-cache';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
         console.log('[RESUME_ANALYSIS] Credits deducted and transaction recorded');
 
         // Invalidate user cache after successful analysis
-        dashboardCache.invalidateUser(dbUser.id);
+        await dashboardCache.invalidateAnalysis(savedAnalysisId, dbUser.id);
 
       } catch (dbError: any) {
         console.error('[RESUME_ANALYSIS] Failed to save analysis to database:', dbError);

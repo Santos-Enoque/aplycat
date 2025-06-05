@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { db } from '@/lib/db';
-import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
+import { getAnalysisById } from '@/lib/actions/resume-actions';
 
 export async function GET(
   request: NextRequest,
@@ -22,35 +21,8 @@ export async function GET(
       );
     }
 
-    // Get database user
-    const dbUser = await getCurrentUserFromDB();
-    if (!dbUser) {
-      console.log('[GET_ANALYSIS] Database user not found');
-      return NextResponse.json(
-        { error: 'User not found in database' },
-        { status: 404 }
-      );
-    }
-
-    // Get the specific analysis
-    const analysis = await db.analysis.findFirst({
-      where: {
-        id: analysisId,
-        userId: dbUser.id, // Ensure user can only access their own analyses
-        isCompleted: true,
-      },
-      include: {
-        resume: {
-          select: {
-            id: true,
-            fileName: true,
-            title: true,
-            fileUrl: true,
-            createdAt: true,
-          },
-        },
-      },
-    });
+    // Get the specific analysis using server action
+    const analysis = await getAnalysisById(analysisId);
 
     if (!analysis) {
       console.log('[GET_ANALYSIS] Analysis not found or access denied');
@@ -62,7 +34,6 @@ export async function GET(
 
     console.log('[GET_ANALYSIS] Found analysis:', {
       analysisId: analysis.id,
-      resumeId: analysis.resumeId,
       fileName: analysis.fileName,
       overallScore: analysis.overallScore,
       atsScore: analysis.atsScore,
@@ -74,18 +45,14 @@ export async function GET(
       success: true,
       analysis: {
         id: analysis.id,
-        resumeId: analysis.resumeId,
         fileName: analysis.fileName,
         overallScore: analysis.overallScore,
         atsScore: analysis.atsScore,
         scoreCategory: analysis.scoreCategory,
         mainRoast: analysis.mainRoast,
         analysisData: analysis.analysisData, // Full analysis results
-        creditsUsed: analysis.creditsUsed,
         processingTimeMs: analysis.processingTimeMs,
         createdAt: analysis.createdAt,
-        updatedAt: analysis.updatedAt,
-        resume: analysis.resume,
       },
       timestamp: new Date().toISOString(),
     });
