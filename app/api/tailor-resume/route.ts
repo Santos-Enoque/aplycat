@@ -1,9 +1,101 @@
 // app/api/tailor-resume/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
+import OpenAI from 'openai';
 import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
 import { db } from '@/lib/db';
-import { modelService } from '@/lib/models-updated';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const SYSTEM_PROMPT = `You are a CONSERVATIVE Resume Tailoring Specialist. Your ONLY task is to reorganize and reword existing resume content to better match a job description. You are STRICTLY FORBIDDEN from adding any new information.
+
+🚨 CRITICAL RULE: NEVER INVENT OR FABRICATE ANYTHING 🚨
+
+WHAT YOU MUST NEVER DO:
+- NEVER mention companies the candidate hasn't worked for (like saying they want to work "at [Company]" when they never worked there)
+- NEVER add skills, technologies, or tools not already in the resume
+- NEVER fabricate achievements, metrics, or responsibilities
+- NEVER modify job titles, company names, dates, or factual information
+- NEVER claim experience with projects, methodologies, or domains not mentioned in original resume
+- NEVER add certifications, education, or qualifications not already present
+- NEVER invent career goals related to the target company
+
+WHAT YOU CAN DO:
+- Reorder experience bullets to prioritize most relevant ones first
+- Rewrite the professional summary using ONLY existing skills and experience
+- Reorganize skills section to emphasize job-relevant technologies already listed
+- Use job description terminology ONLY where it accurately describes existing experience
+- Highlight transferable aspects of existing experience
+
+PROFESSIONAL SUMMARY RULES:
+- Use ONLY skills and technologies already mentioned in the resume
+- Reference ONLY actual work experience and achievements from the resume
+- DO NOT mention the target company by name or express desire to work there
+- Focus on existing qualifications that align with the role requirements
+- Keep all statements factual and based on actual resume content
+
+KEYWORD INTEGRATION:
+- Only use keywords where they genuinely match existing experience
+- Do not force keywords that don't apply to the candidate's background
+- Prioritize authenticity over keyword density
+
+OUTPUT: Return ONLY valid JSON with this structure:
+{
+  "tailoredResume": {
+    "personalInfo": {
+      "name": "[EXACT name from original resume]",
+      "email": "[EXACT email from original]",
+      "phone": "[EXACT phone from original]",
+      "location": "[EXACT location from original]",
+      "linkedin": "[If present in original, use EXACT URL]",
+      "website": "[If present in original, use EXACT URL]"
+    },
+    "professionalSummary": "[Rewritten to emphasize existing skills and experience that align with the job requirements]",
+    "experience": [
+      {
+        "title": "[EXACT job title from original]",
+        "company": "[EXACT company name from original]",
+        "location": "[EXACT location from original]",
+        "startDate": "[EXACT start date from original]",
+        "endDate": "[EXACT end date from original]",
+        "achievements": [
+          "[Existing achievements reordered and reworded to emphasize relevance to target job]"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "degree": "[EXACT degree from original]",
+        "institution": "[EXACT institution from original]",
+        "year": "[EXACT year from original]",
+        "details": "[Only include if present in original and relevant]"
+      }
+    ],
+    "skills": {
+      "technical": ["[Existing technical skills reordered to prioritize job-relevant ones]"],
+      "certifications": ["[Existing certifications from original resume]"],
+      "otherRelevantSkills": ["[Existing other skills that are relevant to the target role]"]
+    }
+  },
+  "coverLetter": "[Generated only if includeCoverLetter is true. Professional cover letter based on existing qualifications and honest assessment of fit]",
+  "tailoringAnalysis": {
+    "jobMatchScore": "[Honest percentage 60-95% based on actual alignment between existing skills and job requirements]",
+    "emphasizedSkills": [
+      "[Existing skills that were prioritized for this role]"
+    ],
+    "transferableExperience": [
+      "[Existing experience that transfers well to the target role]"
+    ],
+    "gaps": [
+      "[Honest assessment of areas where the candidate lacks required skills - for internal analysis]"
+    ],
+    "recommendations": [
+      "[Suggestions for the candidate to strengthen their profile for this type of role]"
+    ]
+  }
+}`;
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -99,22 +191,58 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Use the new model service for tailoring
-    const response = await modelService.tailorResume(
-      currentResume,
-      jobDescription,
-      includeCoverLetter || false,
-      companyName,
-      jobTitle
-    );
+    const USER_PROMPT = `TAILOR this resume for the job below. Use ONLY information already in the resume. DO NOT INVENT anything.
 
-    const result = response.content;
+CURRENT RESUME:
+${JSON.stringify(currentResume, null, 2)}
+
+JOB DESCRIPTION:
+${jobDescription}
+
+${companyName ? `COMPANY NAME: ${companyName}` : ''}
+${jobTitle ? `JOB TITLE: ${jobTitle}` : ''}
+
+🚨 ABSOLUTE REQUIREMENTS - NO EXCEPTIONS:
+- DO NOT mention the target company (${companyName || 'the hiring company'}) as if the candidate worked there or wants to work there specifically
+- DO NOT add skills, technologies, or experience not already in the resume
+- DO NOT fabricate any achievements, projects, or responsibilities
+- DO NOT change job titles, company names, dates, or any factual information
+- DO NOT invent career goals or aspirations related to the target company
+- ONLY reorganize and reword existing content to emphasize relevance
+
+WHAT TO DO:
+1. Rewrite professional summary using ONLY existing skills and experience
+2. Reorder experience bullets to put most relevant ones first
+3. Reorganize skills to emphasize those matching the job requirements
+4. Use job keywords ONLY where they genuinely match existing experience
+5. Keep all information truthful and verifiable
+
+${includeCoverLetter ? 'COVER LETTER: Write an honest cover letter based on actual qualifications. Do NOT claim desire to work at the specific company - focus on the role type.' : ''}
+
+Remember: Better to have an honest resume that shows 70% match than a fabricated one claiming 90% match.`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4-1106-preview",
+      messages: [
+        {
+          role: 'system',
+          content: SYSTEM_PROMPT,
+        },
+        {
+          role: 'user',
+          content: USER_PROMPT,
+        },
+      ],
+      temperature: 0.3,
+    });
+
+    const result = completion.choices[0]?.message?.content;
     
     if (!result) {
-      throw new Error('No response from model service');
+      throw new Error('No response from OpenAI');
     }
 
-    console.log(`[RESUME_TAILORING] Model response length: ${result.length} characters`);
+    console.log(`[RESUME_TAILORING] OpenAI response length: ${result.length} characters`);
 
     // Clean up the response text to handle potential JSON issues
     let cleanedResult = result.trim();
@@ -142,7 +270,7 @@ export async function POST(request: NextRequest) {
         
         tailoredResult = JSON.parse(fixedResult);
       } catch (secondError) {
-        throw new Error(`Failed to parse model response as JSON.`);
+        throw new Error(`Failed to parse OpenAI response as JSON.`);
       }
     }
 
@@ -196,9 +324,9 @@ export async function POST(request: NextRequest) {
             improvedScore,
             improvementPercentage: null, // Not applicable for tailoring
             fileName: `tailored-resume-v${nextVersion}.json`,
-            creditsUsed: 3, // Cost for tailoring
+            creditsUsed: 2, // Cost for tailoring
             processingTimeMs: processingTime,
-            modelUsed: 'Model Service',
+            modelUsed: 'gpt-4-1106-preview',
             isCompleted: true,
           },
         });
@@ -216,7 +344,7 @@ export async function POST(request: NextRequest) {
           data: {
             userId: dbUser.id,
             type: 'IMPROVEMENT_USE',
-            amount: -3, // Deduct 3 credits for tailoring
+            amount: -2, // Deduct 2 credits for tailoring
             description: `Resume tailoring: ${jobTitle || 'Position'}${companyName ? ` at ${companyName}` : ''}`,
             relatedImprovedResumeId: savedTailoredResumeId,
           },
@@ -226,8 +354,8 @@ export async function POST(request: NextRequest) {
         await db.user.update({
           where: { id: dbUser.id },
           data: {
-            credits: { decrement: 3 },
-            totalCreditsUsed: { increment: 3 },
+            credits: { decrement: 2 },
+            totalCreditsUsed: { increment: 2 },
           },
         });
 

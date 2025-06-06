@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Download,
@@ -34,7 +35,12 @@ import {
   Crown,
 } from "lucide-react";
 import { EnhancedLoading } from "@/components/enhanced-loading";
-import { ImprovedResume, Experience, Education } from "@/types/improved-resume";
+import {
+  ImprovedResume,
+  Experience,
+  Education,
+  Project,
+} from "@/types/improved-resume";
 
 interface ImprovedResumeProps {
   params: Promise<{ improvedResumeId: string }>;
@@ -467,10 +473,37 @@ function ResumePreview({
   highlightedFields: string[];
   selectedTemplate?: string;
 }) {
+  // Helper function to get field value from nested object
+  const getFieldValue = (obj: any, fieldPath: string): any => {
+    const path = fieldPath.split(".");
+    let current = obj;
+    for (const key of path) {
+      if (current === null || current === undefined) return null;
+      if (key.includes("[") && key.includes("]")) {
+        const [arrayKey, indexStr] = key.split("[");
+        const index = parseInt(indexStr.replace("]", ""));
+        current = current[arrayKey]?.[index];
+      } else {
+        current = current[key];
+      }
+    }
+    return current;
+  };
+
   const isHighlighted = (field: string) => {
     return highlightedFields.some((highlightedField) => {
-      // Skip keyword highlights for field-level highlighting
-      if (highlightedField.startsWith("keyword:")) return false;
+      // Handle keyword-based highlighting from tailoring
+      if (highlightedField.startsWith("keyword:")) {
+        const keyword = highlightedField.replace("keyword:", "");
+        const fieldValue = getFieldValue(resumeData, field);
+        if (
+          typeof fieldValue === "string" &&
+          fieldValue.toLowerCase().includes(keyword.toLowerCase())
+        ) {
+          return true;
+        }
+        return false;
+      }
 
       // Exact match
       if (highlightedField === field) return true;
@@ -486,6 +519,18 @@ function ResumePreview({
 
       if (
         highlightedField === "professionalSummary" &&
+        field === "professionalSummary"
+      ) {
+        return true;
+      }
+
+      // Handle tailoring-specific highlighting
+      if (highlightedField === "tailored.skills" && field.includes("skills.")) {
+        return true;
+      }
+
+      if (
+        highlightedField === "tailored.summary" &&
         field === "professionalSummary"
       ) {
         return true;
@@ -945,6 +990,70 @@ function ResumePreview({
         </div>
       </div>
 
+      {/* Projects */}
+      {resumeData.projects && resumeData.projects.length > 0 && (
+        <div className="p-8 border-b border-gray-200">
+          <h3 className={styles.sectionHeader}>Projects</h3>
+          <div className="space-y-6">
+            {resumeData.projects.map((project, index) => (
+              <div key={index}>
+                <div className="flex justify-between items-start mb-2">
+                  <EditableText
+                    field={`projects.${index}.name`}
+                    value={project.name}
+                    className={`text-base font-semibold ${styles.headerText}`}
+                  />
+                  {project.technologies && (
+                    <div
+                      className={`text-sm ${styles.headerSubtext} flex-shrink-0 ml-4`}
+                    >
+                      {project.technologies}
+                    </div>
+                  )}
+                </div>
+                {project.description && (
+                  <EditableText
+                    field={`projects.${index}.description`}
+                    value={project.description}
+                    className={`text-sm ${styles.textColor} mb-3 leading-relaxed`}
+                    multiline
+                  />
+                )}
+                {project.achievements && project.achievements.length > 0 && (
+                  <ul className="space-y-2 ml-0">
+                    {project.achievements.map((achievement, achIndex) => (
+                      <li
+                        key={achIndex}
+                        className={`text-sm ${styles.textColor} flex items-start`}
+                      >
+                        <span
+                          className={`${
+                            selectedTemplate === "creative"
+                              ? "text-purple-400"
+                              : selectedTemplate === "executive"
+                              ? "text-slate-400"
+                              : "text-gray-400"
+                          } mr-3 mt-0.5`}
+                        >
+                          •
+                        </span>
+                        <EditableText
+                          field={`projects.${index}.achievements.${achIndex}`}
+                          value={achievement}
+                          className="flex-1 text-sm leading-relaxed"
+                          multiline
+                          style={{ minHeight: "20px" }}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Education */}
       <div className="p-8 border-b border-gray-200">
         <h3 className={styles.sectionHeader}>Education</h3>
@@ -986,36 +1095,61 @@ function ResumePreview({
       <div className="p-8">
         <h3 className={styles.sectionHeader}>Skills</h3>
         <div className="space-y-4">
-          {resumeData.skills.technical.length > 0 && (
-            <div>
-              <p className={`text-sm font-medium ${styles.textColor} mb-3`}>
-                Technical Skills
-              </p>
-              <div className={`text-sm ${styles.textColor} leading-relaxed`}>
-                {resumeData.skills.technical.join(" • ")}
+          {resumeData.skills.technical &&
+            resumeData.skills.technical.length > 0 && (
+              <div>
+                <p className={`text-sm font-medium ${styles.textColor} mb-3`}>
+                  Technical Skills
+                </p>
+                <div className={`text-sm ${styles.textColor} leading-relaxed`}>
+                  {resumeData.skills.technical.join(" • ")}
+                </div>
               </div>
-            </div>
-          )}
-          {resumeData.skills.certifications.length > 0 && (
-            <div>
-              <p className={`text-sm font-medium ${styles.textColor} mb-3`}>
-                Certifications
-              </p>
-              <div className={`text-sm ${styles.textColor} leading-relaxed`}>
-                {resumeData.skills.certifications.join(" • ")}
+            )}
+          {resumeData.skills.certifications &&
+            resumeData.skills.certifications.length > 0 && (
+              <div>
+                <p className={`text-sm font-medium ${styles.textColor} mb-3`}>
+                  Certifications
+                </p>
+                <div className={`text-sm ${styles.textColor} leading-relaxed`}>
+                  {resumeData.skills.certifications.join(" • ")}
+                </div>
               </div>
-            </div>
-          )}
-          {resumeData.skills.otherRelevantSkills.length > 0 && (
-            <div>
-              <p className={`text-sm font-medium ${styles.textColor} mb-3`}>
-                Additional Skills
-              </p>
-              <div className={`text-sm ${styles.textColor} leading-relaxed`}>
-                {resumeData.skills.otherRelevantSkills.join(" • ")}
+            )}
+          {resumeData.skills.languages &&
+            resumeData.skills.languages.length > 0 && (
+              <div>
+                <p className={`text-sm font-medium ${styles.textColor} mb-3`}>
+                  Languages
+                </p>
+                <div className={`text-sm ${styles.textColor} leading-relaxed`}>
+                  {resumeData.skills.languages.join(" • ")}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          {resumeData.skills.methodologies &&
+            resumeData.skills.methodologies.length > 0 && (
+              <div>
+                <p className={`text-sm font-medium ${styles.textColor} mb-3`}>
+                  Methodologies
+                </p>
+                <div className={`text-sm ${styles.textColor} leading-relaxed`}>
+                  {resumeData.skills.methodologies.join(" • ")}
+                </div>
+              </div>
+            )}
+          {resumeData.skills.otherRelevantSkills &&
+            resumeData.skills.otherRelevantSkills.length > 0 && (
+              <div>
+                <p className={`text-sm font-medium ${styles.textColor} mb-3`}>
+                  Additional Skills
+                </p>
+                <div className={`text-sm ${styles.textColor} leading-relaxed`}>
+                  {resumeData.skills.otherRelevantSkills.join(" • ")}
+                </div>
+              </div>
+            )}
         </div>
       </div>
     </div>
@@ -1058,6 +1192,7 @@ function TailoringComponent({
       }
 
       const jobInfo = await extractResponse.json();
+      console.log("[TAILORING_COMPONENT] Job extraction result:", jobInfo);
 
       if (jobInfo.message) {
         throw new Error(
@@ -1083,11 +1218,19 @@ function TailoringComponent({
 
       if (response.ok) {
         const result = await response.json();
+        console.log("[TAILORING_COMPONENT] Tailoring response:", result);
         onTailor(result);
+      } else {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || `HTTP ${response.status}: Failed to tailor resume`
+        );
       }
     } catch (error) {
       console.error("Failed to tailor resume:", error);
-      alert(error instanceof Error ? error.message : "Failed to tailor resume");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to tailor resume"
+      );
     } finally {
       setIsLoading(false);
       onTailoringStateChange(false);
@@ -1309,29 +1452,105 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
   };
 
   const handleTailor = (tailoringResult: any) => {
+    console.log("[TAILOR_HANDLER] Received tailoring result:", tailoringResult);
+
+    // Handle the tailored resume - FIXED: Use correct property name from API
     if (tailoringResult.tailoredResume) {
       setEditableResume(tailoringResult.tailoredResume);
+      console.log(
+        "[TAILOR_HANDLER] Updated editable resume with tailored content"
+      );
     }
 
     // Store tailoring analysis for keyword highlighting and display
     if (tailoringResult.tailoringAnalysis) {
       setTailoringAnalysis(tailoringResult.tailoringAnalysis);
-      // Set highlighted fields based on emphasized skills and keywords
-      const keywords = tailoringResult.tailoringAnalysis.keywordAlignment || [];
-      setHighlightedFields(
-        keywords.map((keyword: string) => `keyword:${keyword}`)
+      console.log(
+        "[TAILOR_HANDLER] Set tailoring analysis:",
+        tailoringResult.tailoringAnalysis
+      );
+
+      // Set highlighted fields based on analysis
+      const highlightedFields: string[] = [];
+
+      // Add company name as keyword to highlight (high priority)
+      if (tailoringResult.companyName) {
+        highlightedFields.push(`keyword:${tailoringResult.companyName}`);
+      }
+
+      // Add job title keywords
+      if (tailoringResult.jobTitle) {
+        const jobTitleWords = tailoringResult.jobTitle
+          .split(" ")
+          .filter((word: string) => word.length > 3);
+        jobTitleWords.forEach((word: string) => {
+          highlightedFields.push(`keyword:${word}`);
+        });
+      }
+
+      // Add keyword-based highlights from emphasized skills (only actual skills from resume)
+      const emphasizedSkills =
+        tailoringResult.tailoringAnalysis.emphasizedSkills || [];
+      emphasizedSkills.forEach((skill: string) => {
+        highlightedFields.push(`keyword:${skill}`);
+      });
+
+      // Add keywords from transferable experience (focus on actual technologies in original resume)
+      const transferableExp =
+        tailoringResult.tailoringAnalysis.transferableExperience || [];
+      transferableExp.forEach((exp: string) => {
+        // Only extract technical terms that are likely to be in the original resume
+        const techTerms =
+          exp.match(
+            /\b(JavaScript|Python|React|Node|SQL|AWS|Docker|Kubernetes|API|Machine Learning|Data Science|Analytics|BigQuery|Spark|Hadoop|Scala|Java|TypeScript|Frontend|Backend|Full Stack|Microservices|SageMaker|Glue|Athena|S3|Redshift|Kafka|Kinesis|A\/B Testing|NLP|Deep Learning|Optimization|Recommendation Systems|UX|UI|Design|Research|PhD|Statistics|Mathematics)\b/gi
+          ) || [];
+        techTerms.forEach((term) => {
+          highlightedFields.push(`keyword:${term}`);
+        });
+      });
+
+      // Add general highlighting for all tailored sections
+      highlightedFields.push("tailored.summary");
+      highlightedFields.push("tailored.skills");
+      highlightedFields.push("experience.achievements");
+
+      setHighlightedFields([...new Set(highlightedFields)]); // Remove duplicates
+      console.log(
+        "[TAILOR_HANDLER] Set highlighted fields:",
+        highlightedFields
       );
     }
 
+    // Handle cover letter display
     if (tailoringResult.coverLetter) {
       setCoverLetter(tailoringResult.coverLetter);
       setActiveTab("coverLetter");
+      console.log(
+        "[TAILOR_HANDLER] Set cover letter and switched to cover letter tab"
+      );
     }
 
-    // Store the tailoring result for display instead of redirecting
+    // Show success message with job details
+    if (tailoringResult.success) {
+      const jobInfo =
+        tailoringResult.jobTitle && tailoringResult.companyName
+          ? `${tailoringResult.jobTitle} at ${tailoringResult.companyName}`
+          : "the target position";
+
+      toast.success(`🎯 Resume successfully tailored for ${jobInfo}!`);
+      console.log(
+        "[TAILOR_HANDLER] Tailoring completed successfully for:",
+        jobInfo
+      );
+    }
+
+    // Log version info for debugging
     if (tailoringResult.tailoredResumeId) {
-      // Store in local state instead of redirecting immediately
-      console.log("Tailored resume created:", tailoringResult.tailoredResumeId);
+      console.log("Tailored resume saved as new version:", {
+        id: tailoringResult.tailoredResumeId,
+        version: tailoringResult.version,
+        versionName: tailoringResult.versionName,
+      });
     }
   };
 
@@ -1414,7 +1633,7 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
       document.body.removeChild(a);
     } catch (error) {
       console.error("Download failed:", error);
-      alert("Failed to download resume. Please try again.");
+      toast.error("Failed to download resume. Please try again.");
     } finally {
       setIsDownloading(false);
     }
@@ -1453,7 +1672,7 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
 
         if (!response.ok) {
           console.error("Credit transaction failed:", result);
-          alert(
+          toast.error(
             result.error || "Failed to use this template. Please try again."
           );
           return;
@@ -1465,7 +1684,7 @@ export default function ImprovedResumePage({ params }: ImprovedResumeProps) {
         window.location.reload();
       } catch (error) {
         console.error("Error processing credit transaction:", error);
-        alert("Error processing credit transaction. Please try again.");
+        toast.error("Error processing credit transaction. Please try again.");
         return;
       }
     }

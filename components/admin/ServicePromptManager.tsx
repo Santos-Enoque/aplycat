@@ -14,6 +14,7 @@ import {
   Save,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ServicePrompt {
   id: string;
@@ -82,38 +83,50 @@ export default function ServicePromptManager() {
   };
 
   const handleResetToDefaults = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to reset to default configuration and prompts? This will deactivate all current configurations and create a new default setup."
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setResetting(true);
-      const response = await fetch("/api/admin/reset-defaults", {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to reset: ${response.status}`);
+    // Show warning toast first
+    toast.warning(
+      "This will reset all configurations and prompts to defaults. Continuing in 3 seconds...",
+      {
+        duration: 3000,
+        action: {
+          label: "Cancel",
+          onClick: () => {
+            toast.dismiss();
+            return;
+          },
+        },
       }
+    );
 
-      const data = await response.json();
+    // Wait 3 seconds then proceed
+    setTimeout(async () => {
+      try {
+        setResetting(true);
+        const response = await fetch("/api/admin/reset-defaults", {
+          method: "POST",
+        });
 
-      if (data.success) {
-        await fetchServices(); // Refresh data
-        alert("Successfully reset to default configuration and prompts!");
-      } else {
-        throw new Error(data.error || "Reset failed");
+        if (!response.ok) {
+          throw new Error(`Failed to reset: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          await fetchServices(); // Refresh data
+          toast.success(
+            "Successfully reset to default configuration and prompts!"
+          );
+        } else {
+          throw new Error(data.error || "Reset failed");
+        }
+      } catch (err: any) {
+        console.error("Error resetting to defaults:", err);
+        toast.error(`Failed to reset: ${err.message}`);
+      } finally {
+        setResetting(false);
       }
-    } catch (err: any) {
-      console.error("Error resetting to defaults:", err);
-      alert(`Failed to reset: ${err.message}`);
-    } finally {
-      setResetting(false);
-    }
+    }, 3000);
   };
 
   const handleEditPrompt = (prompt: ServicePrompt) => {
@@ -152,7 +165,7 @@ export default function ServicePromptManager() {
       }
     } catch (err: any) {
       console.error("Error saving prompt:", err);
-      alert(`Failed to save prompt: ${err.message}`);
+      toast.error(`Failed to save prompt: ${err.message}`);
     } finally {
       setSaving(false);
     }

@@ -1,9 +1,10 @@
 // components/file-upload.tsx
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Upload, FileText, X } from 'lucide-react';
+import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Upload, FileText, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface FileUploadProps {
   onFileSelect: (fileData: string, fileName: string) => void;
@@ -20,7 +21,7 @@ export function FileUpload({ onFileSelect, isLoading }: FileUploadProps) {
       reader.onload = () => {
         const result = reader.result as string;
         // Remove the data:application/pdf;base64, prefix
-        const base64 = result.split(',')[1];
+        const base64 = result.split(",")[1];
         resolve(base64);
       };
       reader.onerror = reject;
@@ -28,43 +29,54 @@ export function FileUpload({ onFileSelect, isLoading }: FileUploadProps) {
     });
   }, []);
 
-  const processFile = useCallback(async (file: File) => {
-    if (!file.type.includes('pdf')) {
-      alert('Please upload a PDF file only');
-      return;
-    }
+  const processFile = useCallback(
+    async (file: File) => {
+      if (!file.type.includes("pdf")) {
+        toast.error("Please upload a PDF file only");
+        return;
+      }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      alert('File size must be less than 10MB');
-      return;
-    }
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit
+        toast.error("File size must be less than 10MB");
+        return;
+      }
 
-    try {
-      setSelectedFile(file);
-      const base64Data = await handleFileToBase64(file);
-      onFileSelect(base64Data, file.name);
-    } catch (error) {
-      console.error('Error processing file:', error);
-      alert('Error processing file. Please try again.');
-    }
-  }, [handleFileToBase64, onFileSelect]);
+      try {
+        setSelectedFile(file);
+        const base64Data = await handleFileToBase64(file);
+        onFileSelect(base64Data, file.name);
+        toast.success("Resume uploaded successfully!");
+      } catch (error) {
+        console.error("Error processing file:", error);
+        toast.error("Error processing file. Please try again.");
+      }
+    },
+    [handleFileToBase64, onFileSelect]
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      processFile(files[0]);
-    }
-  }, [processFile]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      processFile(files[0]);
-    }
-  }, [processFile]);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        processFile(files[0]);
+      }
+    },
+    [processFile]
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        processFile(files[0]);
+      }
+    },
+    [processFile]
+  );
 
   const clearFile = useCallback(() => {
     setSelectedFile(null);
@@ -76,11 +88,12 @@ export function FileUpload({ onFileSelect, isLoading }: FileUploadProps) {
         <div
           className={`
             relative border-2 border-dashed rounded-lg p-8 text-center transition-all
-            ${isDragOver 
-              ? 'border-primary bg-primary/5' 
-              : 'border-gray-300 hover:border-gray-400'
+            ${
+              isDragOver
+                ? "border-primary bg-primary/5"
+                : "border-gray-300 hover:border-gray-400"
             }
-            ${isLoading ? 'opacity-50 pointer-events-none' : ''}
+            ${isLoading ? "opacity-50 pointer-events-none" : ""}
           `}
           onDrop={handleDrop}
           onDragOver={(e) => {
@@ -93,7 +106,7 @@ export function FileUpload({ onFileSelect, isLoading }: FileUploadProps) {
             <div className="p-3 bg-gray-100 rounded-full">
               <Upload className="w-6 h-6 text-gray-600" />
             </div>
-            
+
             <div>
               <p className="text-lg font-medium text-gray-900">
                 Drop your resume here
@@ -106,14 +119,12 @@ export function FileUpload({ onFileSelect, isLoading }: FileUploadProps) {
             <Button
               variant="outline"
               disabled={isLoading}
-              onClick={() => document.getElementById('file-input')?.click()}
+              onClick={() => document.getElementById("file-input")?.click()}
             >
               Choose PDF File
             </Button>
 
-            <p className="text-xs text-gray-400">
-              PDF files only, max 10MB
-            </p>
+            <p className="text-xs text-gray-400">PDF files only, max 10MB</p>
           </div>
 
           <input

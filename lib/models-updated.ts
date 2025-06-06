@@ -1,20 +1,7 @@
 // lib/models-updated.ts
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { promptCache, ServiceType } from '@/lib/cache/prompt-cache';
-
-// Template processing utility
-function processTemplate(template: string, variables: Record<string, any>): string {
-  let processed = template;
-  
-  Object.entries(variables).forEach(([key, value]) => {
-    const placeholder = `{{${key}}}`;
-    const replacement = typeof value === 'string' ? value : JSON.stringify(value);
-    processed = processed.replace(new RegExp(placeholder, 'g'), replacement);
-  });
-  
-  return processed;
-}
+import { promptCache } from '@/lib/cache/prompt-cache';
 
 // Define model provider types
 export type ModelProvider = 'openai' | 'gemini' | 'anthropic';
@@ -126,15 +113,48 @@ class OpenAIProvider extends BaseModelProvider {
             totalTokens: completion.usage?.total_tokens,
           },
         };
+      } else if (input.tools) {
+        // Use responses API for text-only requests with tools (like web search)
+        const completion = await this.client.responses.create({
+          model: this.config.model || "gpt-4o-mini",
+          input: input.messages.map(msg => ({
+            role: msg.role as 'system' | 'user' | 'assistant',
+            content: [
+              {
+                type: 'input_text',
+                text: msg.content,
+              },
+            ],
+          })),
+          text: {
+            format: {
+              type: "text"
+            }
+          },
+          reasoning: {},
+          tools: input.tools,
+          temperature: this.config.temperature || 0.1,
+          max_output_tokens: this.config.maxTokens || 4000,
+          top_p: this.config.topP || 1,
+          store: true
+        } as any);
+
+        return {
+          content: completion.output_text || '',
+          usage: {
+            promptTokens: completion.usage?.input_tokens,
+            completionTokens: completion.usage?.output_tokens,
+            totalTokens: completion.usage?.total_tokens,
+          },
+        };
       } else {
-        // Use regular chat completions for text-only
+        // Use regular chat completions for simple text-only requests without tools
         const completion = await this.client.chat.completions.create({
           model: this.config.model || "gpt-4o-mini",
           messages: input.messages.map(msg => ({
             role: msg.role,
             content: msg.content,
           })),
-          ...(input.tools && { tools: input.tools }),
           temperature: this.config.temperature || 0.1,
           max_tokens: this.config.maxTokens || 4000,
           top_p: this.config.topP || 1,
@@ -320,13 +340,13 @@ export class ModelService {
   async analyzeResume(resumeFile: ModelFileInput): Promise<ModelResponse> {
     const provider = await this.getProvider();
     
-    // Get prompts from cache
-    const prompts = await promptCache.getServicePrompts('RESUME_ANALYSIS');
+    // ALWAYS use the file-based prompts to ensure consistency
+    const { RESUME_ANALYSIS_SYSTEM_PROMPT, RESUME_ANALYSIS_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
     
     return provider.generateResponse({
       messages: [
-        { role: 'system', content: prompts.system },
-        { role: 'user', content: prompts.user },
+        { role: 'system', content: RESUME_ANALYSIS_SYSTEM_PROMPT },
+        { role: 'user', content: RESUME_ANALYSIS_USER_PROMPT },
       ],
       files: [resumeFile],
     });
@@ -340,20 +360,16 @@ export class ModelService {
   ): Promise<ModelResponse> {
     const provider = await this.getProvider();
     
-    // Get prompts from cache
-    const prompts = await promptCache.getServicePrompts('RESUME_IMPROVEMENT');
+    // ALWAYS use the file-based prompts to ensure consistency
+    const { RESUME_IMPROVEMENT_SYSTEM_PROMPT, RESUME_IMPROVEMENT_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
     
-    // Process templates with variables
-    const processedUserPrompt = processTemplate(prompts.user, {
-      targetRole,
-      targetIndustry,
-      customPrompt: customPrompt || 'No additional requirements specified.',
-    });
+    // Use the template function from the file-based prompts
+    const userPrompt = RESUME_IMPROVEMENT_USER_PROMPT(targetRole, targetIndustry, customPrompt);
 
     return provider.generateResponse({
       messages: [
-        { role: 'system', content: prompts.system },
-        { role: 'user', content: processedUserPrompt },
+        { role: 'system', content: RESUME_IMPROVEMENT_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
       ],
       files: [resumeFile],
     });
@@ -368,22 +384,16 @@ export class ModelService {
   ): Promise<ModelResponse> {
     const provider = await this.getProvider();
     
-    // Get prompts from cache
-    const prompts = await promptCache.getServicePrompts('RESUME_TAILORING');
+    // ALWAYS use the file-based prompts to ensure consistency
+    const { RESUME_TAILORING_SYSTEM_PROMPT, RESUME_TAILORING_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
     
-    // Process templates with variables
-    const processedUserPrompt = processTemplate(prompts.user, {
-      currentResume: JSON.stringify(currentResume, null, 2),
-      jobDescription,
-      includeCoverLetter,
-      companyName: companyName || '',
-      jobTitle: jobTitle || '',
-    });
+    // Use the template function from the file-based prompts
+    const userPrompt = RESUME_TAILORING_USER_PROMPT(currentResume, jobDescription, includeCoverLetter, companyName, jobTitle);
 
     return provider.generateResponse({
       messages: [
-        { role: 'system', content: prompts.system },
-        { role: 'user', content: processedUserPrompt },
+        { role: 'system', content: RESUME_TAILORING_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
       ],
     });
   }
@@ -391,18 +401,13 @@ export class ModelService {
   async extractJobInfo(jobUrl: string, tools?: any[]): Promise<ModelResponse> {
     const provider = await this.getProvider();
     
-    // Get prompts from cache
-    const prompts = await promptCache.getServicePrompts('JOB_EXTRACTION');
+    // ALWAYS use the file-based prompts for job extraction to ensure consistency
+    const { JOB_EXTRACTION_SYSTEM_PROMPT, JOB_EXTRACTION_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
     
-    // Process templates with variables
-    const processedUserPrompt = processTemplate(prompts.user, {
-      jobUrl,
-    });
-
     return provider.generateResponse({
       messages: [
-        { role: 'system', content: prompts.system },
-        { role: 'user', content: processedUserPrompt },
+        { role: 'system', content: JOB_EXTRACTION_SYSTEM_PROMPT },
+        { role: 'user', content: JOB_EXTRACTION_USER_PROMPT(jobUrl) },
       ],
       tools,
     });

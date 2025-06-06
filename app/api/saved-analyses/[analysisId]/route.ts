@@ -45,6 +45,7 @@ export async function GET(
       success: true,
       analysis: {
         id: analysis.id,
+        resumeId: analysis.resumeId,
         fileName: analysis.fileName,
         overallScore: analysis.overallScore,
         atsScore: analysis.atsScore,

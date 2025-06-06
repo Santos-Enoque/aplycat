@@ -16,6 +16,7 @@ import {
   ToggleRight,
   RefreshCw,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ResumeCustomizationProps {
   currentResume: any;
@@ -69,7 +70,7 @@ export function ResumeCustomization({
       setUserFeedback("");
     } catch (error: any) {
       console.error("Error updating resume:", error);
-      alert("Failed to update resume. Please try again.");
+      toast.error("Failed to update resume. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -103,7 +104,7 @@ export function ResumeCustomization({
       onTailoredResume(result);
     } catch (error: any) {
       console.error("Error tailoring resume:", error);
-      alert("Failed to tailor resume. Please try again.");
+      toast.error("Failed to tailor resume. Please try again.");
     } finally {
       setIsTailoring(false);
     }

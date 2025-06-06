@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import ServicePromptManager from "./ServicePromptManager";
 import ModelConfigEditor from "./ModelConfigEditor";
+import { toast } from "sonner";
 
 interface ModelConfiguration {
   id: string;
@@ -118,10 +119,18 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteConfiguration = async (configId: string) => {
-    if (!confirm("Are you sure you want to delete this model configuration?")) {
-      return;
-    }
+    // Show warning toast with confirmation
+    toast.error("Delete configuration? This action cannot be undone.", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          await performDeleteConfig(configId);
+        },
+      },
+    });
+  };
 
+  const performDeleteConfig = async (configId: string) => {
     try {
       const response = await fetch(`/api/admin/models/${configId}`, {
         method: "DELETE",

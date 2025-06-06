@@ -24,11 +24,20 @@ export interface PersonalInfo {
     year: string;
     details?: string;
   }
+
+  export interface Project {
+    name: string;
+    description?: string;
+    technologies?: string;
+    achievements?: string[];
+  }
   
   export interface Skills {
     technical: string[];
     certifications: string[];
-    otherRelevantSkills: string[];
+    otherRelevantSkills?: string[]; // Made optional for backward compatibility
+    languages?: string[]; // New: For language skills
+    methodologies?: string[]; // New: For methodologies like Agile, Scrum
   }
   
   export interface ImprovementsAnalysis {
@@ -43,6 +52,7 @@ export interface PersonalInfo {
     personalInfo: PersonalInfo;
     professionalSummary: string;
     experience: Experience[];
+    projects?: Project[]; // New: Optional projects section
     education: Education[];
     skills: Skills;
     improvementsAnalysis: ImprovementsAnalysis;

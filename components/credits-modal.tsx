@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Zap, CreditCard, Star } from "lucide-react";
+import { toast } from "sonner";
 
 interface CreditsModalProps {
   isOpen: boolean;
@@ -88,10 +89,10 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // TODO: Redirect to payment gateway or handle payment
-      alert("Payment processing would be implemented here");
+      toast.success("Payment processing would be implemented here");
     } catch (error) {
       console.error("Payment failed:", error);
-      alert("Payment failed. Please try again.");
+      toast.error("Payment failed. Please try again.");
     } finally {
       setIsProcessing(false);
       setSelectedPack(null);

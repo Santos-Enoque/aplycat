@@ -1,24 +1,31 @@
 // types/analysis.ts
 
   export interface ResumeSection {
-    section_name: string;
-    found: boolean;
-    score: number;
-    roast: string;
-    issues: string[];
-    strengths: string[];
-    tips?: Array<{
-      issue: string;
-      tip: string;
-      example: string;
-    }>;
-    // Backward compatibility
-    improvements?: Array<{
-      issue: string;
-      fix: string;
-      example: string;
-    }>;
-  }
+  section_name: string;
+  found: boolean;
+  score: number;
+  roast: string;
+  
+  // Primary format (matching new prompt structure)
+  issues: string[];
+  strengths: string[];
+  tips: Array<{
+    issue: string;
+    tip: string;
+    example: string;
+  }>;
+  
+  // Backward compatibility - legacy format (optional)
+  rating?: string; // "Critical" | "Needs Work" | "Good" | "Excellent"
+  good_things?: string[]; // Max 3 items
+  issues_found?: string[]; // Max 3 items
+  quick_fixes?: string[]; // Max 3 items
+  improvements?: Array<{
+    issue: string;
+    fix: string;
+    example: string;
+  }>;
+}
   
   export interface MissingSection {
     section_name: string;
@@ -97,9 +104,11 @@
     overall_score: number;
     ats_score: number;
     main_roast: string;
-    score_category: string;
+    score_category: string; // "Critical" | "Needs Work" | "Good" | "Excellent"
     resume_sections: ResumeSection[];
     missing_sections: MissingSection[];
+    
+    // Comprehensive analysis fields (required with new prompt)
     good_stuff: GoodStuff[];
     needs_work: NeedsWork[];
     critical_issues: CriticalIssue[];
@@ -109,7 +118,14 @@
     keyword_analysis: KeywordAnalysis;
     quantification_issues: QuantificationIssues;
     action_plan: ActionPlan;
-    industry_specific_advice: IndustryAdvice;
+    recommendations: {
+      priority: string;
+      timeline: string;
+      next_steps: string[];
+    };
+    
+    // Backward compatibility - legacy format (optional)
+    industry_specific_advice?: IndustryAdvice;
   }
   
   export interface AnalysisResponse {
@@ -121,6 +137,7 @@
   processingTimeMs?: number;
   timestamp?: string;
   cached?: boolean;
+  fileData?: string; // For improvement functionality when resumeId not available
   message?: string;
   error?: string;
   details?: string;

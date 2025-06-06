@@ -152,7 +152,12 @@ export default function OptimizedAnalyzePage() {
       }
 
       console.log("[ANALYSIS] Analysis completed successfully");
-      setAnalysisResult(result);
+
+      // Include fileData for improvement functionality
+      setAnalysisResult({
+        ...result,
+        fileData: resumeData.fileData, // Pass fileData for improvement
+      });
 
       // Clean up sessionStorage
       sessionStorage.removeItem("aplycat_resume_data");
@@ -250,7 +255,7 @@ export default function OptimizedAnalyzePage() {
         success: true,
         analysis: result.analysis.analysisData,
         fileName: result.analysis.fileName,
-        resumeId: "", // Not needed for saved analyses
+        resumeId: result.analysis.resumeId, // Now available from saved analyses
         analysisId: result.analysis.id,
         processingTimeMs: result.analysis.processingTimeMs,
         timestamp: result.analysis.createdAt,
@@ -382,6 +387,7 @@ export default function OptimizedAnalyzePage() {
             analysis={analysisResult.analysis}
             fileName={analysisResult.fileName}
             resumeId={analysisResult.resumeId}
+            fileData={analysisResult.fileData}
           />
         </div>
       </div>

@@ -26,6 +26,7 @@ import {
   Award,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 
 interface DashboardUser {
   id: string;
@@ -134,7 +135,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
   const handleStartImprovement = () => {
     // Check if user has existing resumes
     if (user.resumes.length === 0) {
-      alert(
+      toast.error(
         "You need to analyze a resume first before you can improve it. Please upload and analyze a resume!"
       );
       handleStartAnalysis();
@@ -147,7 +148,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
   const handleStartTailoring = () => {
     // Check if user has existing resumes
     if (user.resumes.length === 0) {
-      alert(
+      toast.error(
         "You need to analyze a resume first before you can tailor it. Please upload and analyze a resume!"
       );
       handleStartAnalysis();

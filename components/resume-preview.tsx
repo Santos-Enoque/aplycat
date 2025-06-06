@@ -1,12 +1,12 @@
 // components/resume-preview.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ResumeCustomization } from '@/components/resume-customization';
-import { TailoredResults } from '@/components/tailored-results';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ResumeCustomization } from "@/components/resume-customization";
+import { TailoredResults } from "@/components/tailored-results";
 import {
   Download,
   Edit3,
@@ -22,55 +22,16 @@ import {
   Sparkles,
   FileText,
   Target,
-} from 'lucide-react';
+} from "lucide-react";
 
-interface PersonalInfo {
-  name: string;
-  email: string;
-  phone: string;
-  location: string;
-  linkedin?: string;
-  website?: string;
-}
-
-interface Experience {
-  title: string;
-  company: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-  achievements: string[];
-}
-
-interface Education {
-  degree: string;
-  institution: string;
-  year: string;
-  details?: string;
-}
-
-interface Skills {
-  technical: string[];
-  certifications: string[];
-  otherRelevantSkills: string[];
-}
-
-interface ImprovementsAnalysis {
-  originalResumeEffectivenessEstimateForTarget: string;
-  targetOptimizedResumeScore: string;
-  analysisHeadline: string;
-  keyRevisionsImplemented: string[];
-  recommendationsForUser: string[];
-}
-
-interface ImprovedResume {
-  personalInfo: PersonalInfo;
-  professionalSummary: string;
-  experience: Experience[];
-  education: Education[];
-  skills: Skills;
-  improvementsAnalysis: ImprovementsAnalysis;
-}
+import {
+  ImprovedResume,
+  PersonalInfo,
+  Experience,
+  Education,
+  Skills,
+  ImprovementsAnalysis,
+} from "@/types/improved-resume";
 
 interface TailoredData {
   tailoredResume: ImprovedResume;
@@ -92,19 +53,19 @@ interface ResumePreviewProps {
   onBack: () => void;
 }
 
-type ViewState = 'preview' | 'customize' | 'tailored';
+type ViewState = "preview" | "customize" | "tailored";
 
-export function ResumePreview({ 
-  improvedResume, 
-  targetRole, 
-  targetIndustry, 
-  fileName, 
-  onBack 
+export function ResumePreview({
+  improvedResume,
+  targetRole,
+  targetIndustry,
+  fileName,
+  onBack,
 }: ResumePreviewProps) {
   const [showIllustrativeMetrics, setShowIllustrativeMetrics] = useState(true);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [currentResume, setCurrentResume] = useState(improvedResume);
-  const [viewState, setViewState] = useState<ViewState>('preview');
+  const [viewState, setViewState] = useState<ViewState>("preview");
   const [tailoredData, setTailoredData] = useState<TailoredData | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -118,35 +79,65 @@ export function ResumePreview({
     // Create a simple text version for download
     const resumeText = `
 ${currentResume.personalInfo.name}
-${currentResume.personalInfo.email} | ${currentResume.personalInfo.phone} | ${currentResume.personalInfo.location}
-${currentResume.personalInfo.linkedin ? `LinkedIn: ${currentResume.personalInfo.linkedin}` : ''}
+${currentResume.personalInfo.email} | ${currentResume.personalInfo.phone} | ${
+      currentResume.personalInfo.location
+    }
+${
+  currentResume.personalInfo.linkedin
+    ? `LinkedIn: ${currentResume.personalInfo.linkedin}`
+    : ""
+}
 
 PROFESSIONAL SUMMARY
 ${currentResume.professionalSummary}
 
 PROFESSIONAL EXPERIENCE
-${currentResume.experience.map(exp => `
-${exp.title} | ${exp.company} | ${exp.location} | ${exp.startDate} - ${exp.endDate}
-${exp.achievements.map(achievement => `• ${achievement}`).join('\n')}
-`).join('\n')}
+${currentResume.experience
+  .map(
+    (exp) => `
+${exp.title} | ${exp.company} | ${exp.location} | ${exp.startDate} - ${
+      exp.endDate
+    }
+${exp.achievements.map((achievement) => `• ${achievement}`).join("\n")}
+`
+  )
+  .join("\n")}
 
 EDUCATION
-${currentResume.education.map(edu => `
+${currentResume.education
+  .map(
+    (edu) => `
 ${edu.degree} | ${edu.institution} | ${edu.year}
-${edu.details || ''}
-`).join('\n')}
+${edu.details || ""}
+`
+  )
+  .join("\n")}
 
 CORE COMPETENCIES
-Technical Skills: ${currentResume.skills.technical.join(', ')}
-${currentResume.skills.certifications.length > 0 ? `Certifications: ${currentResume.skills.certifications.join(', ')}` : ''}
-${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${currentResume.skills.otherRelevantSkills.join(', ')}` : ''}
+Technical Skills: ${currentResume.skills.technical.join(", ")}
+${
+  currentResume.skills.certifications.length > 0
+    ? `Certifications: ${currentResume.skills.certifications.join(", ")}`
+    : ""
+}
+${
+  currentResume.skills.otherRelevantSkills &&
+  currentResume.skills.otherRelevantSkills.length > 0
+    ? `Additional Skills: ${currentResume.skills.otherRelevantSkills.join(
+        ", "
+      )}`
+    : ""
+}
     `.trim();
 
-    const blob = new Blob([resumeText], { type: 'text/plain' });
+    const blob = new Blob([resumeText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${currentResume.personalInfo.name.replace(/\s+/g, '_')}_Resume.txt`;
+    a.download = `${currentResume.personalInfo.name.replace(
+      /\s+/g,
+      "_"
+    )}_Resume.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -160,30 +151,33 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
   const shareResume = async () => {
     const resumeUrl = window.location.href;
     const shareText = `Check out my optimized resume for ${targetRole} in ${targetIndustry}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'My Optimized Resume',
+          title: "My Optimized Resume",
           text: shareText,
           url: resumeUrl,
         });
       } catch (error) {
         // Fallback to clipboard
-        copyToClipboard(resumeUrl, 'url');
+        copyToClipboard(resumeUrl, "url");
       }
     } else {
-      copyToClipboard(resumeUrl, 'url');
+      copyToClipboard(resumeUrl, "url");
     }
   };
 
   const highlightIllustrativeMetrics = (text: string) => {
     if (!showIllustrativeMetrics) {
-      return text.replace(/\[Illustrative: [^\]]+\]/g, '<span class="bg-gray-200 text-gray-700 px-1 rounded">[REPLACE WITH YOUR DATA]</span>');
+      return text.replace(
+        /\[Illustrative: [^\]]+\]/g,
+        '<span class="bg-gray-200 text-gray-700 px-1 rounded">[REPLACE WITH YOUR DATA]</span>'
+      );
     }
-    
+
     return text.replace(
-      /\[Illustrative: ([^\]]+)\]/g, 
+      /\[Illustrative: ([^\]]+)\]/g,
       '<span class="bg-yellow-200 text-yellow-800 px-1 rounded font-medium" title="This is sample data - replace with your actual metrics">[Illustrative: $1]</span>'
     );
   };
@@ -192,26 +186,26 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
     setIsUpdating(true);
     setTimeout(() => {
       setCurrentResume(updatedResume);
-      setViewState('preview');
+      setViewState("preview");
       setIsUpdating(false);
     }, 500); // Small delay for smooth transition
   };
 
   const handleTailoredResult = (result: TailoredData) => {
     setTailoredData(result);
-    setViewState('tailored');
+    setViewState("tailored");
   };
 
   const handleBackToPreview = () => {
-    setViewState('preview');
+    setViewState("preview");
   };
 
   const handleBackToCustomize = () => {
-    setViewState('customize');
+    setViewState("customize");
   };
 
   // Render Customization View
-  if (viewState === 'customize') {
+  if (viewState === "customize") {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex items-center gap-4 mb-6">
@@ -220,11 +214,15 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
             Back to Preview
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Customize Resume</h1>
-            <p className="text-gray-600">Update with feedback or tailor to job description</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Customize Resume
+            </h1>
+            <p className="text-gray-600">
+              Update with feedback or tailor to job description
+            </p>
           </div>
         </div>
-        
+
         <ResumeCustomization
           currentResume={currentResume}
           targetRole={targetRole}
@@ -237,7 +235,7 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
   }
 
   // Render Tailored Results View
-  if (viewState === 'tailored' && tailoredData) {
+  if (viewState === "tailored" && tailoredData) {
     return (
       <TailoredResults
         tailoredResume={tailoredData.tailoredResume}
@@ -260,29 +258,45 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {isUpdating ? 'Updating Resume...' : 'Improved Resume Preview'}
+              {isUpdating ? "Updating Resume..." : "Improved Resume Preview"}
             </h1>
             <p className="text-gray-600">
-              Optimized for <span className="font-medium text-blue-600">{targetRole}</span> in <span className="font-medium text-purple-600">{targetIndustry}</span>
+              Optimized for{" "}
+              <span className="font-medium text-blue-600">{targetRole}</span> in{" "}
+              <span className="font-medium text-purple-600">
+                {targetIndustry}
+              </span>
             </p>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowIllustrativeMetrics(!showIllustrativeMetrics)}
-            title={showIllustrativeMetrics ? "Hide sample metrics" : "Show sample metrics"}
+            title={
+              showIllustrativeMetrics
+                ? "Hide sample metrics"
+                : "Show sample metrics"
+            }
           >
-            {showIllustrativeMetrics ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-            {showIllustrativeMetrics ? 'Hide' : 'Show'} Metrics
+            {showIllustrativeMetrics ? (
+              <EyeOff className="h-4 w-4 mr-2" />
+            ) : (
+              <Eye className="h-4 w-4 mr-2" />
+            )}
+            {showIllustrativeMetrics ? "Hide" : "Show"} Metrics
           </Button>
           <Button variant="outline" onClick={printResume} title="Print resume">
             <Printer className="h-4 w-4 mr-2" />
             Print
           </Button>
-          <Button variant="outline" onClick={downloadResume} title="Download as text file">
+          <Button
+            variant="outline"
+            onClick={downloadResume}
+            title="Download as text file"
+          >
             <Download className="h-4 w-4 mr-2" />
             Download
           </Button>
@@ -318,7 +332,7 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                   {currentResume.personalInfo.linkedin && (
                     <>
                       <span>•</span>
-                      <a 
+                      <a
                         href={currentResume.personalInfo.linkedin}
                         className="text-blue-600 hover:text-blue-800"
                         target="_blank"
@@ -331,7 +345,7 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                   {currentResume.personalInfo.website && (
                     <>
                       <span>•</span>
-                      <a 
+                      <a
                         href={currentResume.personalInfo.website}
                         className="text-blue-600 hover:text-blue-800"
                         target="_blank"
@@ -349,10 +363,12 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                 <h2 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-1">
                   PROFESSIONAL SUMMARY
                 </h2>
-                <p 
+                <p
                   className="text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ 
-                    __html: highlightIllustrativeMetrics(currentResume.professionalSummary) 
+                  dangerouslySetInnerHTML={{
+                    __html: highlightIllustrativeMetrics(
+                      currentResume.professionalSummary
+                    ),
                   }}
                 />
               </div>
@@ -367,8 +383,12 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                     <div key={index} className="relative">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="font-semibold text-gray-900">{exp.title}</h3>
-                          <p className="text-gray-700 font-medium">{exp.company} - {exp.location}</p>
+                          <h3 className="font-semibold text-gray-900">
+                            {exp.title}
+                          </h3>
+                          <p className="text-gray-700 font-medium">
+                            {exp.company} - {exp.location}
+                          </p>
                         </div>
                         <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
                           {exp.startDate} - {exp.endDate}
@@ -376,11 +396,13 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                       </div>
                       <ul className="space-y-1 ml-4">
                         {exp.achievements.map((achievement, achIndex) => (
-                          <li 
-                            key={achIndex} 
+                          <li
+                            key={achIndex}
                             className="text-gray-700 text-sm leading-relaxed"
-                            dangerouslySetInnerHTML={{ 
-                              __html: `• ${highlightIllustrativeMetrics(achievement)}` 
+                            dangerouslySetInnerHTML={{
+                              __html: `• ${highlightIllustrativeMetrics(
+                                achievement
+                              )}`,
                             }}
                           />
                         ))}
@@ -397,15 +419,24 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                 </h2>
                 <div className="space-y-3">
                   {currentResume.education.map((edu, index) => (
-                    <div key={index} className="flex justify-between items-start">
+                    <div
+                      key={index}
+                      className="flex justify-between items-start"
+                    >
                       <div>
-                        <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
+                        <h3 className="font-semibold text-gray-900">
+                          {edu.degree}
+                        </h3>
                         <p className="text-gray-700">{edu.institution}</p>
                         {edu.details && (
-                          <p className="text-sm text-gray-600 mt-1">{edu.details}</p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {edu.details}
+                          </p>
                         )}
                       </div>
-                      <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.year}</span>
+                      <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
+                        {edu.year}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -419,28 +450,35 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                 <div className="space-y-3">
                   {currentResume.skills.technical.length > 0 && (
                     <div>
-                      <h3 className="font-medium text-gray-800 mb-1">Technical Skills:</h3>
+                      <h3 className="font-medium text-gray-800 mb-1">
+                        Technical Skills:
+                      </h3>
                       <p className="text-gray-700 text-sm leading-relaxed">
-                        {currentResume.skills.technical.join(' • ')}
+                        {currentResume.skills.technical.join(" • ")}
                       </p>
                     </div>
                   )}
                   {currentResume.skills.certifications.length > 0 && (
                     <div>
-                      <h3 className="font-medium text-gray-800 mb-1">Certifications:</h3>
+                      <h3 className="font-medium text-gray-800 mb-1">
+                        Certifications:
+                      </h3>
                       <p className="text-gray-700 text-sm leading-relaxed">
-                        {currentResume.skills.certifications.join(' • ')}
+                        {currentResume.skills.certifications.join(" • ")}
                       </p>
                     </div>
                   )}
-                  {currentResume.skills.otherRelevantSkills.length > 0 && (
-                    <div>
-                      <h3 className="font-medium text-gray-800 mb-1">Additional Skills:</h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {currentResume.skills.otherRelevantSkills.join(' • ')}
-                      </p>
-                    </div>
-                  )}
+                  {currentResume.skills.otherRelevantSkills &&
+                    currentResume.skills.otherRelevantSkills.length > 0 && (
+                      <div>
+                        <h3 className="font-medium text-gray-800 mb-1">
+                          Additional Skills:
+                        </h3>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {currentResume.skills.otherRelevantSkills.join(" • ")}
+                        </p>
+                      </div>
+                    )}
                 </div>
               </div>
             </CardContent>
@@ -461,21 +499,34 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
               <div className="space-y-4">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-green-600 mb-1">
-                    {currentResume.improvementsAnalysis.targetOptimizedResumeScore}
+                    {
+                      currentResume.improvementsAnalysis
+                        .targetOptimizedResumeScore
+                    }
                   </div>
                   <p className="text-sm text-gray-600">Target Optimization</p>
                 </div>
-                
+
                 <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div 
+                  <div
                     className="bg-green-600 h-3 rounded-full transition-all duration-1000"
-                    style={{ width: `${parseInt(currentResume.improvementsAnalysis.targetOptimizedResumeScore.split('-')[0])}%` }}
+                    style={{
+                      width: `${parseInt(
+                        currentResume.improvementsAnalysis.targetOptimizedResumeScore.split(
+                          "-"
+                        )[0]
+                      )}%`,
+                    }}
                   ></div>
                 </div>
-                
+
                 <div className="text-center pt-2 border-t">
                   <div className="text-lg font-semibold text-gray-700 mb-1">
-                    {currentResume.improvementsAnalysis.originalResumeEffectivenessEstimateForTarget}/100
+                    {
+                      currentResume.improvementsAnalysis
+                        .originalResumeEffectivenessEstimateForTarget
+                    }
+                    /100
                   </div>
                   <p className="text-xs text-gray-500">Original Score</p>
                 </div>
@@ -493,21 +544,22 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-purple-700">
-                Fine-tune your resume with feedback or tailor it to specific job postings
+                Fine-tune your resume with feedback or tailor it to specific job
+                postings
               </p>
-              
+
               <div className="grid grid-cols-1 gap-2">
-                <Button 
-                  onClick={() => setViewState('customize')}
+                <Button
+                  onClick={() => setViewState("customize")}
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                   size="sm"
                 >
                   <Edit3 className="h-4 w-4 mr-2" />
                   Update with Feedback
                 </Button>
-                
-                <Button 
-                  onClick={() => setViewState('customize')}
+
+                <Button
+                  onClick={() => setViewState("customize")}
                   variant="outline"
                   className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
                   size="sm"
@@ -529,12 +581,17 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {currentResume.improvementsAnalysis.keyRevisionsImplemented.map((revision, index) => (
-                  <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
-                    <span className="text-green-600 mt-1 text-xs">✓</span>
-                    <span className="leading-relaxed">{revision}</span>
-                  </li>
-                ))}
+                {currentResume.improvementsAnalysis.keyRevisionsImplemented.map(
+                  (revision, index) => (
+                    <li
+                      key={index}
+                      className="text-sm text-gray-700 flex items-start gap-2"
+                    >
+                      <span className="text-green-600 mt-1 text-xs">✓</span>
+                      <span className="leading-relaxed">{revision}</span>
+                    </li>
+                  )
+                )}
               </ul>
             </CardContent>
           </Card>
@@ -549,11 +606,16 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {currentResume.improvementsAnalysis.recommendationsForUser.map((rec, index) => (
-                  <div key={index} className="text-sm text-yellow-800 bg-yellow-100 p-3 rounded border border-yellow-200 leading-relaxed">
-                    {rec}
-                  </div>
-                ))}
+                {currentResume.improvementsAnalysis.recommendationsForUser.map(
+                  (rec, index) => (
+                    <div
+                      key={index}
+                      className="text-sm text-yellow-800 bg-yellow-100 p-3 rounded border border-yellow-200 leading-relaxed"
+                    >
+                      {rec}
+                    </div>
+                  )
+                )}
               </div>
             </CardContent>
           </Card>
@@ -564,12 +626,14 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
               <CardTitle className="text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
-                onClick={() => copyToClipboard(currentResume.professionalSummary, 'summary')}
+                onClick={() =>
+                  copyToClipboard(currentResume.professionalSummary, "summary")
+                }
               >
-                {copiedSection === 'summary' ? (
+                {copiedSection === "summary" ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                     Copied!
@@ -581,16 +645,18 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                   </>
                 )}
               </Button>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 className="w-full justify-start"
-                onClick={() => copyToClipboard(
-                  currentResume.skills.technical.join(', '), 
-                  'skills'
-                )}
+                onClick={() =>
+                  copyToClipboard(
+                    currentResume.skills.technical.join(", "),
+                    "skills"
+                  )
+                }
               >
-                {copiedSection === 'skills' ? (
+                {copiedSection === "skills" ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                     Copied!
@@ -602,13 +668,13 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
                   </>
                 )}
               </Button>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={shareResume}
               >
-                {copiedSection === 'url' ? (
+                {copiedSection === "url" ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                     Link Copied!
@@ -634,20 +700,31 @@ ${currentResume.skills.otherRelevantSkills.length > 0 ? `Additional Skills: ${cu
             <CardContent>
               <div className="space-y-3">
                 <div>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 mb-2">
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-800 mb-2"
+                  >
                     Target Role
                   </Badge>
-                  <p className="text-sm text-blue-700 font-medium">{targetRole}</p>
+                  <p className="text-sm text-blue-700 font-medium">
+                    {targetRole}
+                  </p>
                 </div>
                 <div>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 mb-2">
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-800 mb-2"
+                  >
                     Industry
                   </Badge>
-                  <p className="text-sm text-blue-700 font-medium">{targetIndustry}</p>
+                  <p className="text-sm text-blue-700 font-medium">
+                    {targetIndustry}
+                  </p>
                 </div>
                 <div className="pt-2 border-t border-blue-200">
                   <p className="text-xs text-blue-600">
-                    Resume optimized with industry keywords and role-specific achievements
+                    Resume optimized with industry keywords and role-specific
+                    achievements
                   </p>
                 </div>
               </div>

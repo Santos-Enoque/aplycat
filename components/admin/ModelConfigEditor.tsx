@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Save, X, Star, Trash2, Plus, Settings } from "lucide-react";
+import { toast } from "sonner";
 
 interface ModelConfiguration {
   id: string;
@@ -65,15 +66,23 @@ export default function ModelConfigEditor({
 
       await onRefresh();
     } catch (err: any) {
-      alert(`Failed to set default: ${err.message}`);
+      toast.error(`Failed to set default: ${err.message}`);
     }
   };
 
   const handleDeleteConfiguration = async (configId: string) => {
-    if (!confirm("Are you sure you want to delete this model configuration?")) {
-      return;
-    }
+    // Show warning toast with confirmation
+    toast.error("Delete configuration? This action cannot be undone.", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          await performDelete(configId);
+        },
+      },
+    });
+  };
 
+  const performDelete = async (configId: string) => {
     try {
       const response = await fetch(`/api/admin/models/${configId}`, {
         method: "DELETE",
@@ -86,7 +95,7 @@ export default function ModelConfigEditor({
 
       await onRefresh();
     } catch (err: any) {
-      alert(`Failed to delete configuration: ${err.message}`);
+      toast.error(`Failed to delete configuration: ${err.message}`);
     }
   };
 
@@ -116,7 +125,7 @@ export default function ModelConfigEditor({
       setIsCreating(false);
       await onRefresh();
     } catch (err: any) {
-      alert(`Failed to save configuration: ${err.message}`);
+      toast.error(`Failed to save configuration: ${err.message}`);
     } finally {
       setSaving(false);
     }

@@ -22,6 +22,7 @@ export interface ResumeRecord {
 
 export interface AnalysisRecord {
   id: string;
+  resumeId: string;
   fileName: string;
   overallScore: number;
   atsScore: number;
@@ -106,6 +107,7 @@ export async function getUserAnalyses(
             skip: offset,
             select: {
               id: true,
+              resumeId: true,
               fileName: true,
               overallScore: true,
               atsScore: true,
@@ -211,6 +213,7 @@ export async function getAnalysisById(analysisId: string): Promise<AnalysisRecor
           },
           select: {
             id: true,
+            resumeId: true,
             fileName: true,
             overallScore: true,
             atsScore: true,
