@@ -4,11 +4,7 @@ import { currentUser } from '@clerk/nextjs/server';
 import { getResumeData } from '@/lib/resume-storage';
 import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
 import { db } from '@/lib/db';
-import { modelService } from '@/lib/models';
-import { 
-  RESUME_IMPROVEMENT_SYSTEM_PROMPT, 
-  RESUME_IMPROVEMENT_USER_PROMPT 
-} from '@/lib/prompts/resume-prompts';
+import { modelService } from '@/lib/models-updated';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -134,8 +130,9 @@ export async function POST(request: NextRequest) {
 
     // Use the new model service for improvement
     const response = await modelService.improveResume(
-      RESUME_IMPROVEMENT_SYSTEM_PROMPT,
-      RESUME_IMPROVEMENT_USER_PROMPT(targetRole, targetIndustry, customPrompt),
+      targetRole,
+      targetIndustry,
+      customPrompt,
       {
         filename: actualFileName || 'resume.pdf',
         fileData: actualFileData,

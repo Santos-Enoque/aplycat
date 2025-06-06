@@ -494,3 +494,75 @@ model WaitlistEntry {
 
     @@map("waitlist_entries")
 }
+
+// ===== MODEL CONFIGURATION SYSTEM =====
+model ModelConfiguration {
+    id          String  @id @default(cuid())
+    name        String  @unique
+    description String?
+
+    // Model settings
+    provider  String // "openai", "anthropic", etc.
+    modelName String
+    apiKey    String?
+    baseUrl   String?
+
+    // Configuration
+    temperature      Float? @default(0.7)
+    maxTokens        Int?   @default(4000)
+    topP             Float? @default(1.0)
+    frequencyPenalty Float? @default(0.0)
+    presencePenalty  Float? @default(0.0)
+
+    // Status
+    isActive  Boolean @default(true)
+    isDefault Boolean @default(false)
+    version   Int     @default(1)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy String? // Admin user who created this
+
+    // Relations
+    prompts ModelPrompt[]
+
+    @@map("model_configurations")
+}
+
+model ModelPrompt {
+    id              String @id @default(cuid())
+    configurationId String
+
+    // Prompt details
+    name         String
+    promptType   PromptType
+    systemPrompt String?
+    userPrompt   String?
+    description  String?
+
+    // Template support
+    templateVariables Json?
+
+    // Testing & versioning
+    testGroup String?
+    version   Int     @default(1)
+    isActive  Boolean @default(true)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy String? // Admin user who created this
+
+    // Relations
+    configuration ModelConfiguration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+
+    @@unique([configurationId, promptType, name])
+    @@map("model_prompts")
+}
+
+enum PromptType {
+    SYSTEM
+    USER
+    TEMPLATE
+}

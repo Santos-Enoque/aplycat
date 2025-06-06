@@ -3,11 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
 import { db } from '@/lib/db';
-import { modelService } from '@/lib/models';
-import { 
-  RESUME_TAILORING_SYSTEM_PROMPT, 
-  RESUME_TAILORING_USER_PROMPT 
-} from '@/lib/prompts/resume-prompts';
+import { modelService } from '@/lib/models-updated';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -105,8 +101,11 @@ export async function POST(request: NextRequest) {
 
     // Use the new model service for tailoring
     const response = await modelService.tailorResume(
-      RESUME_TAILORING_SYSTEM_PROMPT,
-      RESUME_TAILORING_USER_PROMPT(currentResume, jobDescription, includeCoverLetter || false, companyName, jobTitle)
+      currentResume,
+      jobDescription,
+      includeCoverLetter || false,
+      companyName,
+      jobTitle
     );
 
     const result = response.content;

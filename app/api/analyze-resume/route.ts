@@ -5,11 +5,7 @@ import { parseOpenAIResponse } from '@/lib/json-parser';
 import { getResumeData } from '@/lib/resume-storage';
 import { db } from '@/lib/db';
 import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
-import { modelService } from '@/lib/models';
-import { 
-  RESUME_ANALYSIS_SYSTEM_PROMPT, 
-  RESUME_ANALYSIS_USER_PROMPT 
-} from '@/lib/prompts/resume-prompts';
+import { modelService } from '@/lib/models-updated';
 import { dashboardCache } from '@/lib/redis-cache';
 
 export async function POST(request: NextRequest) {
@@ -140,15 +136,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Use the new model service for analysis
-    const response = await modelService.analyzeResume(
-      RESUME_ANALYSIS_SYSTEM_PROMPT,
-      RESUME_ANALYSIS_USER_PROMPT,
-      {
-        filename: actualFileName || 'resume.pdf',
-        fileData: actualFileData,
-        mimeType: 'application/pdf'
-      }
-    );
+    const response = await modelService.analyzeResume({
+      filename: actualFileName || 'resume.pdf',
+      fileData: actualFileData,
+      mimeType: 'application/pdf'
+    });
 
     const result = response.content;
     

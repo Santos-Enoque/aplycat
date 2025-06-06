@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { modelService } from '@/lib/models';
-import { 
-  JOB_EXTRACTION_SYSTEM_PROMPT, 
-  JOB_EXTRACTION_USER_PROMPT 
-} from '@/lib/prompts/resume-prompts';
+import { modelService } from '@/lib/models-updated';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -60,11 +56,7 @@ export async function POST(request: NextRequest) {
       }
     ];
 
-    const response = await modelService.extractJobInfo(
-      JOB_EXTRACTION_SYSTEM_PROMPT,
-      JOB_EXTRACTION_USER_PROMPT(jobUrl),
-      tools
-    );
+    const response = await modelService.extractJobInfo(jobUrl, tools);
 
     const result = response.content;
     

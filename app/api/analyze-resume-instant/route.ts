@@ -3,11 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { parseOpenAIResponse } from '@/lib/json-parser';
 import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
-import { modelService } from '@/lib/models';
-import { 
-  RESUME_ANALYSIS_SYSTEM_PROMPT, 
-  RESUME_ANALYSIS_USER_PROMPT 
-} from '@/lib/prompts/resume-prompts';
+import { modelService } from '@/lib/models-updated';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -56,15 +52,11 @@ export async function POST(request: NextRequest) {
     console.log('[INSTANT_ANALYSIS] Starting AI analysis...');
 
     // Use the model service for immediate analysis
-    const response = await modelService.analyzeResume(
-      RESUME_ANALYSIS_SYSTEM_PROMPT,
-      RESUME_ANALYSIS_USER_PROMPT,
-      {
-        filename: fileName,
-        fileData: fileData,
-        mimeType: 'application/pdf'
-      }
-    );
+    const response = await modelService.analyzeResume({
+      filename: fileName,
+      fileData: fileData,
+      mimeType: 'application/pdf'
+    });
 
     const result = response.content;
     
