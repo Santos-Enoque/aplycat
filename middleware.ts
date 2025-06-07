@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIP } from './lib/middleware/edge-security';
 
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
@@ -20,6 +21,15 @@ const isPublicRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const url = req.nextUrl;
+
+    // Apply rate limiting to payment endpoints
+    if (url.pathname.startsWith('/api/payments/')) {
+      const ip = getClientIP(req);
+      
+      if (!checkRateLimit(ip)) {
+        return new NextResponse('Too Many Requests', { status: 429 });
+      }
+    }
 
   // Redirect authenticated users away from auth pages
   if (userId && (url.pathname.startsWith('/sign-in') || url.pathname.startsWith('/sign-up'))) {

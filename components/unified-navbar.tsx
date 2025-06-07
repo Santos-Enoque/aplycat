@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUser, SignInButton, UserButton, useClerk } from "@clerk/nextjs";
-import { CreditsModal } from "@/components/credits-modal";
+import { EnhancedCreditsModal } from "@/components/enhanced-credits-modal";
 import { getUserCredits } from "@/lib/actions/dashboard-actions";
 import {
   Cat,
@@ -298,10 +298,21 @@ export function UnifiedNavbar() {
         )}
       </div>
 
-      {/* Credits Modal */}
-      <CreditsModal
+      {/* Enhanced Credits Modal */}
+      <EnhancedCreditsModal
         isOpen={isCreditsModalOpen}
         onClose={() => setIsCreditsModalOpen(false)}
+        onCreditsUpdated={async () => {
+          // Refresh user credits after purchase
+          try {
+            const updatedCredits = await getUserCredits();
+            setUserCredits(updatedCredits);
+          } catch (error) {
+            console.error("Failed to refresh credits:", error);
+            // Fallback to full page reload if credits fetch fails
+            window.location.reload();
+          }
+        }}
       />
     </nav>
   );

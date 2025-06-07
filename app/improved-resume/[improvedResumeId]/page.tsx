@@ -199,57 +199,78 @@ function ResumePreview({
     const displayValue =
       hasKeywordHighlights && !isEditing ? highlightKeywords(value) : value;
 
+    const commonStyles = {
+      ...style,
+      wordWrap: "break-word" as const,
+      whiteSpace: multiline ? ("pre-wrap" as const) : ("nowrap" as const),
+      overflow: multiline ? ("hidden" as const) : ("visible" as const),
+      lineHeight: multiline ? "1.5" : "inherit",
+    };
+
+    const commonClassName = `${className} outline-none transition-all duration-200 group relative
+      ${
+        isEditing
+          ? "bg-white ring-2 ring-blue-400 ring-opacity-50 shadow-sm rounded-md px-2 py-1"
+          : "cursor-text hover:bg-gray-50 hover:bg-opacity-70 rounded px-1 py-0.5"
+      }
+      ${isHighlighted(field) ? "bg-yellow-100 border border-yellow-300" : ""}
+      ${multiline ? "min-h-[1.5rem]" : ""}
+    `;
+
+    // Return different JSX structures to avoid dangerouslySetInnerHTML + children conflict
+    if (!isEditing && hasKeywordHighlights) {
+      // Use dangerouslySetInnerHTML with NO children - UI elements outside
+      return (
+        <div className="relative group">
+          <div
+            ref={editableRef}
+            contentEditable={isEditing}
+            suppressContentEditableWarning={true}
+            className={commonClassName}
+            style={commonStyles}
+            onClick={handleClick}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            onInput={handleInput}
+            title="Click to edit"
+            role="textbox"
+            aria-label={`Edit ${field}`}
+            dangerouslySetInnerHTML={{ __html: displayValue }}
+          />
+          <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
+          {isHighlighted(field) && (
+            <Badge
+              variant="secondary"
+              className="absolute -top-2 -right-2 text-xs pointer-events-none"
+            >
+              AI Added
+            </Badge>
+          )}
+        </div>
+      );
+    }
+
+    // Normal rendering without dangerouslySetInnerHTML
     return (
       <div
         ref={editableRef}
         contentEditable={isEditing}
         suppressContentEditableWarning={true}
-        className={`${className} outline-none transition-all duration-200 group relative
-          ${
-            isEditing
-              ? "bg-white ring-2 ring-blue-400 ring-opacity-50 shadow-sm rounded-md px-2 py-1"
-              : "cursor-text hover:bg-gray-50 hover:bg-opacity-70 rounded px-1 py-0.5"
-          }
-          ${
-            isHighlighted(field) ? "bg-yellow-100 border border-yellow-300" : ""
-          }
-          ${multiline ? "min-h-[1.5rem]" : ""}
-        `}
-        style={{
-          ...style,
-          wordWrap: "break-word",
-          whiteSpace: multiline ? "pre-wrap" : "nowrap",
-          overflow: multiline ? "hidden" : "visible",
-          lineHeight: multiline ? "1.5" : "inherit",
-        }}
+        className={commonClassName}
+        style={commonStyles}
         onClick={handleClick}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         onInput={handleInput}
-        {...(!isEditing && hasKeywordHighlights
-          ? { dangerouslySetInnerHTML: { __html: displayValue } }
-          : {})}
         title={isEditing ? "" : "Click to edit"}
         role="textbox"
         aria-label={`Edit ${field}`}
       >
         {isEditing ? (
           value
-        ) : !hasKeywordHighlights ? (
-          <>
-            {value}
-            <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
-            {isHighlighted(field) && (
-              <Badge
-                variant="secondary"
-                className="absolute -top-2 -right-2 text-xs pointer-events-none"
-              >
-                AI Added
-              </Badge>
-            )}
-          </>
         ) : (
           <>
+            {value}
             <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
             {isHighlighted(field) && (
               <Badge
