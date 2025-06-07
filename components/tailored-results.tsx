@@ -40,6 +40,83 @@ export function TailoredResults({
     setTimeout(() => setCopiedSection(null), 2000);
   };
 
+  const downloadContent = () => {
+    if (activeView === "cover" && coverLetter) {
+      // Download cover letter
+      const blob = new Blob([coverLetter], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${tailoredResume.personalInfo.name.replace(
+        /\s+/g,
+        "_"
+      )}_Cover_Letter.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else {
+      // Download tailored resume
+      const resumeText = `
+${tailoredResume.personalInfo.name}
+${tailoredResume.personalInfo.email} | ${tailoredResume.personalInfo.phone} | ${
+        tailoredResume.personalInfo.location
+      }
+${
+  tailoredResume.personalInfo.linkedin
+    ? `LinkedIn: ${tailoredResume.personalInfo.linkedin}`
+    : ""
+}
+
+PROFESSIONAL SUMMARY
+${tailoredResume.professionalSummary}
+
+PROFESSIONAL EXPERIENCE
+${tailoredResume.experience
+  .map(
+    (exp: any) => `
+${exp.title} | ${exp.company} | ${exp.location} | ${exp.startDate} - ${
+      exp.endDate
+    }
+${exp.achievements.map((achievement: string) => `• ${achievement}`).join("\n")}
+`
+  )
+  .join("\n")}
+
+EDUCATION
+${tailoredResume.education
+  .map(
+    (edu: any) => `
+${edu.degree} | ${edu.institution} | ${edu.year}
+${edu.details || ""}
+`
+  )
+  .join("\n")}
+
+CORE COMPETENCIES
+Technical Skills: ${tailoredResume.skills.technical.join(", ")}
+${
+  tailoredResume.skills.certifications.length > 0
+    ? `Certifications: ${tailoredResume.skills.certifications.join(", ")}`
+    : ""
+}
+      `.trim();
+
+      const blob = new Blob([resumeText], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${tailoredResume.personalInfo.name.replace(
+        /\s+/g,
+        "_"
+      )}_Tailored_Resume.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const highlightKeywords = (text: string) => {
     if (!tailoringAnalysis?.keywordAlignment) return text;
 
@@ -88,9 +165,9 @@ export function TailoredResults({
             )}
             {showAnalysis ? "Hide" : "Show"} Analysis
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={downloadContent}>
             <Download className="h-4 w-4 mr-2" />
-            Download
+            Download {activeView === "cover" ? "Cover Letter" : "Resume"}
           </Button>
         </div>
       </div>
