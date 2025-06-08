@@ -36,11 +36,18 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 </div>
               )}
             </div>
-            <Link href="/analyze">
-              <Button className="bg-purple-600 hover:bg-purple-700">
-                Analyze Resume
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/analyze-direct">
+                <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
+                  ⚡ Direct Analysis
+                </Button>
+              </Link>
+              <Link href="/analyze">
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  Standard Analysis
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

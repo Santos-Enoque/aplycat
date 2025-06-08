@@ -1,6 +1,9 @@
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { promptCache } from '@/lib/cache/prompt-cache';
+import { z } from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+import { ModelFileInput } from './models'; // Re-use from existing models file
 
 // Define model provider types
 export type ModelProvider = 'openai' | 'gemini' | 'anthropic';
@@ -18,12 +21,6 @@ export interface ModelConfig {
 export interface ModelMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
-}
-
-export interface ModelFileInput {
-  filename: string;
-  fileData: string; // base64 encoded
-  mimeType?: string;
 }
 
 export interface ModelInput {
@@ -49,6 +46,30 @@ export interface StreamingChunk {
   timestamp: string;
   progress?: number; // 0-100
 }
+
+const ResumeSectionSchema = z.object({
+  section_name: z.string().describe("The name of the resume section (e.g., 'Professional Summary', 'Experience')."),
+  found: z.boolean().describe("Whether the section was found in the resume."),
+  score: z.number().describe("The score for this section, from 0 to 100."),
+  rating: z.enum(["Excellent", "Good", "Needs Work", "Poor"]).describe("The qualitative rating for this section."),
+  roast: z.string().describe("A short, witty, and constructive roast of this section."),
+  good_things: z.array(z.string()).describe("A list of specific strengths of this section."),
+  issues_found: z.array(z.string()).describe("A list of specific weaknesses or issues in this section."),
+  quick_fixes: z.array(z.string()).describe("A list of actionable quick fixes for the issues found."),
+});
+
+export const ResumeAnalysisSchema = z.object({
+  overall_score: z.number().describe("The overall score for the entire resume, from 0 to 100."),
+  ats_score: z.number().describe("The estimated Applicant Tracking System (ATS) compatibility score, from 0 to 100."),
+  main_roast: z.string().describe("A summary-level, witty, and constructive roast of the entire resume."),
+  score_category: z.enum(["Excellent", "Good", "Needs Work", "Poor"]).describe("The overall category based on the score."),
+  resume_sections: z.array(ResumeSectionSchema).describe("A detailed analysis of each section of the resume."),
+  missing_sections: z.array(z.string()).describe("A list of important sections that are missing from the resume."),
+});
+
+export type ResumeAnalysis = z.infer<typeof ResumeAnalysisSchema>;
+
+const analysisJsonSchema = zodToJsonSchema(ResumeAnalysisSchema, "ResumeAnalysis");
 
 // Abstract base class for model providers
 abstract class BaseModelProvider {
@@ -221,10 +242,10 @@ class OpenAIProvider extends BaseModelProvider {
               timestamp: new Date().toISOString(),
               progress: 100,
             };
-          } else if (event.type === 'response.error') {
+          } else if (event.type === 'error') {
             yield {
               type: 'error',
-              error: event.error || 'Unknown streaming error',
+              error: (event as any).error || 'Unknown streaming error',
               timestamp: new Date().toISOString(),
             };
             break;
@@ -290,7 +311,7 @@ class OpenAIProvider extends BaseModelProvider {
     }
     
     // Extract completed sections using more robust regex
-    const sectionsMatch = content.match(/"resume_sections":\s*\[(.*?)\]/s);
+    const sectionsMatch = content.match(/"resume_sections":\s*\[([\s\S]*?)\]/g);
     if (sectionsMatch) {
       try {
         const sectionsContent = `[${sectionsMatch[1]}]`;
@@ -538,20 +559,41 @@ export class StreamingModelService {
   }
 
   // New streaming analysis method
-  analyzeResumeStream(resumeFile: ModelFileInput): Promise<AsyncIterable<StreamingChunk>> {
-    return (async () => {
-      const provider = await this.getProvider();
-      
-      const { RESUME_ANALYSIS_SYSTEM_PROMPT, RESUME_ANALYSIS_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
-      
-      return provider.generateResponseStream({
+  async *analyzeResumeStream(userId: string, resumeFile: ModelFileInput): AsyncIterable<string> {
+    const provider = await this.getProvider();
+    
+    /*
+    // Deduct credits before starting analysis to prevent unauthorized use
+    try {
+        const updatedUser = await this.deductCredit(userId);
+        if (!updatedUser) {
+            yield JSON.stringify({ error: "Credit deduction failed or user not found.", analysis: null });
+            return;
+        }
+    } catch (error) {
+        yield JSON.stringify({ error: "Failed to deduct credits.", analysis: null });
+        return;
+    }
+    */
+
+    const systemPrompt = await this.getSystemPrompt();
+    const userPrompt = this.getUserPrompt();
+    
+    const stream = provider.generateResponseStream({
         messages: [
-          { role: 'system', content: RESUME_ANALYSIS_SYSTEM_PROMPT },
-          { role: 'user', content: RESUME_ANALYSIS_USER_PROMPT },
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
         ],
         files: [resumeFile],
-      });
-    })();
+    });
+
+    for await (const chunk of stream) {
+        if (chunk.type === 'partial_analysis' || chunk.type === 'complete_analysis') {
+            yield JSON.stringify(chunk.data);
+        } else if (chunk.type === 'error') {
+            yield JSON.stringify({ error: chunk.error });
+        }
+    }
   }
 
   // Other existing methods...
@@ -625,6 +667,25 @@ export class StreamingModelService {
     this.provider = null;
     this.currentConfig = null;
     console.log('[StreamingModelService] Configuration cache cleared, will reload on next request');
+  }
+
+  /*
+  private async deductCredit(userId: string) {
+    // This is a placeholder. In a real app, you'd have proper credit deduction logic.
+    // For now, we'll just log it.
+    console.log(`Deducting credit for user ${userId}`);
+    return { id: userId, credits: 99 }; // Return a mock user object
+  }
+  */
+
+  private async getSystemPrompt(): Promise<string> {
+    const { RESUME_ANALYSIS_SYSTEM_PROMPT } = await import('@/lib/prompts/resume-prompts');
+    return RESUME_ANALYSIS_SYSTEM_PROMPT;
+  }
+
+  private getUserPrompt(): string {
+    // This could be dynamic in the future, hence it's a method
+    return 'Analyze this resume.';
   }
 }
 

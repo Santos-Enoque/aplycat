@@ -11,180 +11,104 @@ interface StreamingChunk {
   progress?: number;
 }
 
-interface UseStreamingAnalysisReturn {
-  analysis: Partial<ResumeAnalysis> | null;
-  isStreaming: boolean;
-  isComplete: boolean;
+type StreamingStatus = 'idle' | 'connecting' | 'streaming' | 'completed' | 'error';
+
+export interface UseStreamingAnalysisReturn {
+  analysis: any | null;
+  status: StreamingStatus;
   error: string | null;
-  progress: number;
-  startAnalysis: (fileData: string, fileName: string) => Promise<void>;
-  stopAnalysis: () => void;
-  retryAnalysis: () => Promise<void>;
+  startAnalysis: (file: File) => Promise<void>;
 }
 
 export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
-  const [analysis, setAnalysis] = useState<Partial<ResumeAnalysis> | null>(null);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
+  const [analysis, setAnalysis] = useState<any | null>(null);
+  const [status, setStatus] = useState<StreamingStatus>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
-  
-  // Store current request details for retry functionality
-  const currentRequestRef = useRef<{ fileData: string; fileName: string } | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const startAnalysis = useCallback(async (fileData: string, fileName: string) => {
-    // Store request details for retry
-    currentRequestRef.current = { fileData, fileName };
-    
-    // Reset state
-    setIsStreaming(true);
-    setIsComplete(false);
+  const startAnalysis = useCallback(async (file: File) => {
+    setStatus('connecting');
     setError(null);
     setAnalysis(null);
-    setProgress(0);
 
-    // Create abort controller for cancellation
-    abortControllerRef.current = new AbortController();
+    const formData = new FormData();
+    formData.append('file', file);
 
     try {
-      console.log('[STREAMING_HOOK] Starting analysis for:', fileName);
-      
       const response = await fetch('/api/analyze-resume-stream', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({ fileData, fileName }),
-        signal: abortControllerRef.current.signal,
+        body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.status} ${response.statusText}`);
+      if (!response.ok || !response.body) {
+        const errorText = await response.text();
+        throw new Error(`Failed to start analysis: ${response.status} ${errorText}`);
       }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No reader available for streaming response');
-      }
-
+      
+      setStatus('streaming');
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
-      
-      console.log('[STREAMING_HOOK] Starting to read stream...');
-      
+
       while (true) {
         const { done, value } = await reader.read();
-        
         if (done) {
-          console.log('[STREAMING_HOOK] Stream completed');
+          // Final check on the buffer in case the last chunk was incomplete
+          if (buffer.trim()) {
+            try {
+              const finalData = JSON.parse(buffer);
+              setAnalysis(finalData);
+            } catch (e) {
+              console.error('[useStreamingAnalysis] Error parsing final buffer:', e);
+            }
+          }
+          setStatus('completed');
           break;
         }
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process all complete event messages in the buffer
+        const eventMessages = buffer.split('\n\n');
         
-        // Decode chunk and add to buffer
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk;
-        
-        // Process complete lines from buffer
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
-        
-        for (const line of lines) {
-          if (line.trim()) {
+        // The last part of the buffer might be an incomplete message, so we keep it.
+        buffer = eventMessages.pop() || ''; 
+
+        for (const message of eventMessages) {
+          if (message.startsWith('data:')) {
             try {
-              const data: StreamingChunk = JSON.parse(line);
-              console.log(`[STREAMING_HOOK] Received chunk: ${data.type}`);
-              
-              switch (data.type) {
-                case 'partial_analysis':
-                  if (data.data) {
-                    setAnalysis(prev => ({ ...prev, ...data.data }));
-                    setProgress(data.progress || 0);
-                    console.log('[STREAMING_HOOK] Updated partial analysis');
-                  }
-                  break;
-                  
-                case 'complete_analysis':
-                  if (data.data) {
-                    setAnalysis(data.data as ResumeAnalysis);
-                    setProgress(100);
-                    setIsComplete(true);
-                    setIsStreaming(false);
-                    console.log('[STREAMING_HOOK] Analysis completed');
-                  }
-                  break;
-                  
-                case 'error':
-                  setError(data.error || 'Unknown streaming error');
-                  setIsStreaming(false);
-                  setIsComplete(false);
-                  console.error('[STREAMING_HOOK] Stream error:', data.error);
-                  break;
-                  
-                default:
-                  console.log('[STREAMING_HOOK] Unknown chunk type:', data.type);
+              const jsonStr = message.substring(5).trim();
+              if (jsonStr) {
+                const data = JSON.parse(jsonStr);
+                
+                // The backend now sends the partial/complete analysis object directly
+                setAnalysis(prev => ({ ...prev, ...data }));
               }
-            } catch (parseError) {
-              console.warn('[STREAMING_HOOK] Failed to parse chunk:', line, parseError);
+            } catch (e) {
+              console.error('[useStreamingAnalysis] Error parsing stream data:', e, "Received:", message);
+              // Don't throw, just log and continue, as it might be a partial chunk
+            }
+          } else if (message.startsWith('event: error')) {
+            try {
+              const jsonStr = message.split('\n')[1]?.substring(5).trim();
+              if(jsonStr) {
+                const errorData = JSON.parse(jsonStr);
+                throw new Error(errorData.error || 'Unknown stream error');
+              }
+            } catch(e) {
+               throw new Error('Could not parse error event from stream.');
             }
           }
         }
       }
-      
-      // If we reach here without completion, something went wrong
-      if (!isComplete && !error) {
-        setError('Analysis stream ended unexpectedly');
-        setIsStreaming(false);
-      }
-      
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        console.log('[STREAMING_HOOK] Analysis was cancelled');
-        setError('Analysis was cancelled');
-      } else {
-        console.error('[STREAMING_HOOK] Analysis error:', err);
-        setError(err instanceof Error ? err.message : 'Analysis failed');
-      }
-      setIsStreaming(false);
-      setIsComplete(false);
-    } finally {
-      // Clean up
-      abortControllerRef.current = null;
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      console.error('[useStreamingAnalysis] Error:', errorMessage);
+      setError(errorMessage);
+      setStatus('error');
     }
   }, []);
 
-  const stopAnalysis = useCallback(() => {
-    console.log('[STREAMING_HOOK] Stopping analysis...');
-    
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    
-    setIsStreaming(false);
-    setError('Analysis was stopped');
-  }, []);
-
-  const retryAnalysis = useCallback(async () => {
-    console.log('[STREAMING_HOOK] Retrying analysis...');
-    
-    if (currentRequestRef.current) {
-      const { fileData, fileName } = currentRequestRef.current;
-      await startAnalysis(fileData, fileName);
-    } else {
-      setError('No previous request to retry');
-    }
-  }, [startAnalysis]);
-
-  return {
-    analysis,
-    isStreaming,
-    isComplete,
-    error,
-    progress,
-    startAnalysis,
-    stopAnalysis,
-    retryAnalysis,
-  };
+  return { analysis, status, error, startAnalysis };
 }
 
 // Additional hook for managing multiple streaming analyses
