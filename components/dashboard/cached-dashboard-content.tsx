@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboardData } from "@/hooks/use-dashboard-data";
-import { NewDashboardContent } from "./new-dashboard-content";
+import { DashboardContent } from "./dashboard-content";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
@@ -49,9 +49,7 @@ export function CachedDashboardContent() {
     <div className="min-h-screen bg-gray-50">
       <main>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <NewDashboardContent
-            user={{ improvedResumes: userData.improvedResumes }}
-          />
+          <DashboardContent user={userData} />
         </div>
       </main>
     </div>

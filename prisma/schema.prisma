@@ -222,11 +222,6 @@ model ImprovedResume {
     improvementSummary String? // AI-generated summary of changes made
     keyChanges         Json? // Structured list of key changes made
 
-    // Tailoring specific fields
-    isTailored     Boolean @default(false)
-    jobDescription String?
-    coverLetter    String?
-
     // Quality metrics
     originalScore         Int? // Original resume score
     improvedScore         Int? // Estimated improved score
@@ -261,7 +256,7 @@ model ImprovedResume {
     // Performance indexes for dashboard
     @@index([userId, isCompleted, createdAt(sort: Desc)])
     @@index([resumeId, isCompleted, createdAt(sort: Desc)])
-    @@index([userId, isActive, isFavorite, isTailored])
+    @@index([userId, isActive, isFavorite])
     @@map("improved_resumes")
 }
 

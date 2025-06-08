@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { EnhancedLoading } from "@/components/enhanced-loading";
 import { ImprovedResume, Experience, Education } from "@/types/improved-resume";
-import { ResumePreview, EditableResumeData } from "@/components/resume-preview";
 
 interface ImprovedResumeProps {
   params: Promise<{ improvedResumeId: string }>;
@@ -61,6 +60,10 @@ interface ImprovedResumeData {
     fileName: string;
     title?: string;
   };
+}
+
+interface EditableResumeData extends ImprovedResume {
+  _hasChanges?: boolean;
 }
 
 // ATS-Friendly Resume Preview Component
