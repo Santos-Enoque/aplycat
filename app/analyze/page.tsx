@@ -1,406 +1,178 @@
-// app/analyze/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { AnalysisCards } from "@/components/analysis-cards";
-import { EnhancedLoading } from "@/components/enhanced-loading";
+import React, { useState, useEffect, Suspense, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useStreamingAnalysis } from "@/hooks/use-streaming-analysis";
+import { StreamingAnalysisDisplay } from "@/components/streaming-analysis-display";
+import { ImproveResumeModal } from "@/components/improve-resume-modal";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { AnalysisResponse } from "@/types/analysis";
+import { Loader, XCircle, Zap, FileText, AlertCircle } from "lucide-react";
+import type { ModelFileInput } from "@/lib/models";
 
-export default function OptimizedAnalyzePage() {
+function AnalyzePageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(
-    null
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [backgroundStatus, setBackgroundStatus] = useState<{
-    upload: "pending" | "completed" | "failed";
-    metadata: "pending" | "completed" | "failed";
-  }>({ upload: "pending", metadata: "pending" });
-  const [realTimeSteps, setRealTimeSteps] = useState<
-    Array<{
-      id: string;
-      title: string;
-      description: string;
-      status: "pending" | "in-progress" | "completed" | "error";
-      timestamp?: Date;
-    }>
-  >([]);
-  const [apiLogs, setApiLogs] = useState<string[]>([]);
-
-  const addApiLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setApiLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
-  };
-
-  const updateStep = (
-    stepId: string,
-    status: "pending" | "in-progress" | "completed" | "error",
-    title?: string,
-    description?: string
-  ) => {
-    setRealTimeSteps((prev) => {
-      const existingIndex = prev.findIndex((step) => step.id === stepId);
-      const stepData = {
-        id: stepId,
-        title: title || prev[existingIndex]?.title || stepId,
-        description: description || prev[existingIndex]?.description || "",
-        status,
-        timestamp:
-          status === "completed" || status === "error"
-            ? new Date()
-            : prev[existingIndex]?.timestamp,
-      };
-
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = stepData;
-        return updated;
-      } else {
-        return [...prev, stepData];
-      }
-    });
-  };
-
-  const initializeAnalysisSteps = () => {
-    const steps = [
-      {
-        id: "auth",
-        title: "Authenticating",
-        description: "Verifying user credentials",
-      },
-      {
-        id: "data-prep",
-        title: "Preparing Data",
-        description: "Loading resume content",
-      },
-      {
-        id: "ai-analysis",
-        title: "AI Analysis",
-        description: "Analyzing resume with AI",
-      },
-      {
-        id: "processing",
-        title: "Processing Results",
-        description: "Parsing analysis results",
-      },
-      {
-        id: "saving",
-        title: "Saving Analysis",
-        description: "Storing results to database",
-      },
-    ];
-
-    setRealTimeSteps(
-      steps.map((step) => ({ ...step, status: "pending" as const }))
-    );
-    setApiLogs([]);
-  };
+  const { analysis, status, error, startAnalysis } = useStreamingAnalysis();
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [hasInitiated, setHasInitiated] = useState(false);
+  const [isImproveModalOpen, setIsImproveModalOpen] = useState(false);
+  const originalFileRef = useRef<ModelFileInput | null>(null);
 
   useEffect(() => {
-    const immediate = searchParams.get("immediate");
-    const fileName = searchParams.get("fileName");
+    if (hasInitiated) return;
 
-    if (immediate === "true") {
-      // This is an immediate analysis request
-      handleImmediateAnalysis(fileName);
+    const storedFile = sessionStorage.getItem("streamingAnalysisFile");
+    if (storedFile) {
+      setHasInitiated(true);
+      const { fileName, fileData } = JSON.parse(storedFile);
+      setFileName(fileName);
+      originalFileRef.current = { filename: fileName, fileData: fileData };
+
+      const fetchRes = fetch(fileData);
+      fetchRes
+        .then((res) => res.blob())
+        .then((blob) => {
+          const file = new File([blob], fileName, { type: blob.type });
+          startAnalysis(file);
+        })
+        .catch((err) => {
+          console.error("Error converting base64 to file:", err);
+          // Handle error state in UI
+        });
+
+      // Clean up sessionStorage after use
+      sessionStorage.removeItem("streamingAnalysisFile");
     } else {
-      // Handle other analysis types (existing logic)
-      handleLegacyAnalysis();
+      setHasInitiated(true);
     }
-  }, [searchParams]);
+  }, [startAnalysis, hasInitiated]);
 
-  const handleImmediateAnalysis = async (fileName: string | null) => {
-    if (!fileName) {
-      setError("No file information found");
-      return;
-    }
-
-    // Get resume data from sessionStorage
-    const resumeDataStr = sessionStorage.getItem("alycat_resume_data");
-    if (!resumeDataStr) {
-      setError("Resume data not found. Please upload again.");
-      return;
-    }
-
-    setIsAnalyzing(true);
-    setError(null);
-
-    try {
-      const resumeData = JSON.parse(resumeDataStr);
-
-      // Start analysis immediately with raw file data
-      console.log("[ANALYSIS] Starting immediate analysis...");
-
-      const response = await fetch("/api/analyze-resume-instant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: resumeData.fileName,
-          fileData: resumeData.fileData,
-          immediate: true, // Flag for instant analysis
-        }),
-      });
-
-      const result: AnalysisResponse = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Analysis failed");
-      }
-
-      console.log("[ANALYSIS] Analysis completed successfully");
-
-      // Include fileData for improvement functionality
-      setAnalysisResult({
-        ...result,
-        fileData: resumeData.fileData, // Pass fileData for improvement
-      });
-
-      // Clean up sessionStorage
-      sessionStorage.removeItem("aplycat_resume_data");
-
-      // Start background status monitoring
-      monitorBackgroundProcesses();
-    } catch (err: any) {
-      console.error("[ANALYSIS] Analysis failed:", err);
-      setError(err.message || "Analysis failed. Please try again.");
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const monitorBackgroundProcesses = async () => {
-    // Monitor background upload and metadata save
-    let attempts = 0;
-    const maxAttempts = 30; // 60 seconds total
-
-    const checkStatus = async () => {
-      attempts++;
-
-      try {
-        // Check if we have a resumeId (indicates metadata save completed)
-        const resumeId = sessionStorage.getItem("aplycat_resume_id");
-        if (resumeId && backgroundStatus.metadata === "pending") {
-          setBackgroundStatus((prev) => ({ ...prev, metadata: "completed" }));
-          console.log("[BACKGROUND] Metadata save completed");
-        }
-
-        // You could also check upload status via an API endpoint
-        // For now, we'll simulate upload completion after some time
-        if (attempts > 10 && backgroundStatus.upload === "pending") {
-          setBackgroundStatus((prev) => ({ ...prev, upload: "completed" }));
-          console.log("[BACKGROUND] File upload completed");
-        }
-
-        // Continue monitoring if not all complete and under max attempts
-        if (
-          attempts < maxAttempts &&
-          (backgroundStatus.upload === "pending" ||
-            backgroundStatus.metadata === "pending")
-        ) {
-          setTimeout(checkStatus, 2000);
-        }
-      } catch (error) {
-        console.error("[BACKGROUND] Status check failed:", error);
-        // Mark as failed but don't interrupt user experience
-        setBackgroundStatus({ upload: "failed", metadata: "failed" });
-      }
-    };
-
-    setTimeout(checkStatus, 1000);
-  };
-
-  const handleLegacyAnalysis = async () => {
-    // Your existing analysis logic for other cases
-    const analysisId = searchParams.get("analysisId");
-    const resumeId = searchParams.get("resumeId");
-    const fileName = searchParams.get("fileName");
-
-    if (analysisId) {
-      // Load saved analysis
-      await handleLoadSavedAnalysis(analysisId);
-    } else if (resumeId && fileName) {
-      // Analyze existing resume
-      await handleAnalysisWithResumeId(resumeId, fileName);
-    } else {
-      // No valid parameters
-      router.push("/");
-    }
-  };
-
-  const handleLoadSavedAnalysis = async (analysisId: string) => {
-    console.log("[ANALYSIS] Loading saved analysis:", analysisId);
-    setIsAnalyzing(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`/api/saved-analyses/${analysisId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to load saved analysis");
-      }
-
-      console.log("[ANALYSIS] Saved analysis loaded successfully");
-
-      // Transform the saved analysis data to match the expected format
-      setAnalysisResult({
-        success: true,
-        analysis: result.analysis.analysisData,
-        fileName: result.analysis.fileName,
-        resumeId: result.analysis.resumeId, // Now available from saved analyses
-        analysisId: result.analysis.id,
-        processingTimeMs: result.analysis.processingTimeMs,
-        timestamp: result.analysis.createdAt,
-        cached: true,
-      });
-    } catch (err: any) {
-      console.error("[ANALYSIS] Failed to load saved analysis:", err);
-      setError(
-        err.message || "Failed to load saved analysis. Please try again."
-      );
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const handleAnalysisWithResumeId = async (
-    resumeId: string,
-    fileName: string
+  const handleStartImprovement = (
+    targetRole: string,
+    targetIndustry: string
   ) => {
-    console.log("[ANALYSIS] Analyzing with resume ID:", resumeId);
-    setIsAnalyzing(true);
-    setError(null);
-    initializeAnalysisSteps();
+    if (!analysis || !originalFileRef.current) return;
 
-    try {
-      addApiLog("Starting resume analysis");
-      updateStep("auth", "in-progress");
+    sessionStorage.setItem(
+      "improvementJobDetails",
+      JSON.stringify({
+        targetRole,
+        targetIndustry,
+        analysis, // Pass the full analysis
+        originalFile: originalFileRef.current,
+      })
+    );
 
-      addApiLog("Sending analysis request to API");
-      updateStep("auth", "completed");
-      updateStep("data-prep", "in-progress");
-
-      const response = await fetch("/api/analyze-resume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeId: resumeId,
-          fileName: fileName,
-        }),
-      });
-
-      addApiLog("API request sent, waiting for response");
-      updateStep("data-prep", "completed");
-      updateStep("ai-analysis", "in-progress");
-
-      const result: AnalysisResponse = await response.json();
-
-      if (!response.ok) {
-        updateStep("ai-analysis", "error");
-        addApiLog(`API Error: ${result.error || "Analysis failed"}`);
-        throw new Error(result.error || "Analysis failed");
-      }
-
-      addApiLog("AI analysis completed successfully");
-      updateStep("ai-analysis", "completed");
-      updateStep("processing", "in-progress");
-
-      addApiLog("Processing analysis results");
-      updateStep("processing", "completed");
-      updateStep("saving", "in-progress");
-
-      addApiLog("Analysis saved to database");
-      updateStep("saving", "completed");
-
-      console.log("[ANALYSIS] Analysis completed successfully");
-      setAnalysisResult(result);
-    } catch (err: any) {
-      console.error("[ANALYSIS] Analysis failed:", err);
-      addApiLog(`Error: ${err.message}`);
-      setError(err.message || "Analysis failed. Please try again.");
-    } finally {
-      setIsAnalyzing(false);
-    }
+    router.push("/improve");
   };
 
-  const handleRetry = () => {
-    const immediate = searchParams.get("immediate");
-    const fileName = searchParams.get("fileName");
-
-    if (immediate === "true") {
-      handleImmediateAnalysis(fileName);
-    } else {
-      handleLegacyAnalysis();
+  const renderContent = () => {
+    if (!hasInitiated || status === "connecting") {
+      return (
+        <div className="text-center p-8">
+          <Loader className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-800">
+            {status === "connecting" ? "Connecting..." : "Initializing..."}
+          </h3>
+          <p className="text-gray-600 mt-2">
+            Please wait while we prepare the analysis engine.
+          </p>
+        </div>
+      );
     }
+
+    if (status === "streaming" || status === "completed") {
+      return (
+        <StreamingAnalysisDisplay
+          analysis={analysis}
+          status={status}
+          onStartImprovement={() => setIsImproveModalOpen(true)}
+        />
+      );
+    }
+
+    if (status === "error") {
+      return (
+        <Card className="bg-red-50 border-red-200 text-center p-8">
+          <XCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-red-800">
+            Analysis Failed
+          </h3>
+          <p className="text-red-700 mt-2">{error}</p>
+          <Button onClick={() => router.push("/dashboard")} className="mt-4">
+            Return to Dashboard
+          </Button>
+        </Card>
+      );
+    }
+
+    // Default case: No file was found in session storage
+    return (
+      <Card>
+        <CardContent className="text-center p-8">
+          <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-800">
+            No Resume Found for Analysis
+          </h3>
+          <p className="text-gray-600 mt-2">
+            Please upload a resume from your dashboard to begin.
+          </p>
+          <Button onClick={() => router.push("/dashboard")} className="mt-6">
+            Go to Dashboard
+          </Button>
+        </CardContent>
+      </Card>
+    );
   };
 
-  // Show enhanced loading during analysis
-  if (isAnalyzing) {
-    const fileName = searchParams.get("fileName") || "";
-
-    return (
-      <EnhancedLoading
-        title="Aplycat is Analyzing Your Resume"
-        type="analysis"
-        fileName={decodeURIComponent(fileName)}
-      />
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
-          <div className="text-center">
-            <div className="text-6xl mb-4">😿</div>
-            <h3 className="text-xl font-semibold text-red-600 mb-2">
-              Analysis Failed
-            </h3>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <div className="flex gap-3 justify-center">
-              <Button onClick={() => router.push("/")} variant="outline">
-                ← Back to Home
-              </Button>
-              <Button onClick={handleRetry}>Try Again</Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show analysis results
-  if (analysisResult && analysisResult.success) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-6xl mx-auto py-12 px-4">
-          <AnalysisCards
-            analysis={analysisResult.analysis}
-            fileName={analysisResult.fileName}
-            resumeId={analysisResult.resumeId}
-            fileData={analysisResult.fileData}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Fallback loading state
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-6xl mb-4">⏳</div>
-        <h3 className="text-xl font-semibold mb-2">Preparing Analysis...</h3>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100">
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-6xl mx-auto">
+          <header className="text-center mb-12">
+            <div className="inline-block bg-blue-600 text-white rounded-full p-3 mb-4 shadow-lg">
+              <Zap className="w-8 h-8" />
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+              Real-Time Resume Analysis
+            </h1>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              Our AI is analyzing your resume. Watch the results appear live
+              below.
+            </p>
+          </header>
+
+          <main>
+            {fileName &&
+              (status === "streaming" ||
+                status === "completed" ||
+                status === "error") && (
+                <Card className="mb-6">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-3 font-medium">
+                      <FileText className="w-5 h-5 text-blue-600" />
+                      <span>{fileName}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            {renderContent()}
+          </main>
+        </div>
       </div>
+      <ImproveResumeModal
+        isOpen={isImproveModalOpen}
+        onClose={() => setIsImproveModalOpen(false)}
+        onStartImprovement={handleStartImprovement}
+      />
     </div>
+  );
+}
+
+export default function AnalyzePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AnalyzePageContent />
+    </Suspense>
   );
 }

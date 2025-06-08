@@ -66,6 +66,8 @@ export function UnifiedNavbar() {
   // Navigation items for authenticated users
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
+    { name: "Instant Analysis", href: "/analyze-instant", icon: Zap },
+    { name: "Direct Analysis", href: "/analyze-direct", icon: Zap },
     { name: "Resumes", href: "/dashboard/resumes", icon: FileText },
     { name: "Analyses", href: "/dashboard/analyses", icon: Brain },
     { name: "Improvements", href: "/dashboard/improvements", icon: Sparkles },

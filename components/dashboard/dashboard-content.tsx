@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileUploadWithUploadThing } from "@/components/file-upload-with-uploadthing";
+import { FileUploader } from "@/components/file-uploader";
 import { AnalysisDetail } from "@/components/dashboard/analysis-detail";
 import {
   Brain,
@@ -106,22 +106,31 @@ interface DashboardContentProps {
 
 export function DashboardContent({ user }: DashboardContentProps) {
   const router = useRouter();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const handleFileUploaded = async (resumeId: string, fileName: string) => {
-    console.log("[DASHBOARD] File uploaded, navigating to analysis:", {
-      resumeId,
-      fileName,
-    });
-    setIsAnalyzing(true);
-
-    // Navigate to analyze page with resume ID
-    const params = new URLSearchParams({
-      resumeId: resumeId,
-      fileName: encodeURIComponent(fileName),
+  const handleFileSelected = async (file: File) => {
+    toast.info("Preparing your analysis...", {
+      description: "You will be redirected momentarily.",
     });
 
-    router.push(`/analyze?${params.toString()}`);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      sessionStorage.setItem(
+        "streamingAnalysisFile",
+        JSON.stringify({
+          fileName: file.name,
+          fileData: base64,
+        })
+      );
+      router.push("/analyze");
+    };
+    reader.onerror = (error) => {
+      console.error("Error reading file:", error);
+      toast.error("Could not read the selected file.", {
+        description: "Please try a different file or refresh the page.",
+      });
+    };
   };
 
   const handleStartAnalysis = () => {
@@ -265,93 +274,42 @@ export function DashboardContent({ user }: DashboardContentProps) {
           {/* Left Column - Quick Actions */}
           <div className="lg:col-span-1 space-y-6">
             {/* Quick Upload */}
-            <Card>
+            <Card className="col-span-1 lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Plus className="h-5 w-5" />
-                  Quick Actions
+                  <Zap className="text-purple-500" />
+                  Start a New Task
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Primary Upload Action */}
-                <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50/50 hover:bg-purple-50 transition-colors">
-                  <div className="text-center">
-                    <Zap className="h-8 w-8 text-purple-600 mx-auto mb-3" />
-                    <h3 className="text-lg font-semibold text-purple-900 mb-2">
-                      Upload & Analyze Resume
-                    </h3>
-                    <p className="text-purple-700 text-sm mb-4">
-                      Get instant AI-powered feedback in seconds
-                    </p>
-                    <FileUploadWithUploadThing
-                      onFileUploaded={handleFileUploaded}
-                      isLoading={isAnalyzing}
-                    />
-                    {user.credits < 2 && (
-                      <p className="text-red-600 text-xs mt-2">
-                        ⚠️ Need 2 credits to analyze
-                      </p>
-                    )}
-                  </div>
+                <p className="text-sm text-gray-600">
+                  Ready to improve your career prospects? Upload a new resume to
+                  get started, or work with your existing documents.
+                </p>
+                <div className="p-4 border-2 border-dashed border-gray-200 rounded-lg">
+                  <FileUploader
+                    onFileSelect={handleFileSelected}
+                    buttonText="Upload New Resume for Analysis"
+                  />
                 </div>
-
-                {/* Other Actions */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Other Actions
-                  </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   <Button
-                    className="w-full justify-start"
                     variant="outline"
+                    className="w-full"
                     onClick={handleStartImprovement}
-                    disabled={user.credits < 3}
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
-                    <div className="flex-1 text-left">
-                      <div>Improve Existing Resume</div>
-                      <div className="text-xs text-gray-500">3 credits</div>
-                    </div>
-                    {user.credits < 3 && (
-                      <span className="text-xs text-red-500">Need credits</span>
-                    )}
+                    Improve an Existing Resume
                   </Button>
                   <Button
-                    className="w-full justify-start"
                     variant="outline"
+                    className="w-full"
                     onClick={handleStartTailoring}
-                    disabled={user.credits < 4}
                   >
                     <Target className="h-4 w-4 mr-2" />
-                    <div className="flex-1 text-left">
-                      <div>Tailor for Specific Job</div>
-                      <div className="text-xs text-gray-500">4 credits</div>
-                    </div>
-                    {user.credits < 4 && (
-                      <span className="text-xs text-red-500">Need credits</span>
-                    )}
+                    Tailor Resume to a Job
                   </Button>
                 </div>
-
-                {/* Credit Status */}
-                {user.credits < 4 && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-yellow-600" />
-                      <span className="text-sm font-medium text-yellow-800">
-                        Low on credits
-                      </span>
-                    </div>
-                    <p className="text-yellow-700 text-xs mt-1">
-                      You have {user.credits} credits remaining
-                    </p>
-                    <Button
-                      size="sm"
-                      className="mt-2 bg-yellow-600 hover:bg-yellow-700"
-                    >
-                      Get More Credits
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
 

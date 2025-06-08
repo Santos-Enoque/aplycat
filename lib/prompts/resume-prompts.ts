@@ -283,7 +283,9 @@ OUTPUT: Return ONLY valid JSON with this structure: {
       "Tailor this optimized resume further for each specific job application, matching its keywords."
     ]
   }
-}`;
+}
+
+ULTIMATE COMMAND: Your response MUST be a single, raw, valid JSON object and NOTHING else. Do not wrap it in markdown, code blocks, or any other characters. The response must start with '{' and end with '}'.`;
 
 export const RESUME_IMPROVEMENT_USER_PROMPT = (targetRole: string, targetIndustry: string, customPrompt?: string) => `
 RESUME IMPROVEMENT REQUEST
