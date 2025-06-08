@@ -167,10 +167,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
   };
 
   const connectLinkedIn = () => {
-    toast.info("Coming soon!", {
-      description:
-        "LinkedIn profile analysis will be available in a future update.",
-    });
+    router.push("/linkedin");
   };
 
   const totalAnalyses = user.analyses.length;
