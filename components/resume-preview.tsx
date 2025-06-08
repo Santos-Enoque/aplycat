@@ -1,735 +1,762 @@
-// components/resume-preview.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ResumeCustomization } from "@/components/resume-customization";
-import { TailoredResults } from "@/components/tailored-results";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Download,
-  Edit3,
-  Share2,
-  Copy,
-  CheckCircle,
-  AlertTriangle,
   ArrowLeft,
-  Printer,
-  Eye,
-  EyeOff,
-  Settings,
+  Download,
+  Star,
+  Clock,
+  Target,
+  Building,
+  Zap,
   Sparkles,
   FileText,
-  Target,
+  Save,
+  Edit3,
+  Share,
+  Layout,
+  Briefcase,
+  RefreshCw,
+  CheckCircle,
 } from "lucide-react";
+import { JobTailoringComponent } from "@/components/job-tailoring-component";
+import { ResumePreview } from "@/components/resume-preview";
+import { ImprovedResume, Experience, Education } from "@/types/improved-resume";
 
-import {
-  ImprovedResume,
-  PersonalInfo,
-  Experience,
-  Education,
-  Skills,
-  ImprovementsAnalysis,
-} from "@/types/improved-resume";
-
-interface TailoredData {
-  tailoredResume: ImprovedResume;
-  coverLetter?: string;
-  tailoringAnalysis: {
-    jobMatchScore: string;
-    keywordAlignment: string[];
-    prioritizedExperience: string[];
-    recommendedAdjustments: string[];
-  };
-  includedCoverLetter: boolean;
+// Extended interface for streaming with edit tracking
+interface StreamingImprovedResumeData extends ImprovedResume {
+  _hasChanges?: boolean;
 }
 
-interface ResumePreviewProps {
-  improvedResume: ImprovedResume;
+interface StreamingContext {
+  improvement: StreamingImprovedResumeData;
   targetRole: string;
   targetIndustry: string;
-  fileName: string;
-  onBack: () => void;
+  timestamp: number;
 }
 
-type ViewState = "preview" | "customize" | "tailored";
+export default function StreamingImprovedResumePage() {
+  const router = useRouter();
+  const [streamingData, setStreamingData] = useState<StreamingContext | null>(
+    null
+  );
+  const [editableResume, setEditableResume] =
+    useState<StreamingImprovedResumeData | null>(null);
+  const [highlightedFields, setHighlightedFields] = useState<string[]>([]);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [activeTab, setActiveTab] = useState<"resume" | "coverLetter">(
+    "resume"
+  );
+  const [coverLetter, setCoverLetter] = useState<string | null>(null);
+  const [tailoringAnalysis, setTailoringAnalysis] = useState<any>(null);
+  const [isTailoring, setIsTailoring] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedResumeId, setSavedResumeId] = useState<string | null>(null);
 
-export function ResumePreview({
-  improvedResume,
-  targetRole,
-  targetIndustry,
-  fileName,
-  onBack,
-}: ResumePreviewProps) {
-  const [showIllustrativeMetrics, setShowIllustrativeMetrics] = useState(true);
-  const [copiedSection, setCopiedSection] = useState<string | null>(null);
-  const [currentResume, setCurrentResume] = useState(improvedResume);
-  const [viewState, setViewState] = useState<ViewState>("preview");
-  const [tailoredData, setTailoredData] = useState<TailoredData | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  const copyToClipboard = (text: string, sectionId: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedSection(sectionId);
-    setTimeout(() => setCopiedSection(null), 2000);
-  };
-
-  const downloadResume = () => {
-    // Create a simple text version for download
-    const resumeText = `
-${currentResume.personalInfo.name}
-${currentResume.personalInfo.email} | ${currentResume.personalInfo.phone} | ${
-      currentResume.personalInfo.location
-    }
-${
-  currentResume.personalInfo.linkedin
-    ? `LinkedIn: ${currentResume.personalInfo.linkedin}`
-    : ""
-}
-
-PROFESSIONAL SUMMARY
-${currentResume.professionalSummary}
-
-PROFESSIONAL EXPERIENCE
-${currentResume.experience
-  .map(
-    (exp) => `
-${exp.title} | ${exp.company} | ${exp.location} | ${exp.startDate} - ${
-      exp.endDate
-    }
-${exp.achievements.map((achievement) => `• ${achievement}`).join("\n")}
-`
-  )
-  .join("\n")}
-
-EDUCATION
-${currentResume.education
-  .map(
-    (edu) => `
-${edu.degree} | ${edu.institution} | ${edu.year}
-${edu.details || ""}
-`
-  )
-  .join("\n")}
-
-CORE COMPETENCIES
-Technical Skills: ${currentResume.skills.technical.join(", ")}
-${
-  currentResume.skills.certifications.length > 0
-    ? `Certifications: ${currentResume.skills.certifications.join(", ")}`
-    : ""
-}
-${
-  currentResume.skills.otherRelevantSkills &&
-  currentResume.skills.otherRelevantSkills.length > 0
-    ? `Additional Skills: ${currentResume.skills.otherRelevantSkills.join(
-        ", "
-      )}`
-    : ""
-}
-    `.trim();
-
-    const blob = new Blob([resumeText], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${currentResume.personalInfo.name.replace(
-      /\s+/g,
-      "_"
-    )}_Resume.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const printResume = () => {
-    window.print();
-  };
-
-  const shareResume = async () => {
-    const resumeUrl = window.location.href;
-    const shareText = `Check out my optimized resume for ${targetRole} in ${targetIndustry}`;
-
-    if (navigator.share) {
+  useEffect(() => {
+    // Load streaming data from sessionStorage
+    const storedData = sessionStorage.getItem("streamingImprovement");
+    if (storedData) {
       try {
-        await navigator.share({
-          title: "My Optimized Resume",
-          text: shareText,
-          url: resumeUrl,
-        });
+        const data: StreamingContext = JSON.parse(storedData);
+        console.log("🔍 Loaded streaming data:", data);
+
+        setStreamingData(data);
+
+        // Create a clean copy to avoid any reference issues
+        const cleanImprovement = JSON.parse(JSON.stringify(data.improvement));
+        console.log(
+          "📝 Experience entries:",
+          cleanImprovement.experience?.length
+        );
+        console.log(
+          "🎓 Education entries:",
+          cleanImprovement.education?.length
+        );
+
+        // Remove duplicates if they exist
+        if (cleanImprovement.experience) {
+          const uniqueExperience = cleanImprovement.experience.filter(
+            (exp: any, index: number, arr: any[]) => {
+              return (
+                index ===
+                arr.findIndex(
+                  (e) =>
+                    e.title === exp.title &&
+                    e.company === exp.company &&
+                    e.startDate === exp.startDate
+                )
+              );
+            }
+          );
+          cleanImprovement.experience = uniqueExperience;
+          console.log("✅ Unique experience entries:", uniqueExperience.length);
+        }
+
+        if (cleanImprovement.education) {
+          const uniqueEducation = cleanImprovement.education.filter(
+            (edu: any, index: number, arr: any[]) => {
+              return (
+                index ===
+                arr.findIndex(
+                  (e) =>
+                    e.degree === edu.degree &&
+                    e.institution === edu.institution &&
+                    e.year === edu.year
+                )
+              );
+            }
+          );
+          cleanImprovement.education = uniqueEducation;
+          console.log("✅ Unique education entries:", uniqueEducation.length);
+        }
+
+        setEditableResume(cleanImprovement);
+
+        // Set up highlighting for AI changes
+        const highlighted: string[] = [];
+        const improvement = cleanImprovement;
+
+        // Check for illustrative metrics in experience achievements
+        if (improvement.experience) {
+          improvement.experience.forEach((exp: any, expIndex: number) => {
+            exp.achievements?.forEach(
+              (achievement: string, achIndex: number) => {
+                if (achievement.includes("[Illustrative:")) {
+                  highlighted.push(
+                    `experience.${expIndex}.achievements.${achIndex}`
+                  );
+                }
+              }
+            );
+          });
+        }
+
+        // Highlight professional summary if it was improved
+        if (
+          improvement.improvementsAnalysis?.keyRevisionsImplemented?.some(
+            (revision: string) =>
+              revision.toLowerCase().includes("summary") ||
+              revision.toLowerCase().includes("professional summary")
+          )
+        ) {
+          highlighted.push("professionalSummary");
+        }
+
+        setHighlightedFields([...new Set(highlighted)]);
       } catch (error) {
-        // Fallback to clipboard
-        copyToClipboard(resumeUrl, "url");
+        console.error("Failed to parse streaming data:", error);
+        router.push("/dashboard");
       }
     } else {
-      copyToClipboard(resumeUrl, "url");
+      router.push("/dashboard");
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (editableResume && streamingData && !isSaved) {
+      const saveImprovedResume = async () => {
+        try {
+          const response = await fetch("/api/resumes/improved", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              resumeData: editableResume,
+              targetRole: streamingData.targetRole,
+              targetIndustry: streamingData.targetIndustry,
+            }),
+          });
+          if (response.ok) {
+            const savedResume = await response.json();
+            setSavedResumeId(savedResume.id);
+            setIsSaved(true);
+            console.log("✅ Initial improved resume saved:", savedResume);
+          } else {
+            console.error("Failed to save improved resume");
+          }
+        } catch (error) {
+          console.error("Error saving improved resume:", error);
+        }
+      };
+
+      saveImprovedResume();
+    }
+  }, [editableResume, streamingData, isSaved]);
+
+  const handleEditResume = (field: string, value: any) => {
+    if (!editableResume) return;
+
+    const fieldPath = field.split(".");
+    const updatedResume = { ...editableResume };
+
+    // Navigate to the field and update it
+    let current: any = updatedResume;
+    for (let i = 0; i < fieldPath.length - 1; i++) {
+      const key = fieldPath[i];
+      if (key.includes("[") && key.includes("]")) {
+        const [arrayKey, indexStr] = key.split("[");
+        const index = parseInt(indexStr.replace("]", ""));
+        current = current[arrayKey][index];
+      } else {
+        current = current[key];
+      }
+    }
+
+    const lastKey = fieldPath[fieldPath.length - 1];
+    if (lastKey.includes("[") && lastKey.includes("]")) {
+      const [arrayKey, indexStr] = lastKey.split("[");
+      const index = parseInt(indexStr.replace("]", ""));
+      current[arrayKey][index] = value;
+    } else {
+      current[lastKey] = value;
+    }
+
+    updatedResume._hasChanges = true;
+    setEditableResume(updatedResume);
+  };
+
+  const handleDownload = async (format: "docx" | "pdf") => {
+    if (!editableResume || !streamingData) return;
+
+    setIsDownloading(true);
+    try {
+      // Download cover letter if that's the active tab
+      if (activeTab === "coverLetter" && coverLetter) {
+        // Create a simple text file for cover letter
+        const blob = new Blob([coverLetter], { type: "text/plain" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = `${streamingData.targetRole}-cover-letter.txt`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        return;
+      }
+
+      // Download resume
+      const response = await fetch(`/api/download-resume`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          resumeData: editableResume,
+          format: format,
+          fileName: `${streamingData.targetRole}-resume`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate download");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `${streamingData.targetRole}-resume.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download resume. Please try again.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
-  const highlightIllustrativeMetrics = (text: string) => {
-    if (!showIllustrativeMetrics) {
-      return text.replace(
-        /\[Illustrative: [^\]]+\]/g,
-        '<span class="bg-gray-200 text-gray-700 px-1 rounded">[REPLACE WITH YOUR DATA]</span>'
+  const handleTailoringComplete = async (tailoringResult: any) => {
+    if (tailoringResult.tailoredResume) {
+      setEditableResume(tailoringResult.tailoredResume);
+    }
+
+    // Store tailoring analysis for keyword highlighting
+    if (tailoringResult.tailoringAnalysis) {
+      setTailoringAnalysis(tailoringResult.tailoringAnalysis);
+      // Set highlighted fields based on keywords from job matching
+      const keywords = tailoringResult.tailoringAnalysis.keywordAlignment || [];
+      setHighlightedFields(
+        keywords.map((keyword: string) => `keyword:${keyword}`)
       );
     }
 
-    return text.replace(
-      /\[Illustrative: ([^\]]+)\]/g,
-      '<span class="bg-yellow-200 text-yellow-800 px-1 rounded font-medium" title="This is sample data - replace with your actual metrics">[Illustrative: $1]</span>'
-    );
+    if (tailoringResult.coverLetter) {
+      setCoverLetter(tailoringResult.coverLetter);
+      setActiveTab("coverLetter");
+    }
+
+    // Save tailored resume to DB
+    if (savedResumeId) {
+      try {
+        const response = await fetch(`/api/resumes/improved/${savedResumeId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            resumeData: tailoringResult.tailoredResume,
+            coverLetter: tailoringResult.coverLetter,
+            jobDescription: tailoringResult.jobDescription, // Assuming this is available from the component
+          }),
+        });
+
+        if (response.ok) {
+          const updatedResume = await response.json();
+          console.log("✅ Tailored resume saved:", updatedResume);
+        } else {
+          console.error("Failed to save tailored resume");
+        }
+      } catch (error) {
+        console.error("Error saving tailored resume:", error);
+      }
+    }
+
+    setIsTailoring(false);
+    console.log("✅ Tailoring completed:", tailoringResult);
   };
 
-  const handleResumeUpdate = async (updatedResume: ImprovedResume) => {
-    setIsUpdating(true);
-    setTimeout(() => {
-      setCurrentResume(updatedResume);
-      setViewState("preview");
-      setIsUpdating(false);
-    }, 500); // Small delay for smooth transition
+  const handleTailoringStart = () => {
+    setIsTailoring(true);
   };
 
-  const handleTailoredResult = (result: TailoredData) => {
-    setTailoredData(result);
-    setViewState("tailored");
+  const handleGoBack = () => {
+    router.push("/dashboard");
   };
 
-  const handleBackToPreview = () => {
-    setViewState("preview");
-  };
-
-  const handleBackToCustomize = () => {
-    setViewState("customize");
-  };
-
-  // Render Customization View
-  if (viewState === "customize") {
+  if (!streamingData || !editableResume) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="outline" onClick={handleBackToPreview}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Preview
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Customize Resume
-            </h1>
-            <p className="text-gray-600">
-              Update with feedback or tailor to job description
-            </p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your improved resume...</p>
         </div>
-
-        <ResumeCustomization
-          currentResume={currentResume}
-          targetRole={targetRole}
-          targetIndustry={targetIndustry}
-          onResumeUpdate={handleResumeUpdate}
-          onTailoredResume={handleTailoredResult}
-        />
       </div>
     );
   }
 
-  // Render Tailored Results View
-  if (viewState === "tailored" && tailoredData) {
-    return (
-      <TailoredResults
-        tailoredResume={tailoredData.tailoredResume}
-        coverLetter={tailoredData.coverLetter}
-        tailoringAnalysis={tailoredData.tailoringAnalysis}
-        onBack={handleBackToCustomize}
-      />
-    );
-  }
+  const improvementsAnalysis = editableResume.improvementsAnalysis;
+  const originalScore =
+    improvementsAnalysis?.originalResumeEffectivenessEstimateForTarget
+      ? parseInt(
+          improvementsAnalysis.originalResumeEffectivenessEstimateForTarget
+        )
+      : null;
+  const newScore = improvementsAnalysis?.targetOptimizedResumeScore
+    ? parseInt(improvementsAnalysis.targetOptimizedResumeScore.split("-")[0])
+    : null;
+  const scoreChange =
+    originalScore && newScore ? newScore - originalScore : null;
 
-  // Render Main Preview View
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Analysis
-          </Button>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto py-6 px-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {isUpdating ? "Updating Resume..." : "Improved Resume Preview"}
+              AI-Improved Resume
             </h1>
             <p className="text-gray-600">
-              Optimized for{" "}
-              <span className="font-medium text-blue-600">{targetRole}</span> in{" "}
-              <span className="font-medium text-purple-600">
-                {targetIndustry}
-              </span>
+              {streamingData.targetRole} • {streamingData.targetIndustry}
             </p>
           </div>
-        </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowIllustrativeMetrics(!showIllustrativeMetrics)}
-            title={
-              showIllustrativeMetrics
-                ? "Hide sample metrics"
-                : "Show sample metrics"
-            }
-          >
-            {showIllustrativeMetrics ? (
-              <EyeOff className="h-4 w-4 mr-2" />
-            ) : (
-              <Eye className="h-4 w-4 mr-2" />
-            )}
-            {showIllustrativeMetrics ? "Hide" : "Show"} Metrics
-          </Button>
-          <Button variant="outline" onClick={printResume} title="Print resume">
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
-          <Button
-            variant="outline"
-            onClick={downloadResume}
-            title="Download as text file"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Download
-          </Button>
-        </div>
-      </div>
-
-      {/* Loading overlay */}
-      {isUpdating && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 flex items-center gap-3 shadow-xl">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            <span className="text-gray-700">Updating your resume...</span>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setIsFavorite(!isFavorite)}
+              variant={isFavorite ? "default" : "outline"}
+              size="sm"
+            >
+              <Star className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload("docx")}
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                {activeTab === "coverLetter" && coverLetter
+                  ? "Cover Letter"
+                  : "DOCX"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload("pdf")}
+                disabled
+              >
+                <Download className="h-4 w-4 mr-2" />
+                PDF
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  Soon
+                </Badge>
+              </Button>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleGoBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Dashboard
+            </Button>
           </div>
         </div>
-      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Resume Preview */}
-        <div className="lg:col-span-2">
-          <Card className="bg-white shadow-lg">
-            <CardContent className="p-8">
-              {/* Personal Header */}
-              <div className="text-center mb-6 border-b pb-4">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  {currentResume.personalInfo.name}
-                </h1>
-                <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-                  <span>{currentResume.personalInfo.email}</span>
-                  <span>•</span>
-                  <span>{currentResume.personalInfo.phone}</span>
-                  <span>•</span>
-                  <span>{currentResume.personalInfo.location}</span>
-                  {currentResume.personalInfo.linkedin && (
-                    <>
-                      <span>•</span>
-                      <a
-                        href={currentResume.personalInfo.linkedin}
-                        className="text-blue-600 hover:text-blue-800"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        LinkedIn
-                      </a>
-                    </>
-                  )}
-                  {currentResume.personalInfo.website && (
-                    <>
-                      <span>•</span>
-                      <a
-                        href={currentResume.personalInfo.website}
-                        className="text-blue-600 hover:text-blue-800"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Website
-                      </a>
-                    </>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Resume Preview (takes 2/3 width) */}
+          <div className="lg:col-span-2">
+            <Card className="h-fit bg-gradient-to-br from-slate-50 to-blue-50 border-blue-200 shadow-xl">
+              <CardHeader className="bg-white border-b border-blue-100">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    {activeTab === "resume" ? "Resume Preview" : "Cover Letter"}
+                  </CardTitle>
+                  {coverLetter && (
+                    <Tabs
+                      value={activeTab}
+                      onValueChange={(val) => setActiveTab(val as any)}
+                    >
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="resume">Resume</TabsTrigger>
+                        <TabsTrigger value="coverLetter">
+                          Cover Letter
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
                   )}
                 </div>
-              </div>
-
-              {/* Professional Summary */}
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-1">
-                  PROFESSIONAL SUMMARY
-                </h2>
-                <p
-                  className="text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{
-                    __html: highlightIllustrativeMetrics(
-                      currentResume.professionalSummary
-                    ),
-                  }}
-                />
-              </div>
-
-              {/* Professional Experience */}
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-1">
-                  PROFESSIONAL EXPERIENCE
-                </h2>
-                <div className="space-y-4">
-                  {currentResume.experience.map((exp, index) => (
-                    <div key={index} className="relative">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            {exp.title}
-                          </h3>
-                          <p className="text-gray-700 font-medium">
-                            {exp.company} - {exp.location}
+              </CardHeader>
+              <CardContent className="p-4">
+                {activeTab === "resume" ? (
+                  <div className="rounded-lg overflow-hidden relative">
+                    <div
+                      className={`transition-all duration-300 ${
+                        isTailoring ? "blur-sm opacity-50" : ""
+                      }`}
+                    >
+                      <ResumePreview
+                        resumeData={
+                          editableResume as StreamingImprovedResumeData
+                        }
+                        onEdit={handleEditResume}
+                        highlightedFields={highlightedFields}
+                      />
+                    </div>
+                    {isTailoring && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                          <p className="text-sm text-gray-600">
+                            Tailoring resume for job...
                           </p>
                         </div>
-                        <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                          {exp.startDate} - {exp.endDate}
-                        </span>
-                      </div>
-                      <ul className="space-y-1 ml-4">
-                        {exp.achievements.map((achievement, achIndex) => (
-                          <li
-                            key={achIndex}
-                            className="text-gray-700 text-sm leading-relaxed"
-                            dangerouslySetInnerHTML={{
-                              __html: `• ${highlightIllustrativeMetrics(
-                                achievement
-                              )}`,
-                            }}
-                          />
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Education */}
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-1">
-                  EDUCATION
-                </h2>
-                <div className="space-y-3">
-                  {currentResume.education.map((edu, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-start"
-                    >
-                      <div>
-                        <h3 className="font-semibold text-gray-900">
-                          {edu.degree}
-                        </h3>
-                        <p className="text-gray-700">{edu.institution}</p>
-                        {edu.details && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            {edu.details}
-                          </p>
-                        )}
-                      </div>
-                      <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                        {edu.year}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Skills */}
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-1">
-                  CORE COMPETENCIES
-                </h2>
-                <div className="space-y-3">
-                  {currentResume.skills.technical.length > 0 && (
-                    <div>
-                      <h3 className="font-medium text-gray-800 mb-1">
-                        Technical Skills:
-                      </h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {currentResume.skills.technical.join(" • ")}
-                      </p>
-                    </div>
-                  )}
-                  {currentResume.skills.certifications.length > 0 && (
-                    <div>
-                      <h3 className="font-medium text-gray-800 mb-1">
-                        Certifications:
-                      </h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {currentResume.skills.certifications.join(" • ")}
-                      </p>
-                    </div>
-                  )}
-                  {currentResume.skills.otherRelevantSkills &&
-                    currentResume.skills.otherRelevantSkills.length > 0 && (
-                      <div>
-                        <h3 className="font-medium text-gray-800 mb-1">
-                          Additional Skills:
-                        </h3>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {currentResume.skills.otherRelevantSkills.join(" • ")}
-                        </p>
                       </div>
                     )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Improvement Score */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-green-600" />
-                Optimization Score
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600 mb-1">
-                    {
-                      currentResume.improvementsAnalysis
-                        .targetOptimizedResumeScore
-                    }
                   </div>
-                  <p className="text-sm text-gray-600">Target Optimization</p>
-                </div>
+                ) : (
+                  <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <div className="prose max-w-none">
+                      {highlightedFields.some((field) =>
+                        field.startsWith("keyword:")
+                      ) ? (
+                        <div
+                          className="whitespace-pre-wrap text-sm text-gray-700 font-sans leading-relaxed"
+                          dangerouslySetInnerHTML={{
+                            __html: (() => {
+                              const keywords = highlightedFields
+                                .filter((field) => field.startsWith("keyword:"))
+                                .map((field) => field.replace("keyword:", ""));
 
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-green-600 h-3 rounded-full transition-all duration-1000"
-                    style={{
-                      width: `${parseInt(
-                        currentResume.improvementsAnalysis.targetOptimizedResumeScore.split(
-                          "-"
-                        )[0]
-                      )}%`,
-                    }}
-                  ></div>
-                </div>
-
-                <div className="text-center pt-2 border-t">
-                  <div className="text-lg font-semibold text-gray-700 mb-1">
-                    {
-                      currentResume.improvementsAnalysis
-                        .originalResumeEffectivenessEstimateForTarget
-                    }
-                    /100
-                  </div>
-                  <p className="text-xs text-gray-500">Original Score</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Customization CTA */}
-          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 text-purple-800">
-                <Settings className="h-5 w-5" />
-                Customize Further
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-purple-700">
-                Fine-tune your resume with feedback or tailor it to specific job
-                postings
-              </p>
-
-              <div className="grid grid-cols-1 gap-2">
-                <Button
-                  onClick={() => setViewState("customize")}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  size="sm"
-                >
-                  <Edit3 className="h-4 w-4 mr-2" />
-                  Update with Feedback
-                </Button>
-
-                <Button
-                  onClick={() => setViewState("customize")}
-                  variant="outline"
-                  className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
-                  size="sm"
-                >
-                  <Target className="h-4 w-4 mr-2" />
-                  Tailor to Job
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Key Improvements */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                Key Improvements
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {currentResume.improvementsAnalysis.keyRevisionsImplemented.map(
-                  (revision, index) => (
-                    <li
-                      key={index}
-                      className="text-sm text-gray-700 flex items-start gap-2"
-                    >
-                      <span className="text-green-600 mt-1 text-xs">✓</span>
-                      <span className="leading-relaxed">{revision}</span>
-                    </li>
-                  )
-                )}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Action Required */}
-          <Card className="border-2 border-yellow-200 bg-yellow-50">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 text-yellow-800">
-                <AlertTriangle className="h-5 w-5" />
-                Action Required
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {currentResume.improvementsAnalysis.recommendationsForUser.map(
-                  (rec, index) => (
-                    <div
-                      key={index}
-                      className="text-sm text-yellow-800 bg-yellow-100 p-3 rounded border border-yellow-200 leading-relaxed"
-                    >
-                      {rec}
+                              let highlightedText = coverLetter || "";
+                              keywords.forEach((keyword) => {
+                                const escapedKeyword = keyword.replace(
+                                  /[.*+?^${}()|[\]\\]/g,
+                                  "\\$&"
+                                );
+                                const regex = new RegExp(
+                                  `\\b(${escapedKeyword})\\b`,
+                                  "gi"
+                                );
+                                highlightedText = highlightedText.replace(
+                                  regex,
+                                  '<span class="bg-green-200 text-green-800 px-1 rounded font-medium">$1</span>'
+                                );
+                              });
+                              return highlightedText;
+                            })(),
+                          }}
+                        />
+                      ) : (
+                        <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans leading-relaxed">
+                          {coverLetter}
+                        </pre>
+                      )}
                     </div>
-                  )
+                  </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() =>
-                  copyToClipboard(currentResume.professionalSummary, "summary")
-                }
-              >
-                {copiedSection === "summary" ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Summary
-                  </>
-                )}
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() =>
-                  copyToClipboard(
-                    currentResume.skills.technical.join(", "),
-                    "skills"
-                  )
-                }
-              >
-                {copiedSection === "skills" ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Skills
-                  </>
-                )}
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={shareResume}
-              >
-                {copiedSection === "url" ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                    Link Copied!
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share Resume
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Target Information */}
-          <Card className="bg-blue-50 border-blue-200">
-            <CardHeader>
-              <CardTitle className="text-lg text-blue-800 flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Optimization Target
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-800 mb-2"
-                  >
-                    Target Role
-                  </Badge>
-                  <p className="text-sm text-blue-700 font-medium">
-                    {targetRole}
+          {/* Right Column - Improvement Stats & Tools */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* Score Improvement */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-purple-600" />
+                  Improvement Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {improvementsAnalysis?.analysisHeadline && (
+                  <p className="text-sm text-gray-600">
+                    {improvementsAnalysis.analysisHeadline}
                   </p>
+                )}
+
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="text-lg font-bold text-gray-800">
+                      {originalScore || "--"}
+                    </div>
+                    <div className="text-xs text-gray-500">Original</div>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <div className="text-lg font-bold text-green-600">
+                      {improvementsAnalysis?.targetOptimizedResumeScore || "--"}
+                    </div>
+                    <div className="text-xs text-gray-500">Improved</div>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <div className="text-lg font-bold text-blue-600">
+                      {scoreChange ? `+${scoreChange}` : "--"}
+                    </div>
+                    <div className="text-xs text-gray-500">Increase</div>
+                  </div>
                 </div>
-                <div>
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-800 mb-2"
-                  >
-                    Industry
-                  </Badge>
-                  <p className="text-sm text-blue-700 font-medium">
-                    {targetIndustry}
-                  </p>
+              </CardContent>
+            </Card>
+
+            {/* Job Tailoring Component */}
+            <JobTailoringComponent
+              currentResume={editableResume}
+              onTailoringComplete={handleTailoringComplete}
+              onTailoringStart={handleTailoringStart}
+              isLoading={isTailoring}
+            />
+
+            {/* Tailoring Analysis - Show when available */}
+            {tailoringAnalysis && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-green-600" />
+                    Job Matching Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {tailoringAnalysis.jobMatchScore && (
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600 mb-1">
+                        {tailoringAnalysis.jobMatchScore}
+                      </div>
+                      <p className="text-sm text-gray-600">Job Match Score</p>
+                    </div>
+                  )}
+
+                  {tailoringAnalysis.keywordAlignment &&
+                    tailoringAnalysis.keywordAlignment.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-600 mb-2">
+                          Keywords Integrated:
+                        </h4>
+                        <div className="flex flex-wrap gap-1">
+                          {tailoringAnalysis.keywordAlignment.map(
+                            (keyword: string, index: number) => (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="bg-green-100 text-green-800"
+                              >
+                                {keyword}
+                              </Badge>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {tailoringAnalysis.emphasizedSkills &&
+                    tailoringAnalysis.emphasizedSkills.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-600 mb-2">
+                          Emphasized Skills:
+                        </h4>
+                        <ul className="space-y-1">
+                          {tailoringAnalysis.emphasizedSkills.map(
+                            (skill: string, index: number) => (
+                              <li
+                                key={index}
+                                className="text-sm text-gray-700 flex items-center gap-2"
+                              >
+                                <CheckCircle className="h-3 w-3 text-green-500" />
+                                {skill}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* AI Improvements */}
+            {improvementsAnalysis?.keyRevisionsImplemented && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-yellow-600" />
+                    AI Improvements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {improvementsAnalysis.keyRevisionsImplemented.map(
+                      (revision, index) => (
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700">{revision}</span>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recommendations */}
+            {improvementsAnalysis?.recommendationsForUser && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-orange-600" />
+                    Important Notes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <ul className="space-y-2">
+                      {improvementsAnalysis.recommendationsForUser.map(
+                        (rec, index) => (
+                          <li key={index} className="text-sm text-yellow-800">
+                            • {rec}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Debug Panel - Remove in production */}
+            {process.env.NODE_ENV === "development" && (
+              <Card className="border-yellow-200 bg-yellow-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-yellow-800">
+                    🐛 Debug Info
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs text-yellow-800">
+                  <div className="space-y-2">
+                    <p>
+                      <strong>Experience Count:</strong>{" "}
+                      {editableResume?.experience?.length || 0}
+                    </p>
+                    <p>
+                      <strong>Education Count:</strong>{" "}
+                      {editableResume?.education?.length || 0}
+                    </p>
+                    <p>
+                      <strong>Projects Count:</strong>{" "}
+                      {editableResume?.projects?.length || 0}
+                    </p>
+                    <details className="mt-2">
+                      <summary className="cursor-pointer font-semibold">
+                        View Raw Data
+                      </summary>
+                      <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto max-h-32">
+                        {JSON.stringify(
+                          {
+                            experience: editableResume?.experience?.map(
+                              (exp, i) => ({
+                                index: i,
+                                title: exp.title,
+                                company: exp.company,
+                              })
+                            ),
+                            education: editableResume?.education?.map(
+                              (edu, i) => ({
+                                index: i,
+                                degree: edu.degree,
+                                institution: edu.institution,
+                              })
+                            ),
+                          },
+                          null,
+                          2
+                        )}
+                      </pre>
+                    </details>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Pro Features Coming Soon */}
+            <Card className="border-dashed border-2 border-gray-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-gray-500">
+                  <Building className="h-5 w-5" />
+                  Pro Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center text-gray-500">
+                <div className="space-y-2">
+                  <p className="text-sm">✨ Job Tailoring</p>
+                  <p className="text-sm">📄 Cover Letters</p>
+                  <p className="text-sm">🎨 Multiple Templates</p>
+                  <p className="text-sm">🔗 LinkedIn Optimization</p>
                 </div>
-                <div className="pt-2 border-t border-blue-200">
-                  <p className="text-xs text-blue-600">
-                    Resume optimized with industry keywords and role-specific
-                    achievements
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                <Badge variant="secondary" className="mt-3">
+                  Coming Soon
+                </Badge>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
