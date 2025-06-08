@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useStreamingAnalysis } from "@/hooks/use-streaming-analysis";
 import { StreamingAnalysisDisplay } from "@/components/streaming-analysis-display";
+import { ImproveResumeModal } from "@/components/improve-resume-modal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useDropzone } from "react-dropzone";
+import type { ModelFileInput } from "@/lib/models";
 
 function FileUploadArea({
   onFileSelect,
@@ -63,12 +66,65 @@ function FileUploadArea({
 }
 
 export default function InstantAnalysisPage() {
+  const router = useRouter();
   const { analysis, status, error, startAnalysis } = useStreamingAnalysis();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isImproveModalOpen, setIsImproveModalOpen] = useState(false);
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
     startAnalysis(file);
+  };
+
+  const fileToModelFileInput = (file: File): Promise<ModelFileInput> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(",")[1];
+        if (base64String) {
+          resolve({
+            filename: file.name,
+            fileData: base64String,
+            mimeType: file.type,
+          });
+        } else {
+          reject(new Error("Failed to read file as base64."));
+        }
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleStartImprovement = () => {
+    if (!selectedFile) return;
+    setIsImproveModalOpen(true);
+  };
+
+  const handleImprovementSubmit = async (
+    targetRole: string,
+    targetIndustry: string
+  ) => {
+    if (!selectedFile) return;
+
+    try {
+      const originalFile = await fileToModelFileInput(selectedFile);
+
+      sessionStorage.setItem(
+        "improvementJobDetails",
+        JSON.stringify({
+          targetRole,
+          targetIndustry,
+          originalFile,
+        })
+      );
+
+      setIsImproveModalOpen(false);
+      router.push("/improve");
+    } catch (err) {
+      console.error("Error preparing for improvement:", err);
+      // You might want to show an error to the user here
+    }
   };
 
   const renderContent = () => {
@@ -87,7 +143,13 @@ export default function InstantAnalysisPage() {
         );
       case "streaming":
       case "completed":
-        return <StreamingAnalysisDisplay analysis={analysis} status={status} />;
+        return (
+          <StreamingAnalysisDisplay
+            analysis={analysis}
+            status={status}
+            onStartImprovement={handleStartImprovement}
+          />
+        );
       case "error":
         return (
           <Card className="bg-red-50 border-red-200 text-center p-8">
@@ -148,6 +210,11 @@ export default function InstantAnalysisPage() {
                 </Card>
               )}
             {renderContent()}
+            <ImproveResumeModal
+              isOpen={isImproveModalOpen}
+              onClose={() => setIsImproveModalOpen(false)}
+              onStartImprovement={handleImprovementSubmit}
+            />
           </main>
         </div>
       </div>

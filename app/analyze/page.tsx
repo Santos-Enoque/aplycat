@@ -1,18 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useStreamingAnalysis } from "@/hooks/use-streaming-analysis";
 import { StreamingAnalysisDisplay } from "@/components/streaming-analysis-display";
+import { ImproveResumeModal } from "@/components/improve-resume-modal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader, XCircle, Zap, FileText, AlertCircle } from "lucide-react";
+import type { ModelFileInput } from "@/lib/models";
 
 function AnalyzePageContent() {
   const router = useRouter();
   const { analysis, status, error, startAnalysis } = useStreamingAnalysis();
   const [fileName, setFileName] = useState<string | null>(null);
   const [hasInitiated, setHasInitiated] = useState(false);
+  const [isImproveModalOpen, setIsImproveModalOpen] = useState(false);
+  const originalFileRef = useRef<ModelFileInput | null>(null);
 
   useEffect(() => {
     if (hasInitiated) return;
@@ -22,8 +26,8 @@ function AnalyzePageContent() {
       setHasInitiated(true);
       const { fileName, fileData } = JSON.parse(storedFile);
       setFileName(fileName);
+      originalFileRef.current = { filename: fileName, fileData: fileData };
 
-      // Convert base64 back to a File object to pass to the hook
       const fetchRes = fetch(fileData);
       fetchRes
         .then((res) => res.blob())
@@ -43,6 +47,25 @@ function AnalyzePageContent() {
     }
   }, [startAnalysis, hasInitiated]);
 
+  const handleStartImprovement = (
+    targetRole: string,
+    targetIndustry: string
+  ) => {
+    if (!analysis || !originalFileRef.current) return;
+
+    sessionStorage.setItem(
+      "improvementJobDetails",
+      JSON.stringify({
+        targetRole,
+        targetIndustry,
+        analysis, // Pass the full analysis
+        originalFile: originalFileRef.current,
+      })
+    );
+
+    router.push("/improve");
+  };
+
   const renderContent = () => {
     if (!hasInitiated || status === "connecting") {
       return (
@@ -59,7 +82,13 @@ function AnalyzePageContent() {
     }
 
     if (status === "streaming" || status === "completed") {
-      return <StreamingAnalysisDisplay analysis={analysis} status={status} />;
+      return (
+        <StreamingAnalysisDisplay
+          analysis={analysis}
+          status={status}
+          onStartImprovement={() => setIsImproveModalOpen(true)}
+        />
+      );
     }
 
     if (status === "error") {
@@ -131,6 +160,11 @@ function AnalyzePageContent() {
           </main>
         </div>
       </div>
+      <ImproveResumeModal
+        isOpen={isImproveModalOpen}
+        onClose={() => setIsImproveModalOpen(false)}
+        onStartImprovement={handleStartImprovement}
+      />
     </div>
   );
 }

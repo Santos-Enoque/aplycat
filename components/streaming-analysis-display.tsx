@@ -1,7 +1,13 @@
 "use client";
 
 import { ResumeAnalysis } from "@/lib/models-streaming";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,11 +18,14 @@ import {
   Wand2,
   CheckCircle,
   AlertTriangle,
+  Sparkles,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface StreamingAnalysisDisplayProps {
   analysis: any | null;
   status: "idle" | "connecting" | "streaming" | "completed" | "error";
+  onStartImprovement: () => void;
 }
 
 const SectionSkeleton = () => (
@@ -46,6 +55,7 @@ const SectionSkeleton = () => (
 export function StreamingAnalysisDisplay({
   analysis,
   status,
+  onStartImprovement,
 }: StreamingAnalysisDisplayProps) {
   if (status === "idle" || status === "connecting" || !analysis) {
     // Show a set of skeletons on initial load
@@ -97,15 +107,41 @@ export function StreamingAnalysisDisplay({
     }
   };
 
+  const getScoreCategory = (score: number) => {
+    if (score >= 90) return "Excellent";
+    if (score >= 70) return "Good";
+    if (score >= 70) return "bg-green-100 text-green-800";
+    if (score >= 40) return "bg-yellow-100 text-yellow-800";
+    return "bg-red-100 text-red-800";
+  };
+
+  const isComplete = status === "completed";
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
-      {/* Scores Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Overall Score</CardTitle>
-          </CardHeader>
-          <CardContent>
+      {/* Overall Scores */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>Overall Analysis</CardTitle>
+              <CardDescription>
+                Your resume's top-level scores and feedback.
+              </CardDescription>
+            </div>
+            {isComplete && (
+              <Button onClick={onStartImprovement}>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Improve with AI
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-4 rounded-lg bg-gray-50 text-center">
+            <h4 className="text-sm font-medium text-gray-600 mb-1">
+              Overall Score
+            </h4>
             {analysis.overall_score !== undefined ? (
               <div
                 className={`text-3xl font-bold ${getScoreColor(
@@ -117,13 +153,11 @@ export function StreamingAnalysisDisplay({
             ) : (
               <Skeleton className="h-8 w-24" />
             )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">ATS Score</CardTitle>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-50 text-center">
+            <h4 className="text-sm font-medium text-gray-600 mb-1">
+              ATS Score
+            </h4>
             {analysis.ats_score !== undefined ? (
               <div
                 className={`text-3xl font-bold ${getScoreColor(
@@ -135,13 +169,9 @@ export function StreamingAnalysisDisplay({
             ) : (
               <Skeleton className="h-8 w-24" />
             )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Category</CardTitle>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-50 text-center">
+            <h4 className="text-sm font-medium text-gray-600 mb-1">Category</h4>
             {analysis.score_category ? (
               <Badge
                 variant={getBadgeVariant(analysis.score_category)}
@@ -152,9 +182,9 @@ export function StreamingAnalysisDisplay({
             ) : (
               <Skeleton className="h-8 w-24" />
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Main Roast */}
       {analysis.main_roast ? (

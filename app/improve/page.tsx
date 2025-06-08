@@ -1,325 +1,257 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ImprovementModal } from "@/components/improvement-modal";
-import { EnhancedLoading } from "@/components/enhanced-loading";
+import React, { useState, useEffect, Suspense, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { ImprovementResponse } from "@/types/improved-resume";
+import { Loader, AlertCircle, Zap, CheckCircle } from "lucide-react";
 
-export default function ImprovePage() {
+function ImprovePageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isImproving, setIsImproving] = useState(false);
+  const [improvement, setImprovement] = useState(null);
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "completed" | "error"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
-  const [showImprovementModal, setShowImprovementModal] = useState(true);
-  const [existingVersions, setExistingVersions] = useState<number[]>([]);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [improvementData, setImprovementData] = useState<{
-    targetRole: string;
-    targetIndustry: string;
-    fileName: string;
-  } | null>(null);
+  const [progress, setProgress] = useState(0);
+  const hasInitiated = useRef(false);
+
+  // Simulate progress for better UX
+  useEffect(() => {
+    if (status === "loading") {
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 90) return prev; // Stop at 90% until completion
+          return prev + Math.random() * 15;
+        });
+      }, 500);
+
+      return () => clearInterval(interval);
+    }
+  }, [status]);
 
   useEffect(() => {
-    // Check for new resumeId approach
-    const resumeId = searchParams.get("resumeId");
-    const fileName = searchParams.get("fileName");
+    if (hasInitiated.current) return;
+    hasInitiated.current = true;
 
-    // Check for legacy fileData approach
-    const fileData = searchParams.get("fileData");
-
-    // If neither approach has the required parameters, redirect to dashboard
-    if ((!resumeId || !fileName) && (!fileData || !fileName)) {
-      router.push("/dashboard");
-      return;
+    const storedData = sessionStorage.getItem("improvementJobDetails");
+    if (storedData) {
+      const { targetRole, targetIndustry, originalFile } =
+        JSON.parse(storedData);
+      improveResume(originalFile, targetRole, targetIndustry);
     }
+  }, []);
 
-    // Fetch existing versions if we have a resumeId
-    if (resumeId) {
-      fetchExistingVersions(resumeId);
-    }
-  }, [searchParams, router]);
-
-  const fetchExistingVersions = async (resumeId: string) => {
-    try {
-      const response = await fetch(
-        `/api/improved-resumes?resumeId=${resumeId}`
-      );
-      if (response.ok) {
-        const result = await response.json();
-        const versions =
-          result.improvedResumes?.map((ir: any) => ir.version) || [];
-        setExistingVersions(versions);
-        console.log("[IMPROVE_PAGE] Existing versions:", versions);
-      }
-    } catch (error) {
-      console.error("[IMPROVE_PAGE] Failed to fetch existing versions:", error);
-      // Don't block the user if we can't fetch versions
-    }
-  };
-
-  const handleImproveResume = async (
+  const improveResume = async (
+    originalFile: any,
     targetRole: string,
-    targetIndustry: string,
-    customPrompt?: string,
-    versionName?: string
+    targetIndustry: string
   ) => {
-    // Try new approach first
-    const resumeId = searchParams.get("resumeId");
-    const fileName = searchParams.get("fileName");
-
-    // Fallback to legacy approach
-    const fileData = searchParams.get("fileData");
-
-    if ((!resumeId || !fileName) && (!fileData || !fileName)) {
-      router.push("/dashboard");
-      return;
-    }
-
-    setIsImproving(true);
-    setIsSubmitted(true);
-    setShowImprovementModal(false);
+    setStatus("loading");
     setError(null);
-
-    // Store improvement data for the loading screen
-    setImprovementData({
-      targetRole,
-      targetIndustry,
-      fileName: decodeURIComponent(fileName || ""),
-    });
+    setProgress(0);
 
     try {
-      let requestBody;
-
-      if (resumeId && fileName) {
-        // New approach with resumeId
-        requestBody = {
-          resumeId: resumeId,
-          fileName: decodeURIComponent(fileName),
-          targetRole,
-          targetIndustry,
-          customPrompt,
-          versionName,
-        };
-      } else {
-        // Legacy approach with fileData
-        requestBody = {
-          fileData: decodeURIComponent(fileData!),
-          fileName: decodeURIComponent(fileName!),
-          targetRole,
-          targetIndustry,
-          customPrompt,
-          versionName,
-        };
-      }
-
-      console.log("[IMPROVE_PAGE] Submitting improvement request:", {
-        ...requestBody,
-        fileData: requestBody.fileData ? "[REDACTED]" : undefined,
-      });
-
       const response = await fetch("/api/improve-resume", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalFile,
+          targetRole,
+          targetIndustry,
+        }),
       });
-
-      const result: ImprovementResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to improve resume");
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to improve resume: ${response.status} ${errorText}`
+        );
       }
 
-      console.log("[IMPROVE_PAGE] Improvement successful:", {
-        success: result.success,
-        improvedResumeId: result.improvedResumeId,
-        version: result.version,
-        versionName: result.versionName,
-      });
+      const result = await response.json();
 
-      // Direct redirect to the final improved resume page
-      if (result.improvedResumeId) {
-        // Database save completed - redirect directly to the improved resume page
-        router.push(`/improved-resume/${result.improvedResumeId}`);
-      } else if (result.improvedResume) {
-        // If we have the improved resume data but no ID yet, we'll need to wait
-        // for the background save to complete or implement a different strategy
-        console.log(
-          "[IMPROVE_PAGE] No improvedResumeId yet, checking for database save..."
+      if (result.improvedResume) {
+        setProgress(100);
+        setImprovement(result.improvedResume);
+        setStatus("completed");
+
+        // Store the improvement data for the improved resume page
+        sessionStorage.setItem(
+          "streamingImprovement",
+          JSON.stringify({
+            improvement: result.improvedResume,
+            targetRole,
+            targetIndustry,
+            timestamp: Date.now(),
+          })
         );
 
-        // Poll for the saved resume in database
-        await waitForDatabaseSave(resumeId!, result.version || 1);
+        // Small delay to show completion, then redirect
+        setTimeout(() => {
+          router.push("/improved-resume/stream");
+        }, 1500);
       } else {
         throw new Error("No improved resume data received");
       }
     } catch (err: any) {
-      console.error("[IMPROVE_PAGE] Improvement failed:", err);
-      setError(err.message || "An error occurred while improving your resume");
-      setIsSubmitted(false);
-      setShowImprovementModal(true);
-      setImprovementData(null);
-    } finally {
-      setIsImproving(false);
+      setError(err.message || "An unknown error occurred");
+      setStatus("error");
+      setProgress(0);
     }
   };
 
-  const waitForDatabaseSave = async (resumeId: string, version: number) => {
-    let attempts = 0;
-    const maxAttempts = 30; // Wait up to 60 seconds (30 * 2 seconds)
-
-    const checkDatabase = async (): Promise<string | null> => {
-      try {
-        const response = await fetch(
-          `/api/improved-resumes?resumeId=${resumeId}&version=${version}`
-        );
-
-        if (response.ok) {
-          const result = await response.json();
-          const savedResume = result.improvedResumes?.find(
-            (ir: any) => ir.resumeId === resumeId && ir.version === version
-          );
-
-          if (savedResume) {
-            return savedResume.id;
-          }
-        }
-      } catch (error) {
-        console.error("[IMPROVE_PAGE] Error checking database:", error);
-      }
-      return null;
-    };
-
-    return new Promise<void>((resolve, reject) => {
-      const interval = setInterval(async () => {
-        attempts++;
-
-        const savedResumeId = await checkDatabase();
-
-        if (savedResumeId) {
-          clearInterval(interval);
-          console.log(
-            "[IMPROVE_PAGE] Found saved resume, redirecting:",
-            savedResumeId
-          );
-          router.push(`/improved-resume/${savedResumeId}`);
-          resolve();
-          return;
-        }
-
-        if (attempts >= maxAttempts) {
-          clearInterval(interval);
-          console.error("[IMPROVE_PAGE] Timeout waiting for database save");
-          setError(
-            "Resume improved but taking longer to save. Please check your dashboard in a moment."
-          );
-          setIsSubmitted(false);
-          setShowImprovementModal(true);
-          setImprovementData(null);
-          reject(new Error("Database save timeout"));
-          return;
-        }
-      }, 2000); // Check every 2 seconds
-    });
-  };
-
-  const handleGoBack = () => {
-    // Try new approach first
-    const resumeId = searchParams.get("resumeId");
-    const fileName = searchParams.get("fileName");
-
-    if (resumeId && fileName) {
-      // Navigate back to analysis with resumeId
-      const params = new URLSearchParams({
-        resumeId,
-        fileName,
-      });
-      router.push(`/analyze?${params.toString()}`);
-      return;
-    }
-
-    // Fallback to legacy approach
-    const fileData = searchParams.get("fileData");
-    if (fileData && fileName) {
-      const params = new URLSearchParams({
-        fileData,
-        fileName,
-      });
-      router.push(`/analyze?${params.toString()}`);
-      return;
-    }
-
-    // If no valid parameters, go to dashboard
-    router.push("/dashboard");
-  };
-
-  const fileName = searchParams.get("fileName") || "";
-
-  // Show loading screen if submitted and improving
-  if (isSubmitted && isImproving && improvementData) {
+  if (error) {
     return (
-      <EnhancedLoading
-        title="AI is Optimizing Your Resume"
-        type="improvement"
-        fileName={improvementData.fileName}
-        targetRole={improvementData.targetRole}
-        targetIndustry={improvementData.targetIndustry}
-      />
+      <Card className="bg-red-50 border-red-200 text-center p-8">
+        <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-red-800">
+          Improvement Failed
+        </h3>
+        <p className="text-red-700 mt-2">{error}</p>
+        <Button onClick={() => router.push("/dashboard")} className="mt-4">
+          Return to Dashboard
+        </Button>
+      </Card>
+    );
+  }
+
+  if (status === "completed") {
+    return (
+      <Card className="bg-green-50 border-green-200 text-center p-8">
+        <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-green-800">
+          Resume Improved Successfully!
+        </h3>
+        <p className="text-green-700 mt-2">
+          Redirecting to your improved resume...
+        </p>
+        <div className="w-full bg-green-200 rounded-full h-2 mt-4">
+          <div className="bg-green-600 h-2 rounded-full transition-all duration-300 w-full"></div>
+        </div>
+      </Card>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto py-12 px-4">
-        {/* Error State */}
-        {error && (
-          <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto mb-6">
-            <div className="text-center">
-              <div className="text-6xl mb-4">😿</div>
-              <h3 className="text-xl font-semibold text-red-600 mb-2">
-                Oops! Something went wrong
-              </h3>
-              <p className="text-gray-600 mb-6">{error}</p>
-              <div className="flex gap-3 justify-center">
-                <Button onClick={handleGoBack} variant="outline">
-                  ← Back to Analysis
-                </Button>
-                <Button
-                  onClick={() => {
-                    setError(null);
-                    setIsSubmitted(false);
-                    setShowImprovementModal(true);
-                    setImprovementData(null);
-                  }}
-                >
-                  Try Again
-                </Button>
-              </div>
+    <div className="text-center p-8">
+      <Loader className="w-12 h-12 text-purple-500 animate-spin mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-gray-800">
+        AI is improving your resume...
+      </h3>
+      <p className="text-gray-600 mt-2">
+        This may take a moment. Please don't close this page.
+      </p>
+
+      {/* Progress bar */}
+      <div className="w-full max-w-md mx-auto mt-6">
+        <div className="flex justify-between text-sm text-gray-500 mb-2">
+          <span>Processing</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-purple-600 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* Processing steps */}
+      <div className="mt-8 space-y-3 text-left max-w-md mx-auto">
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg ${
+            progress > 10
+              ? "bg-green-50 text-green-700"
+              : "bg-gray-50 text-gray-500"
+          }`}
+        >
+          {progress > 10 ? (
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          ) : (
+            <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+          )}
+          <span className="text-sm font-medium">Analyzing original resume</span>
+        </div>
+
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg ${
+            progress > 40
+              ? "bg-green-50 text-green-700"
+              : "bg-gray-50 text-gray-500"
+          }`}
+        >
+          {progress > 40 ? (
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          ) : (
+            <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+          )}
+          <span className="text-sm font-medium">
+            Optimizing for target role
+          </span>
+        </div>
+
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg ${
+            progress > 70
+              ? "bg-green-50 text-green-700"
+              : "bg-gray-50 text-gray-500"
+          }`}
+        >
+          {progress > 70 ? (
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          ) : (
+            <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+          )}
+          <span className="text-sm font-medium">
+            Enhancing with AI improvements
+          </span>
+        </div>
+
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg ${
+            progress >= 100
+              ? "bg-green-50 text-green-700"
+              : "bg-gray-50 text-gray-500"
+          }`}
+        >
+          {progress >= 100 ? (
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          ) : (
+            <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+          )}
+          <span className="text-sm font-medium">
+            Finalizing improved resume
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ImprovePage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-100">
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-6xl mx-auto">
+          <header className="text-center mb-12">
+            <div className="inline-block bg-purple-600 text-white rounded-full p-3 mb-4 shadow-lg">
+              <Zap className="w-8 h-8" />
             </div>
-          </div>
-        )}
-
-        {/* Back Button */}
-        {!isImproving && !isSubmitted && (
-          <div className="flex justify-center mb-6">
-            <Button onClick={handleGoBack} variant="outline">
-              ← Back to Analysis
-            </Button>
-          </div>
-        )}
-
-        {/* Improvement Modal */}
-        <ImprovementModal
-          isOpen={showImprovementModal && !error && !isSubmitted}
-          onClose={handleGoBack}
-          onSubmit={handleImproveResume}
-          isLoading={isImproving}
-          fileName={decodeURIComponent(fileName)}
-          existingVersions={existingVersions}
-        />
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+              AI-Powered Resume Improvement
+            </h1>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              Our AI is rewriting your resume for maximum impact in your target
+              role.
+            </p>
+          </header>
+          <main>
+            <Suspense fallback={<div>Loading...</div>}>
+              <ImprovePageContent />
+            </Suspense>
+          </main>
+        </div>
       </div>
     </div>
   );

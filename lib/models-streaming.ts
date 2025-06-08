@@ -71,6 +71,26 @@ export type ResumeAnalysis = z.infer<typeof ResumeAnalysisSchema>;
 
 const analysisJsonSchema = zodToJsonSchema(ResumeAnalysisSchema, "ResumeAnalysis");
 
+// New Schema for Streaming Resume Improvement
+export const ImprovedResumeSectionSchema = z.object({
+  section_name: z.string().describe("The name of the resume section (e.g., 'Professional Summary', 'Experience')."),
+  original_content: z.string().describe("The original content of the section for comparison."),
+  improved_content: z.string().describe("The new, AI-improved content for this section, rewritten for impact."),
+  changes_made: z.array(z.string()).describe("A bulleted list of the key changes made in this section.")
+});
+
+export const ImprovedResumeSchema = z.object({
+  analysis_headline: z.string().describe("A one-sentence headline summarizing the core improvement strategy."),
+  original_resume_score: z.number().describe("The estimated score (0-100) of the original resume for the target role."),
+  improved_resume_score: z.number().describe("The estimated score (0-100) of the new, improved resume."),
+  overall_feedback: z.string().describe("General feedback on the overall improvements made."),
+  improved_sections: z.array(ImprovedResumeSectionSchema).describe("An array containing each rewritten section of the resume."),
+});
+
+export type ImprovedResume = z.infer<typeof ImprovedResumeSchema>;
+
+const improvementJsonSchema = zodToJsonSchema(ImprovedResumeSchema, "ImprovedResume");
+
 // Abstract base class for model providers
 abstract class BaseModelProvider {
   protected config: ModelConfig;
@@ -363,12 +383,17 @@ class OpenAIProvider extends BaseModelProvider {
 
   private parseCompleteResponse(content: string): any {
     try {
-      return JSON.parse(content);
+      let cleanedContent = content.trim();
+      if (cleanedContent.startsWith("```json")) {
+        cleanedContent = cleanedContent.slice(7).trim();
+      }
+      if (cleanedContent.endsWith("```")) {
+        cleanedContent = cleanedContent.slice(0, -3).trim();
+      }
+      return JSON.parse(cleanedContent);
     } catch (error) {
-      // Fallback parsing logic - use existing JSON parser
-      const { parseOpenAIResponse } = eval('require')('@/lib/json-parser');
-      const result = parseOpenAIResponse(content);
-      return result.data;
+      console.error("Failed to parse the complete JSON response:", content);
+      throw new Error("Could not parse the final AI response.");
     }
   }
 }
@@ -597,6 +622,44 @@ export class StreamingModelService {
   }
 
   // Other existing methods...
+  async *improveResumeStream(
+    userId: string,
+    resumeFile: ModelFileInput,
+    targetRole: string,
+    targetIndustry: string,
+    customPrompt?: string
+  ): AsyncIterable<string> {
+    const provider = await this.getProvider();
+    const { RESUME_IMPROVEMENT_SYSTEM_PROMPT, RESUME_IMPROVEMENT_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
+
+    const systemPrompt = RESUME_IMPROVEMENT_SYSTEM_PROMPT;
+    const userPrompt = RESUME_IMPROVEMENT_USER_PROMPT(targetRole, targetIndustry, customPrompt);
+
+    const stream = provider.generateResponseStream({
+        messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+        ],
+        files: [resumeFile],
+        tools: [{
+            type: 'function',
+            function: {
+                name: 'displayImprovedResume',
+                description: 'Displays the improved resume to the user.',
+                parameters: improvementJsonSchema,
+            }
+        }]
+    });
+
+    for await (const chunk of stream) {
+        if (chunk.type === 'partial_analysis' || chunk.type === 'complete_analysis') {
+            yield JSON.stringify(chunk.data);
+        } else if (chunk.type === 'error') {
+            yield JSON.stringify({ error: chunk.error });
+        }
+    }
+  }
+
   async improveResume(
     targetRole: string, 
     targetIndustry: string, 
