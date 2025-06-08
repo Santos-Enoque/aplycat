@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -78,6 +79,10 @@ export function JobTailoringComponent({
       if (result.job_description) setJobDescription(result.job_description);
     } catch (err: any) {
       setError("Failed to extract job info. Please fill manually.");
+      toast.error("Failed to extract job information from the URL.", {
+        description:
+          "Please check the URL or paste the job description manually.",
+      });
       console.error("Job extraction error:", err);
     } finally {
       setIsExtractingJob(false);

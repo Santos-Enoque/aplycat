@@ -20,9 +20,10 @@ import {
   Linkedin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ResumeAnalysis, ResumeSection } from "@/types/analysis";
 
 interface StreamingAnalysisDisplayProps {
-  analysis: any | null;
+  analysis: Partial<ResumeAnalysis> | null;
   status: "idle" | "connecting" | "streaming" | "completed" | "error";
   onStartImprovement: () => void;
 }
@@ -102,15 +103,18 @@ export function StreamingAnalysisDisplay({
     keyInsight:
       analysis.main_roast ||
       "The analysis is still in progress, but key insights will appear here soon.",
-    sections: (analysis.resume_sections || []).map((section: any) => ({
-      name: section.section_name,
-      rating: section.rating || "Fair",
-      score: section.score || 0,
-      analysis: section.roast || "...",
-      issues: section.areas_for_improvement || [],
-      goodThings: section.good_things || [],
-      quickFixes: section.quick_fixes || [],
-    })),
+    sections: (analysis.resume_sections || []).map(
+      (section: ResumeSection) => ({
+        name: section.section_name,
+        rating: section.rating || "Fair",
+        score: section.score || 0,
+        analysis: section.roast || "...",
+        issues:
+          (section as any).areas_for_improvement || section.issues_found || [],
+        goodThings: section.good_things || [],
+        quickFixes: section.quick_fixes || [],
+      })
+    ),
   };
 
   const getCategoryColor = (category: string) => {
@@ -162,8 +166,7 @@ export function StreamingAnalysisDisplay({
               >
                 <Progress
                   value={analysisData.overallScore}
-                  className="h-2"
-                  indicatorClassName={getCategoryColor(analysisData.category)}
+                  className={`h-2 ${getCategoryColor(analysisData.category)}`}
                 />
               </div>
             </div>
@@ -313,7 +316,7 @@ export function StreamingAnalysisDisplay({
                       Issues Found
                     </h4>
                     <ul className="space-y-2">
-                      {section.issues.map((issue, i) => (
+                      {section.issues.map((issue: string, i: number) => (
                         <li
                           key={i}
                           className="text-sm text-foreground flex items-start"

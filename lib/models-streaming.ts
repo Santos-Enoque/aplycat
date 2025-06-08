@@ -535,20 +535,23 @@ export class StreamingModelService {
   private currentConfig: ModelConfig | null = null;
 
   // Get the active model provider with configuration
-  private async getProvider(): Promise<BaseModelProvider> {
+  private async getProvider(serviceName: string): Promise<BaseModelProvider> {
     try {
-      // Get active configuration from cache
-      const modelConfig = await promptCache.getModelConfig();
+      // Fetch the active model configuration from cache/db
+      let modelConfig = await promptCache.getModelConfig(serviceName);
       
       if (!modelConfig) {
-        throw new Error('No active model configuration found');
+        console.warn('[StreamingModelService] No active model configuration found in database. Falling back to default.');
+        modelConfig = {
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          temperature: 0.1,
+          maxTokens: 4000,
+        };
       }
 
       // Create new provider if config has changed
-      if (!this.provider || !this.currentConfig || 
-          this.currentConfig.provider !== modelConfig.provider ||
-          this.currentConfig.model !== modelConfig.model) {
-        
+      if (!this.provider || JSON.stringify(this.currentConfig) !== JSON.stringify(modelConfig)) {
         this.currentConfig = {
           provider: modelConfig.provider as ModelProvider,
           model: modelConfig.model,
@@ -570,7 +573,7 @@ export class StreamingModelService {
 
   // Traditional non-streaming analysis
   async analyzeResume(resumeFile: ModelFileInput): Promise<ModelResponse> {
-    const provider = await this.getProvider();
+    const provider = await this.getProvider('RESUME_ANALYSIS');
     
     const { RESUME_ANALYSIS_SYSTEM_PROMPT, RESUME_ANALYSIS_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
     
@@ -585,7 +588,7 @@ export class StreamingModelService {
 
   // New streaming analysis method
   async *analyzeResumeStream(userId: string, resumeFile: ModelFileInput): AsyncIterable<string> {
-    const provider = await this.getProvider();
+    const provider = await this.getProvider('RESUME_ANALYSIS');
     
     /*
     // Deduct credits before starting analysis to prevent unauthorized use
@@ -629,7 +632,7 @@ export class StreamingModelService {
     targetIndustry: string,
     customPrompt?: string
   ): AsyncIterable<string> {
-    const provider = await this.getProvider();
+    const provider = await this.getProvider('RESUME_IMPROVEMENT');
     const { RESUME_IMPROVEMENT_SYSTEM_PROMPT, RESUME_IMPROVEMENT_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
 
     const systemPrompt = RESUME_IMPROVEMENT_SYSTEM_PROMPT;
@@ -666,7 +669,7 @@ export class StreamingModelService {
     customPrompt: string | undefined,
     resumeFile: ModelFileInput
   ): Promise<ModelResponse> {
-    const provider = await this.getProvider();
+    const provider = await this.getProvider('RESUME_IMPROVEMENT');
     
     const { RESUME_IMPROVEMENT_SYSTEM_PROMPT, RESUME_IMPROVEMENT_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
     
@@ -688,7 +691,7 @@ export class StreamingModelService {
     companyName?: string,
     jobTitle?: string
   ): Promise<ModelResponse> {
-    const provider = await this.getProvider();
+    const provider = await this.getProvider('RESUME_TAILORING');
     
     const { RESUME_TAILORING_SYSTEM_PROMPT, RESUME_TAILORING_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
     
@@ -703,7 +706,7 @@ export class StreamingModelService {
   }
 
   async extractJobInfo(jobUrl: string, tools?: any[]): Promise<ModelResponse> {
-    const provider = await this.getProvider();
+    const provider = await this.getProvider('JOB_EXTRACTION');
     
     const { JOB_EXTRACTION_SYSTEM_PROMPT, JOB_EXTRACTION_USER_PROMPT } = await import('@/lib/prompts/resume-prompts');
     
@@ -717,7 +720,7 @@ export class StreamingModelService {
   }
 
   async generateResponse(messages: ModelMessage[], files?: ModelFileInput[], tools?: any[]): Promise<ModelResponse> {
-    const provider = await this.getProvider();
+    const provider = await this.getProvider('UNKNOWN');
     
     return provider.generateResponse({
       messages,

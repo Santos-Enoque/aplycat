@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { streamingModelService } from '@/lib/models-streaming';
-import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
+import { getCurrentUserFromDB, decrementUserCredits } from '@/lib/auth/user-sync';
 // import { db } from '@/lib/db'; // Temporarily disabled
 
 export const revalidate = 0;
@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
       async start(controller) {
         const encoder = new TextEncoder();
         let accumulatedJson = '';
+        let streamSuccessful = false;
 
         try {
           const analysisStream = streamingModelService.analyzeResumeStream(user.id, resumeFile);
@@ -97,18 +98,22 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // After the stream is finished, save the full analysis
-          /*
-          if (accumulatedJson) {
-            saveAnalysisInBackground(user.id, file.name, JSON.parse(accumulatedJson));
-          }
-          */
+          streamSuccessful = true;
 
         } catch (error) {
           console.error('[STREAM_API] Error during stream generation:', error);
           const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
           controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ error: errorMessage })}\n\n`));
         } finally {
+          if (streamSuccessful) {
+            try {
+              await decrementUserCredits(user.id, 1);
+              console.log(`[STREAM_API] Deducted 1 credit from user ${user.id}`);
+            } catch (deductionError) {
+              console.error(`[STREAM_API] Failed to deduct credits for user ${user.id}:`, deductionError);
+              // Optionally, you could try to signal this to the client, but it's tricky
+            }
+          }
           controller.close();
         }
       },

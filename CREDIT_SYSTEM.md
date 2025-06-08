@@ -23,6 +23,7 @@ Credits are virtual currency units that power Aplycat's AI features. Think of th
 | **Job-Tailored Resume**          | 2 credits        | Resume specifically optimized for a job posting                                                            |
 | **Cover Letter Generation**      | 2 credits        | AI-generated cover letter tailored to job requirements                                                     |
 | **Job Tailoring + Cover Letter** | 3 credits        | Combined package: tailored resume + personalized cover letter                                              |
+| **Linked in Analysis**           | 3 credits        | Detailed linked in analysis                                                                                |
 | **Custom Improvements**          | 1 credit         | AI improvements based on your specific instructions                                                        |
 
 ## 🎁 Free Credits for New Users

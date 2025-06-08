@@ -11,24 +11,38 @@ interface StreamingChunk {
   progress?: number;
 }
 
-type StreamingStatus = 'idle' | 'connecting' | 'streaming' | 'completed' | 'error';
+export type StreamingStatus = 'idle' | 'connecting' | 'streaming' | 'completed' | 'error';
 
 export interface UseStreamingAnalysisReturn {
-  analysis: any | null;
+  analysis: Partial<ResumeAnalysis> | null;
   status: StreamingStatus;
+  isStreaming: boolean;
+  isComplete: boolean;
+  progress: number;
   error: string | null;
   startAnalysis: (file: File) => Promise<void>;
+  stopAnalysis: () => void;
+  retryAnalysis: () => void;
 }
 
 export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
-  const [analysis, setAnalysis] = useState<any | null>(null);
+  const [analysis, setAnalysis] = useState<Partial<ResumeAnalysis> | null>(null);
   const [status, setStatus] = useState<StreamingStatus>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+
+  const lastFile = useRef<File | null>(null);
+
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const startAnalysis = useCallback(async (file: File) => {
+    lastFile.current = file;
     setStatus('connecting');
     setError(null);
     setAnalysis(null);
+    setProgress(0);
+
+    abortControllerRef.current = new AbortController();
 
     const formData = new FormData();
     formData.append('file', file);
@@ -37,6 +51,7 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
       const response = await fetch('/api/analyze-resume-stream', {
         method: 'POST',
         body: formData,
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok || !response.body) {
@@ -50,6 +65,11 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
       let buffer = '';
 
       while (true) {
+        if (abortControllerRef.current.signal.aborted) {
+          reader.cancel();
+          break;
+        }
+
         const { done, value } = await reader.read();
         if (done) {
           // Final check on the buffer in case the last chunk was incomplete
@@ -57,6 +77,7 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
             try {
               const finalData = JSON.parse(buffer);
               setAnalysis(finalData);
+              setProgress(100);
             } catch (e) {
               console.error('[useStreamingAnalysis] Error parsing final buffer:', e);
             }
@@ -64,6 +85,9 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
           setStatus('completed');
           break;
         }
+
+        // Dummy progress calculation
+        setProgress(p => Math.min(99, p + 5));
 
         buffer += decoder.decode(value, { stream: true });
 
@@ -102,13 +126,40 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-      console.error('[useStreamingAnalysis] Error:', errorMessage);
-      setError(errorMessage);
-      setStatus('error');
+      if (errorMessage === 'The operation was aborted.') {
+        console.log('[useStreamingAnalysis] Analysis stopped by user.');
+        setStatus('idle');
+      } else {
+        console.error('[useStreamingAnalysis] Error:', errorMessage);
+        setError(errorMessage);
+        setStatus('error');
+      }
     }
   }, []);
 
-  return { analysis, status, error, startAnalysis };
+  const stopAnalysis = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
+
+  const retryAnalysis = useCallback(() => {
+    if (lastFile.current) {
+      startAnalysis(lastFile.current);
+    }
+  }, [startAnalysis]);
+
+  return {
+    analysis,
+    status,
+    isStreaming: status === 'streaming',
+    isComplete: status === 'completed',
+    progress,
+    error,
+    startAnalysis,
+    stopAnalysis,
+    retryAnalysis,
+  };
 }
 
 // Additional hook for managing multiple streaming analyses

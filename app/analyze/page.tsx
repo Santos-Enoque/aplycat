@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useStreamingAnalysis } from "@/hooks/use-streaming-analysis";
 import { StreamingAnalysisDisplay } from "@/components/streaming-analysis-display";
 import { ImproveResumeModal } from "@/components/improve-resume-modal";
+import { useUserCredits } from "@/hooks/use-user-credits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader, XCircle, Zap, FileText, AlertCircle } from "lucide-react";
@@ -13,10 +14,17 @@ import type { ModelFileInput } from "@/lib/models";
 function AnalyzePageContent() {
   const router = useRouter();
   const { analysis, status, error, startAnalysis } = useStreamingAnalysis();
+  const { refetch: refetchCredits } = useUserCredits();
   const [fileName, setFileName] = useState<string | null>(null);
   const [hasInitiated, setHasInitiated] = useState(false);
   const [isImproveModalOpen, setIsImproveModalOpen] = useState(false);
   const originalFileRef = useRef<ModelFileInput | null>(null);
+
+  useEffect(() => {
+    if (status === "completed") {
+      refetchCredits();
+    }
+  }, [status, refetchCredits]);
 
   useEffect(() => {
     if (hasInitiated) return;

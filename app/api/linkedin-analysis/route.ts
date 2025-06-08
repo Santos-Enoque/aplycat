@@ -2,15 +2,30 @@ import { OpenAI } from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { LINKEDIN_ANALYSIS_SYSTEM_PROMPT } from "@/lib/prompts/linkedin-prompts";
 import { LinkedInAnalysisSchema } from "@/lib/schemas/linkedin-analysis-schema";
-
-export const runtime = "edge";
+import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentUserFromDB, decrementUserCredits } from "@/lib/auth/user-sync";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const LINKEDIN_ANALYSIS_COST = 3;
+
 export async function POST(req: Request) {
   try {
+    const user = await currentUser();
+    if (!user?.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const dbUser = await getCurrentUserFromDB();
+    if (!dbUser || dbUser.credits < LINKEDIN_ANALYSIS_COST) {
+      return new Response(
+        `Insufficient credits. This service costs ${LINKEDIN_ANALYSIS_COST} credits.`,
+        { status: 402 }
+      );
+    }
+
     const { profileUrl } = await req.json();
 
     if (!profileUrl) {
@@ -71,7 +86,15 @@ export async function POST(req: Request) {
           controller.error(err);
         });
         stream.on("response.output_text.done", async () => {
-          controller.close();
+          try {
+            await decrementUserCredits(user.id, LINKEDIN_ANALYSIS_COST);
+            console.log(`[LINKEDIN_API] Deducted ${LINKEDIN_ANALYSIS_COST} credits from user ${user.id}`);
+          } catch (deductionError) {
+            console.error(`[LINKEDIN_API] Failed to deduct credits for user ${user.id}:`, deductionError);
+            // Don't throw an error to the client, just log it
+          } finally {
+            controller.close();
+          }
         });
       },
     });

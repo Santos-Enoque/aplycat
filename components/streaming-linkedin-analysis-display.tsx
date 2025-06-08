@@ -150,14 +150,14 @@ export function StreamingLinkedInAnalysisDisplay({
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
       {/* Action Button */}
-      {status === "completed" && (
+      {/* {status === "completed" && (
         <div className="text-center">
           <Button size="lg" onClick={handleImprove}>
             <Wand2 className="mr-2 h-5 w-5" />
             Improve with AI
           </Button>
         </div>
-      )}
+      )} */}
 
       {/* Basic Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -180,8 +180,9 @@ export function StreamingLinkedInAnalysisDisplay({
             )}
             <Progress
               value={analysis?.overall_score || 0}
-              className="h-2 mt-2"
-              indicatorClassName={getStrengthColor(analysis?.profile_strength)}
+              className={`h-2 mt-2 ${getStrengthColor(
+                analysis?.profile_strength
+              )}`}
             />
             {analysis?.profile_strength && (
               <Badge
@@ -205,7 +206,7 @@ export function StreamingLinkedInAnalysisDisplay({
             <div className="flex items-start space-x-3">
               <Target className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
               {analysis?.main_roast ? (
-                <p className="text-sm font-semibold text-primary-foreground">
+                <p className="text-sm font-semibold text-black">
                   &ldquo;{analysis.main_roast}&rdquo;
                 </p>
               ) : (

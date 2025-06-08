@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { parseOpenAIResponse } from '@/lib/json-parser';
-import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
+import { getCurrentUserFromDB, decrementUserCredits } from '@/lib/auth/user-sync';
 import { modelService } from '@/lib/models-updated';
-import { db } from '@/lib/db';
+// import { db } from '@/lib/db'; // No longer needed directly
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -115,28 +115,8 @@ export async function POST(request: NextRequest) {
 
     // Deduct credits immediately after successful analysis
     try {
-      console.log('[DIRECT_ANALYSIS] Deducting credits...');
-      
-      // Record credit transaction
-      await db.creditTransaction.create({
-        data: {
-          userId: dbUser.id,
-          type: 'ANALYSIS_USE',
-          amount: -1,
-          description: `Direct resume analysis: ${fileName}`,
-        },
-      });
-
-      // Update user's credit count
-      await db.user.update({
-        where: { id: dbUser.id },
-        data: {
-          credits: { decrement: 1 },
-          totalCreditsUsed: { increment: 1 },
-        },
-      });
-
-      console.log('[DIRECT_ANALYSIS] Credits deducted successfully');
+      await decrementUserCredits(user.id, 1);
+      console.log(`[DIRECT_ANALYSIS] Deducted 1 credit from user ${user.id}`);
     } catch (creditError) {
       console.error('[DIRECT_ANALYSIS] Failed to deduct credits:', creditError);
       // Don't fail the entire request for credit issues

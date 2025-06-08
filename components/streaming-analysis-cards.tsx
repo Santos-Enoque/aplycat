@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useStreamingAnalysis } from '@/hooks/use-streaming-analysis';
-import { ResumeAnalysis } from '@/types/analysis';
+import React, { useEffect } from "react";
+import { useStreamingAnalysis } from "@/hooks/use-streaming-analysis";
+import { ResumeAnalysis } from "@/types/analysis";
 
 interface StreamingAnalysisCardsProps {
   fileData: string;
@@ -11,26 +11,47 @@ interface StreamingAnalysisCardsProps {
   onError?: (error: string) => void;
 }
 
-export function StreamingAnalysisCards({ 
-  fileData, 
-  fileName, 
+export function StreamingAnalysisCards({
+  fileData,
+  fileName,
   onComplete,
-  onError 
+  onError,
 }: StreamingAnalysisCardsProps) {
-  const { 
-    analysis, 
-    isStreaming, 
-    isComplete, 
-    error, 
+  const {
+    analysis,
+    isStreaming,
+    isComplete,
+    error,
     progress,
     startAnalysis,
     stopAnalysis,
-    retryAnalysis 
+    retryAnalysis,
   } = useStreamingAnalysis();
 
   useEffect(() => {
-    startAnalysis(fileData, fileName);
-  }, [fileData, fileName, startAnalysis]);
+    if (fileData && fileName) {
+      try {
+        const fetchRes = fetch(fileData);
+        fetchRes
+          .then((res) => res.blob())
+          .then((blob) => {
+            const file = new File([blob], fileName, { type: blob.type });
+            startAnalysis(file);
+          })
+          .catch((err) => {
+            console.error("Error converting file data to File object:", err);
+            if (onError) {
+              onError("Failed to process file data.");
+            }
+          });
+      } catch (err) {
+        console.error("Error fetching file data:", err);
+        if (onError) {
+          onError("Invalid file data URL.");
+        }
+      }
+    }
+  }, [fileData, fileName, startAnalysis, onError]);
 
   useEffect(() => {
     if (isComplete && analysis && onComplete) {
@@ -46,8 +67,8 @@ export function StreamingAnalysisCards({
 
   if (error) {
     return (
-      <AnalysisError 
-        error={error} 
+      <AnalysisError
+        error={error}
         onRetry={retryAnalysis}
         onCancel={stopAnalysis}
       />
@@ -66,7 +87,7 @@ export function StreamingAnalysisCards({
             <span className="text-sm text-gray-500">{progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
             />
@@ -97,8 +118,13 @@ export function StreamingAnalysisCards({
         <SummaryCard
           sectionsCount={analysis?.resume_sections?.length}
           missingSectionsCount={analysis?.missing_sections?.length}
-          isLoading={(!analysis?.resume_sections || !analysis?.missing_sections) && isStreaming}
-          animateIn={!!(analysis?.resume_sections && analysis?.missing_sections)}
+          isLoading={
+            (!analysis?.resume_sections || !analysis?.missing_sections) &&
+            isStreaming
+          }
+          animateIn={
+            !!(analysis?.resume_sections && analysis?.missing_sections)
+          }
         />
       </div>
 
@@ -111,7 +137,7 @@ export function StreamingAnalysisCards({
 
       {/* Missing Sections */}
       {analysis?.missing_sections && analysis.missing_sections.length > 0 && (
-        <MissingSectionsCard 
+        <MissingSectionsCard
           sections={analysis.missing_sections}
           animateIn={true}
         />
@@ -124,22 +150,19 @@ export function StreamingAnalysisCards({
 
       {/* Action Plan */}
       {analysis?.action_plan && (
-        <ActionPlanCard 
-          actionPlan={analysis.action_plan}
-          animateIn={true}
-        />
+        <ActionPlanCard actionPlan={analysis.action_plan} animateIn={true} />
       )}
     </div>
   );
 }
 
 // Individual Card Components
-function ScoreCard({ 
-  title, 
-  score, 
-  category, 
-  isLoading, 
-  animateIn 
+function ScoreCard({
+  title,
+  score,
+  category,
+  isLoading,
+  animateIn,
 }: {
   title: string;
   score?: number;
@@ -152,26 +175,28 @@ function ScoreCard({
   }
 
   const scoreColor = getScoreColor(score || 0);
-  
+
   return (
-    <div className={`bg-white p-6 rounded-lg border shadow-sm transition-all duration-500 ${
-      animateIn ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
-    }`}>
+    <div
+      className={`bg-white p-6 rounded-lg border shadow-sm transition-all duration-500 ${
+        animateIn
+          ? "opacity-100 transform translate-y-0"
+          : "opacity-0 transform translate-y-4"
+      }`}
+    >
       <div className={`text-3xl font-bold mb-2 ${scoreColor}`}>
         {score || 0}
       </div>
       <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
-      {category && (
-        <p className="text-sm text-gray-600">{category}</p>
-      )}
+      {category && <p className="text-sm text-gray-600">{category}</p>}
     </div>
   );
 }
 
-function RoastCard({ 
-  roast, 
-  isLoading, 
-  animateIn 
+function RoastCard({
+  roast,
+  isLoading,
+  animateIn,
 }: {
   roast?: string;
   isLoading: boolean;
@@ -182,23 +207,27 @@ function RoastCard({
   }
 
   return (
-    <div className={`bg-gradient-to-r from-orange-50 to-red-50 p-6 rounded-lg border border-orange-200 transition-all duration-500 ${
-      animateIn ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
-    }`}>
+    <div
+      className={`bg-gradient-to-r from-orange-50 to-red-50 p-6 rounded-lg border border-orange-200 transition-all duration-500 ${
+        animateIn
+          ? "opacity-100 transform translate-y-0"
+          : "opacity-0 transform translate-y-4"
+      }`}
+    >
       <div className="text-2xl mb-2">🔥</div>
       <h3 className="font-semibold text-gray-900 mb-2">AI Roast</h3>
       <p className="text-sm text-gray-700 leading-relaxed">
-        {roast || 'Preparing your personalized roast...'}
+        {roast || "Preparing your personalized roast..."}
       </p>
     </div>
   );
 }
 
-function SummaryCard({ 
-  sectionsCount, 
-  missingSectionsCount, 
-  isLoading, 
-  animateIn 
+function SummaryCard({
+  sectionsCount,
+  missingSectionsCount,
+  isLoading,
+  animateIn,
 }: {
   sectionsCount?: number;
   missingSectionsCount?: number;
@@ -210,9 +239,13 @@ function SummaryCard({
   }
 
   return (
-    <div className={`bg-white p-6 rounded-lg border shadow-sm transition-all duration-500 ${
-      animateIn ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
-    }`}>
+    <div
+      className={`bg-white p-6 rounded-lg border shadow-sm transition-all duration-500 ${
+        animateIn
+          ? "opacity-100 transform translate-y-0"
+          : "opacity-0 transform translate-y-4"
+      }`}
+    >
       <div className="text-2xl mb-2">📊</div>
       <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
       <div className="space-y-1 text-sm text-gray-600">
@@ -223,10 +256,10 @@ function SummaryCard({
   );
 }
 
-function SectionAnalysisGrid({ 
-  sections, 
-  isStreaming, 
-  isComplete 
+function SectionAnalysisGrid({
+  sections,
+  isStreaming,
+  isComplete,
 }: {
   sections: any[];
   isStreaming: boolean;
@@ -240,16 +273,16 @@ function SectionAnalysisGrid({
       <h2 className="text-xl font-semibold text-gray-900 mb-4">
         Section Analysis
       </h2>
-      
+
       {/* Completed sections */}
       {sections.map((section, index) => (
-        <SectionCard 
-          key={section.section_name} 
-          section={section} 
+        <SectionCard
+          key={section.section_name}
+          section={section}
           delay={index * 100}
         />
       ))}
-      
+
       {/* Loading skeletons for pending sections */}
       {(isStreaming || !isComplete) && loadingSections > 0 && (
         <>
@@ -262,17 +295,11 @@ function SectionAnalysisGrid({
   );
 }
 
-function SectionCard({ 
-  section, 
-  delay = 0 
-}: {
-  section: any;
-  delay?: number;
-}) {
+function SectionCard({ section, delay = 0 }: { section: any; delay?: number }) {
   const scoreColor = getScoreColor(section.score || 0);
-  
+
   return (
-    <div 
+    <div
       className="bg-white p-6 rounded-lg border shadow-sm transition-all duration-500 transform opacity-0 animate-fade-in"
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -285,15 +312,19 @@ function SectionCard({
             <span className={`text-xl font-bold ${scoreColor}`}>
               {section.score}/10
             </span>
-            <span className={`px-2 py-1 text-xs rounded-full ${
-              section.found ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
-              {section.found ? 'Found' : 'Missing'}
+            <span
+              className={`px-2 py-1 text-xs rounded-full ${
+                section.found
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {section.found ? "Found" : "Missing"}
             </span>
           </div>
         </div>
       </div>
-      
+
       {section.roast && (
         <div className="bg-orange-50 p-3 rounded-lg mb-4">
           <p className="text-sm text-orange-800 font-medium">
@@ -301,7 +332,7 @@ function SectionCard({
           </p>
         </div>
       )}
-      
+
       {section.strengths && section.strengths.length > 0 && (
         <div className="mb-4">
           <h4 className="font-medium text-green-800 mb-2">✅ Strengths</h4>
@@ -314,7 +345,7 @@ function SectionCard({
           </ul>
         </div>
       )}
-      
+
       {section.issues && section.issues.length > 0 && (
         <div className="mb-4">
           <h4 className="font-medium text-red-800 mb-2">⚠️ Issues</h4>
@@ -327,16 +358,20 @@ function SectionCard({
           </ul>
         </div>
       )}
-      
+
       {section.tips && section.tips.length > 0 && (
         <div>
           <h4 className="font-medium text-blue-800 mb-2">💡 Tips</h4>
           <div className="space-y-2">
             {section.tips.map((tip: any, index: number) => (
               <div key={index} className="bg-blue-50 p-3 rounded">
-                <p className="text-sm font-medium text-blue-900 mb-1">{tip.tip}</p>
+                <p className="text-sm font-medium text-blue-900 mb-1">
+                  {tip.tip}
+                </p>
                 {tip.example && (
-                  <p className="text-xs text-blue-700">Example: {tip.example}</p>
+                  <p className="text-xs text-blue-700">
+                    Example: {tip.example}
+                  </p>
                 )}
               </div>
             ))}
@@ -403,22 +438,38 @@ function SectionCardSkeleton() {
 }
 
 // Additional Components (to be implemented)
-function MissingSectionsCard({ sections, animateIn }: { sections: any[]; animateIn: boolean }) {
+function MissingSectionsCard({
+  sections,
+  animateIn,
+}: {
+  sections: any[];
+  animateIn: boolean;
+}) {
   return (
-    <div className={`bg-red-50 p-6 rounded-lg border border-red-200 transition-all duration-500 ${
-      animateIn ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
-    }`}>
+    <div
+      className={`bg-red-50 p-6 rounded-lg border border-red-200 transition-all duration-500 ${
+        animateIn
+          ? "opacity-100 transform translate-y-0"
+          : "opacity-0 transform translate-y-4"
+      }`}
+    >
       <h3 className="font-semibold text-red-900 mb-4">⚠️ Missing Sections</h3>
       <div className="grid gap-3">
         {sections.map((section, index) => (
           <div key={index} className="bg-white p-3 rounded border">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900">{section.section_name}</h4>
-              <span className={`px-2 py-1 text-xs rounded ${
-                section.importance === 'Critical' ? 'bg-red-100 text-red-800' :
-                section.importance === 'Important' ? 'bg-orange-100 text-orange-800' :
-                'bg-yellow-100 text-yellow-800'
-              }`}>
+              <h4 className="font-medium text-gray-900">
+                {section.section_name}
+              </h4>
+              <span
+                className={`px-2 py-1 text-xs rounded ${
+                  section.importance === "Critical"
+                    ? "bg-red-100 text-red-800"
+                    : section.importance === "Important"
+                    ? "bg-orange-100 text-orange-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
                 {section.importance}
               </span>
             </div>
@@ -431,7 +482,13 @@ function MissingSectionsCard({ sections, animateIn }: { sections: any[]; animate
   );
 }
 
-function AnalysisDetails({ analysis, isComplete }: { analysis: any; isComplete: boolean }) {
+function AnalysisDetails({
+  analysis,
+  isComplete,
+}: {
+  analysis: any;
+  isComplete: boolean;
+}) {
   if (!isComplete) return null;
 
   return (
@@ -439,7 +496,9 @@ function AnalysisDetails({ analysis, isComplete }: { analysis: any; isComplete: 
       {/* Good Stuff */}
       {analysis.good_stuff && analysis.good_stuff.length > 0 && (
         <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-          <h3 className="font-semibold text-green-900 mb-4">✅ What's Working</h3>
+          <h3 className="font-semibold text-green-900 mb-4">
+            ✅ What's Working
+          </h3>
           <div className="space-y-3">
             {analysis.good_stuff.map((item: any, index: number) => (
               <div key={index} className="bg-white p-3 rounded border">
@@ -454,7 +513,9 @@ function AnalysisDetails({ analysis, isComplete }: { analysis: any; isComplete: 
       {/* Needs Work */}
       {analysis.needs_work && analysis.needs_work.length > 0 && (
         <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
-          <h3 className="font-semibold text-yellow-900 mb-4">⚠️ Needs Improvement</h3>
+          <h3 className="font-semibold text-yellow-900 mb-4">
+            ⚠️ Needs Improvement
+          </h3>
           <div className="space-y-3">
             {analysis.needs_work.map((item: any, index: number) => (
               <div key={index} className="bg-white p-3 rounded border">
@@ -470,7 +531,9 @@ function AnalysisDetails({ analysis, isComplete }: { analysis: any; isComplete: 
       {/* Critical Issues */}
       {analysis.critical_issues && analysis.critical_issues.length > 0 && (
         <div className="bg-red-50 p-6 rounded-lg border border-red-200">
-          <h3 className="font-semibold text-red-900 mb-4">🚨 Critical Issues</h3>
+          <h3 className="font-semibold text-red-900 mb-4">
+            🚨 Critical Issues
+          </h3>
           <div className="space-y-3">
             {analysis.critical_issues.map((item: any, index: number) => (
               <div key={index} className="bg-white p-3 rounded border">
@@ -486,25 +549,41 @@ function AnalysisDetails({ analysis, isComplete }: { analysis: any; isComplete: 
   );
 }
 
-function ActionPlanCard({ actionPlan, animateIn }: { actionPlan: any; animateIn: boolean }) {
+function ActionPlanCard({
+  actionPlan,
+  animateIn,
+}: {
+  actionPlan: any;
+  animateIn: boolean;
+}) {
   return (
-    <div className={`bg-blue-50 p-6 rounded-lg border border-blue-200 transition-all duration-500 ${
-      animateIn ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
-    }`}>
+    <div
+      className={`bg-blue-50 p-6 rounded-lg border border-blue-200 transition-all duration-500 ${
+        animateIn
+          ? "opacity-100 transform translate-y-0"
+          : "opacity-0 transform translate-y-4"
+      }`}
+    >
       <h3 className="font-semibold text-blue-900 mb-4">📋 Action Plan</h3>
-      
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Immediate Actions */}
         {actionPlan.immediate && actionPlan.immediate.length > 0 && (
           <div>
-            <h4 className="font-medium text-gray-900 mb-3">🚀 Immediate (Do Now)</h4>
+            <h4 className="font-medium text-gray-900 mb-3">
+              🚀 Immediate (Do Now)
+            </h4>
             <div className="space-y-2">
               {actionPlan.immediate.map((action: any, index: number) => (
                 <div key={index} className="bg-white p-3 rounded border">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-lg">{action.icon}</span>
-                    <span className="font-medium text-gray-900">{action.title}</span>
-                    <span className="text-xs text-gray-500">{action.time_estimate}</span>
+                    <span className="font-medium text-gray-900">
+                      {action.title}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {action.time_estimate}
+                    </span>
                   </div>
                   <p className="text-sm text-gray-600">{action.description}</p>
                 </div>
@@ -516,14 +595,20 @@ function ActionPlanCard({ actionPlan, animateIn }: { actionPlan: any; animateIn:
         {/* Long-term Actions */}
         {actionPlan.longTerm && actionPlan.longTerm.length > 0 && (
           <div>
-            <h4 className="font-medium text-gray-900 mb-3">📅 Long-term (Plan Ahead)</h4>
+            <h4 className="font-medium text-gray-900 mb-3">
+              📅 Long-term (Plan Ahead)
+            </h4>
             <div className="space-y-2">
               {actionPlan.longTerm.map((action: any, index: number) => (
                 <div key={index} className="bg-white p-3 rounded border">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-lg">{action.icon}</span>
-                    <span className="font-medium text-gray-900">{action.title}</span>
-                    <span className="text-xs text-gray-500">{action.time_estimate}</span>
+                    <span className="font-medium text-gray-900">
+                      {action.title}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {action.time_estimate}
+                    </span>
                   </div>
                   <p className="text-sm text-gray-600">{action.description}</p>
                 </div>
@@ -536,10 +621,10 @@ function ActionPlanCard({ actionPlan, animateIn }: { actionPlan: any; animateIn:
   );
 }
 
-function AnalysisError({ 
-  error, 
-  onRetry, 
-  onCancel 
+function AnalysisError({
+  error,
+  onRetry,
+  onCancel,
 }: {
   error: string;
   onRetry: () => void;
@@ -570,8 +655,8 @@ function AnalysisError({
 
 // Utility Functions
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'text-green-600';
-  if (score >= 60) return 'text-yellow-600';
-  if (score >= 40) return 'text-orange-600';
-  return 'text-red-600';
+  if (score >= 80) return "text-green-600";
+  if (score >= 60) return "text-yellow-600";
+  if (score >= 40) return "text-orange-600";
+  return "text-red-600";
 }

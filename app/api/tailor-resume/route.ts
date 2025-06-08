@@ -2,8 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { streamingModelService } from '@/lib/models-streaming';
+import { getCurrentUserFromDB, decrementUserCredits } from '@/lib/auth/user-sync';
 
 export const revalidate = 0;
+
+const TAILORING_COST = 4;
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -13,6 +16,14 @@ export async function POST(request: NextRequest) {
     const user = await currentUser();
     if (!user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const dbUser = await getCurrentUserFromDB();
+    if (!dbUser || dbUser.credits < TAILORING_COST) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This service costs ${TAILORING_COST} credits.` },
+        { status: 402 }
+      );
     }
 
     const {
@@ -52,6 +63,9 @@ export async function POST(request: NextRequest) {
 
     const processingTime = Date.now() - startTime;
     console.log(`[TAILOR_RESUME_FAST] Tailoring completed in ${processingTime}ms`);
+    
+    await decrementUserCredits(user.id, TAILORING_COST);
+    console.log(`[TAILOR_RESUME_FAST] Deducted ${TAILORING_COST} credits from user ${user.id}`);
 
     return NextResponse.json({
       success: true,

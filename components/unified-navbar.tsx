@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUser, SignInButton, UserButton, useClerk } from "@clerk/nextjs";
 import { EnhancedCreditsModal } from "@/components/enhanced-credits-modal";
-import { getUserCredits } from "@/lib/actions/dashboard-actions";
+import { useUserCredits } from "@/hooks/use-user-credits";
 import {
   Cat,
   Home,
@@ -34,34 +34,15 @@ import {
 export function UnifiedNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false);
-  const [userCredits, setUserCredits] = useState<number>(0);
-  const [creditsLoading, setCreditsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const { user, isSignedIn, isLoaded } = useUser();
   const { signOut } = useClerk();
-
-  // Fetch user credits when signed in
-  useEffect(() => {
-    const fetchCredits = async () => {
-      if (isSignedIn) {
-        try {
-          setCreditsLoading(true);
-          const credits = await getUserCredits();
-          setUserCredits(credits);
-        } catch (error) {
-          console.error("Failed to fetch credits:", error);
-          setUserCredits(0);
-        } finally {
-          setCreditsLoading(false);
-        }
-      } else {
-        setCreditsLoading(false);
-      }
-    };
-
-    fetchCredits();
-  }, [isSignedIn]);
+  const {
+    credits: userCredits,
+    isLoading: creditsLoading,
+    refetch: refetchCredits,
+  } = useUserCredits();
 
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -136,14 +117,7 @@ export function UnifiedNavbar() {
         onClose={() => setIsCreditsModalOpen(false)}
         onCreditsUpdated={async () => {
           // Refresh user credits after purchase
-          try {
-            const updatedCredits = await getUserCredits();
-            setUserCredits(updatedCredits);
-          } catch (error) {
-            console.error("Failed to refresh credits:", error);
-            // Fallback to full page reload if credits fetch fails
-            window.location.reload();
-          }
+          await refetchCredits();
         }}
       />
     </nav>

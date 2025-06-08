@@ -94,6 +94,50 @@ export async function requireAuth() {
 }
 
 /**
+ * Decrements a user's credits and records the transaction.
+ * @param clerkId The Clerk ID of the user.
+ * @param amount The number of credits to deduct (should be positive).
+ * @param description A description for the credit transaction.
+ */
+export async function decrementUserCredits(clerkId: string, amount: number, description?: string) {
+  const user = await db.user.findUnique({ where: { clerkId } });
+
+  if (!user) {
+    throw new Error(`User with clerkId ${clerkId} not found.`);
+  }
+
+  if (user.credits < amount) {
+    throw new Error('Insufficient credits.');
+  }
+
+  try {
+    return await db.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id: user.id },
+        data: {
+          credits: { decrement: amount },
+          totalCreditsUsed: { increment: amount },
+        },
+      });
+
+      await tx.creditTransaction.create({
+        data: {
+          userId: user.id,
+          type: 'ANALYSIS_USE', // This might need to be more generic
+          amount: -amount,
+          description: description || `Service usage`,
+        },
+      });
+
+      return updatedUser;
+    });
+  } catch (error) {
+    console.error(`Failed to deduct ${amount} credits for user ${clerkId}:`, error);
+    throw new Error('Credit deduction failed.');
+  }
+}
+
+/**
  * Get user ID from Clerk for API routes
  */
 export async function getCurrentUserId(): Promise<string | null> {

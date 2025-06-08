@@ -2,14 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { streamingModelService } from "@/lib/models-streaming";
 import type { ModelFileInput } from "@/lib/models";
+import { getCurrentUserFromDB, decrementUserCredits } from "@/lib/auth/user-sync";
 
 export const revalidate = 0;
+
+const IMPROVEMENT_COST = 2;
 
 export async function POST(request: NextRequest) {
   try {
     const user = await currentUser();
     if (!user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+    
+    const dbUser = await getCurrentUserFromDB();
+    if (!dbUser || dbUser.credits < IMPROVEMENT_COST) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This service costs ${IMPROVEMENT_COST} credits.` },
+        { status: 402 }
+      );
     }
 
     const {
@@ -55,6 +66,9 @@ export async function POST(request: NextRequest) {
     const improvedResumeData = JSON.parse(response.content);
 
     console.log(`[IMPROVE_API] Improvement completed successfully for user ${user.id}`);
+    
+    await decrementUserCredits(user.id, IMPROVEMENT_COST);
+    console.log(`[IMPROVE_API] Deducted ${IMPROVEMENT_COST} credits from user ${user.id}`);
 
     return NextResponse.json({
       success: true,

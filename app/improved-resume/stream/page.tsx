@@ -25,6 +25,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { JobTailoringComponent } from "@/components/job-tailoring-component";
+import { useUserCredits } from "@/hooks/use-user-credits";
+import { toast } from "sonner";
 
 import { ImprovedResume } from "@/types/improved-resume";
 
@@ -538,6 +540,9 @@ export default function StreamingImprovedResumePage() {
   const [coverLetter, setCoverLetter] = useState<string | null>(null);
   const [tailoringAnalysis, setTailoringAnalysis] = useState<any>(null);
   const [isTailoring, setIsTailoring] = useState(false);
+  const [showTailoring, setShowTailoring] = useState(false);
+  const [tailoringResult, setTailoringResult] = useState<any>(null);
+  const { refetch: refetchCredits } = useUserCredits();
 
   useEffect(() => {
     // Load streaming data from sessionStorage
@@ -728,27 +733,13 @@ export default function StreamingImprovedResumePage() {
   };
 
   const handleTailoringComplete = (tailoringResult: any) => {
-    if (tailoringResult.tailoredResume) {
-      setEditableResume(tailoringResult.tailoredResume);
-    }
-
-    // Store tailoring analysis for keyword highlighting
-    if (tailoringResult.tailoringAnalysis) {
-      setTailoringAnalysis(tailoringResult.tailoringAnalysis);
-      // Set highlighted fields based on keywords from job matching
-      const keywords = tailoringResult.tailoringAnalysis.keywordAlignment || [];
-      setHighlightedFields(
-        keywords.map((keyword: string) => `keyword:${keyword}`)
-      );
-    }
-
-    if (tailoringResult.coverLetter) {
-      setCoverLetter(tailoringResult.coverLetter);
-      setActiveTab("coverLetter");
-    }
-
+    console.log("Tailoring complete:", tailoringResult);
+    // You can now handle the tailored result, e.g., display it
+    setTailoringResult(tailoringResult);
     setIsTailoring(false);
-    console.log("✅ Tailoring completed:", tailoringResult);
+    setShowTailoring(false); // Optionally close the tailoring view
+    toast.success("Resume tailored successfully!");
+    refetchCredits(); // Refetch credits after tailoring
   };
 
   const handleTailoringStart = () => {

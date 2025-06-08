@@ -7,7 +7,7 @@ export const STRIPE_CONFIG = {
   // Credit packages (same as LemonSqueezy but for Stripe)
   creditPackages: {
     starter: {
-      credits: 7,
+      credits: 5,
       price: 4.99,
       name: '🥉 Starter Pack',
       description: 'Perfect for getting started',
