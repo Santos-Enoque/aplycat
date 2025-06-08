@@ -147,14 +147,9 @@ function AnalyzePageContent() {
               (status === "streaming" ||
                 status === "completed" ||
                 status === "error") && (
-                <Card className="mb-6">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-3 font-medium">
-                      <FileText className="w-5 h-5 text-blue-600" />
-                      <span>{fileName}</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                <p className="text-center text-muted-foreground mb-6">
+                  Analysis for: <strong>{fileName}</strong>
+                </p>
               )}
             {renderContent()}
           </main>

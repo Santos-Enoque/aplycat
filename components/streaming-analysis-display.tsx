@@ -1,6 +1,5 @@
 "use client";
 
-import { ResumeAnalysis } from "@/lib/models-streaming";
 import {
   Card,
   CardContent,
@@ -12,13 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Star,
-  ThumbsUp,
-  ThumbsDown,
-  Wand2,
+  Target,
+  Zap,
+  AlertCircle,
   CheckCircle,
-  AlertTriangle,
-  Sparkles,
+  TrendingUp,
+  FileText,
+  Linkedin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,22 +30,26 @@ interface StreamingAnalysisDisplayProps {
 const SectionSkeleton = () => (
   <Card>
     <CardHeader>
-      <Skeleton className="h-6 w-2/3" />
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-6 w-1/3" />
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-8 w-24" />
+        </div>
+      </div>
     </CardHeader>
-    <CardContent className="space-y-4">
+    <CardContent className="space-y-6">
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-5/6" />
-      <div className="grid grid-cols-2 gap-4 pt-4">
-        <div className="space-y-2">
-          <Skeleton className="h-5 w-1/2" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-        </div>
-        <div className="space-y-2">
-          <Skeleton className="h-5 w-1/2" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+        ))}
       </div>
     </CardContent>
   </Card>
@@ -58,29 +61,31 @@ export function StreamingAnalysisDisplay({
   onStartImprovement,
 }: StreamingAnalysisDisplayProps) {
   if (status === "idle" || status === "connecting" || !analysis) {
-    // Show a set of skeletons on initial load
     return (
-      <div className="space-y-6">
+      <div className="max-w-4xl mx-auto space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="p-4">
-              <Skeleton className="h-16 w-full" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <Skeleton className="h-16 w-full" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <Skeleton className="h-16 w-full" />
-            </CardContent>
-          </Card>
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-2/3" />
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-3">
+                  <Skeleton className="h-8 w-12" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+                <Skeleton className="h-6 w-1/3 mt-2" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
         <Card>
-          <CardContent className="p-4">
-            <Skeleton className="h-12 w-full" />
+          <CardHeader>
+            <Skeleton className="h-6 w-1/4" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4 mt-2" />
           </CardContent>
         </Card>
         <SectionSkeleton />
@@ -89,197 +94,303 @@ export function StreamingAnalysisDisplay({
     );
   }
 
-  const getScoreColor = (score: number) => {
-    if (score > 85) return "text-green-600";
-    if (score > 70) return "text-blue-600";
-    if (score > 50) return "text-yellow-600";
-    return "text-red-600";
+  const analysisData = {
+    overallScore: analysis.overall_score || 0,
+    atsScore: analysis.ats_score || 0,
+    category: analysis.score_category || "Needs Improvement",
+    improvementPotential: analysis.improvement_potential,
+    keyInsight:
+      analysis.main_roast ||
+      "The analysis is still in progress, but key insights will appear here soon.",
+    sections: (analysis.resume_sections || []).map((section: any) => ({
+      name: section.section_name,
+      rating: section.rating || "Fair",
+      score: section.score || 0,
+      analysis: section.roast || "...",
+      issues: section.areas_for_improvement || [],
+      goodThings: section.good_things || [],
+      quickFixes: section.quick_fixes || [],
+    })),
   };
 
-  const getBadgeVariant = (category: string | undefined) => {
-    switch (category) {
-      case "Excellent":
-        return "default";
-      case "Good":
-        return "secondary";
+  const getCategoryColor = (category: string) => {
+    switch (category.toLowerCase()) {
+      case "excellent":
+        return "bg-green-600";
+      case "good":
+        return "bg-blue-600";
       default:
-        return "destructive";
+        return "bg-red-600";
     }
   };
 
-  const getScoreCategory = (score: number) => {
-    if (score >= 90) return "Excellent";
-    if (score >= 70) return "Good";
-    if (score >= 70) return "bg-green-100 text-green-800";
-    if (score >= 40) return "bg-yellow-100 text-yellow-800";
-    return "bg-red-100 text-red-800";
+  const getRatingColor = (rating: string) => {
+    switch (rating.toLowerCase()) {
+      case "strong":
+        return "bg-green-100 text-green-800";
+      case "good":
+        return "bg-blue-100 text-blue-800";
+      case "fair":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-red-100 text-red-800";
+    }
   };
 
   const isComplete = status === "completed";
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
-      {/* Overall Scores */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>Overall Analysis</CardTitle>
-              <CardDescription>
-                Your resume's top-level scores and feedback.
-              </CardDescription>
-            </div>
-            {isComplete && (
-              <Button onClick={onStartImprovement}>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Improve with AI
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-4 rounded-lg bg-gray-50 text-center">
-            <h4 className="text-sm font-medium text-gray-600 mb-1">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
+      {/* Basic Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Overall Score
-            </h4>
-            {analysis.overall_score !== undefined ? (
-              <div
-                className={`text-3xl font-bold ${getScoreColor(
-                  analysis.overall_score
-                )}`}
-              >
-                {analysis.overall_score}/100
-              </div>
-            ) : (
-              <Skeleton className="h-8 w-24" />
-            )}
-          </div>
-          <div className="p-4 rounded-lg bg-gray-50 text-center">
-            <h4 className="text-sm font-medium text-gray-600 mb-1">
-              ATS Score
-            </h4>
-            {analysis.ats_score !== undefined ? (
-              <div
-                className={`text-3xl font-bold ${getScoreColor(
-                  analysis.ats_score
-                )}`}
-              >
-                {analysis.ats_score}/100
-              </div>
-            ) : (
-              <Skeleton className="h-8 w-24" />
-            )}
-          </div>
-          <div className="p-4 rounded-lg bg-gray-50 text-center">
-            <h4 className="text-sm font-medium text-gray-600 mb-1">Category</h4>
-            {analysis.score_category ? (
-              <Badge
-                variant={getBadgeVariant(analysis.score_category)}
-                className="text-lg"
-              >
-                {analysis.score_category}
-              </Badge>
-            ) : (
-              <Skeleton className="h-8 w-24" />
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Main Roast */}
-      {analysis.main_roast ? (
-        <Card className="bg-orange-50 border-orange-200">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-orange-800">
-              <Star className="w-5 h-5" />
-              <span>Key Insight</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-orange-900 font-medium text-lg">
-              {analysis.main_roast}
+            <div className="flex items-baseline space-x-2">
+              <div className="text-3xl font-bold text-foreground">
+                {analysisData.overallScore}
+                <span className="text-xl text-muted-foreground">/100</span>
+              </div>
+              <div
+                className={`flex-1 ${
+                  analysis.overall_score === undefined && "animate-pulse"
+                }`}
+              >
+                <Progress
+                  value={analysisData.overallScore}
+                  className="h-2"
+                  indicatorClassName={getCategoryColor(analysisData.category)}
+                />
+              </div>
+            </div>
+            {analysis.overall_score !== undefined && (
+              <Badge
+                className={`mt-2 ${getCategoryColor(
+                  analysisData.category
+                )} text-primary-foreground`}
+              >
+                {analysisData.category}
+              </Badge>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              ATS Score
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline space-x-2">
+              <div className="text-3xl font-bold text-foreground">
+                {analysisData.atsScore}
+                <span className="text-xl text-muted-foreground">/100</span>
+              </div>
+              <div
+                className={`flex-1 ${
+                  analysis.ats_score === undefined && "animate-pulse"
+                }`}
+              >
+                <Progress value={analysisData.atsScore} className="h-2" />
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              ATS-friendly format
             </p>
           </CardContent>
         </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-4">
-            <Skeleton className="h-12 w-full" />
+
+        <Card className="border-primary bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-primary">
+              Improvement Potential
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-8 h-8 text-primary" />
+              {analysisData.improvementPotential ? (
+                <div>
+                  <div className="text-2xl font-bold text-primary">
+                    +{analysisData.improvementPotential.points_possible}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    points possible
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-12" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Key Insight */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center space-x-2">
+            <Target className="w-5 h-5 text-primary" />
+            <CardTitle>Key Insight</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-foreground">{analysisData.keyInsight}</p>
+        </CardContent>
+      </Card>
+
+      {/* Upsell Card */}
+      {isComplete && (
+        <Card className="border-primary bg-gradient-to-r from-primary/10 to-purple-500/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground mb-1">
+                  Ready to improve your resume?
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  Get AI-powered improvements, rewritten sections, and a
+                  professionally optimized resume.
+                </p>
+              </div>
+              <Button
+                onClick={onStartImprovement}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Improve with AI
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Detailed Sections */}
+      {/* Section Analysis */}
       <div className="space-y-6">
-        {analysis.resume_sections ? (
-          analysis.resume_sections.map((section, index) => (
-            <Card key={index} className="overflow-hidden">
-              <CardHeader className="bg-gray-50 dark:bg-gray-800 p-4 border-b">
-                <CardTitle className="flex items-center justify-between">
-                  <span className="text-lg font-semibold">
-                    {section.section_name}
-                  </span>
-                  <Badge
-                    variant={getBadgeVariant(section.rating)}
-                    className="text-sm"
-                  >
-                    {section.rating} ({section.score}/100)
+        <h2 className="text-2xl font-bold text-foreground">
+          Section-by-Section Analysis
+        </h2>
+
+        {status !== "completed" &&
+          analysisData.sections.length === 0 &&
+          [...Array(3)].map((_, i) => <SectionSkeleton key={i} />)}
+
+        {analysisData.sections.map((section, index) => (
+          <Card key={index}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">{section.name}</CardTitle>
+                <div className="flex items-center space-x-3">
+                  <Badge className={getRatingColor(section.rating)}>
+                    {section.rating}
                   </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 space-y-4">
-                <div className="p-3 bg-red-50 border-red-200 rounded-lg">
-                  <p className="font-semibold text-red-800">🔥 The Roast:</p>
-                  <p className="text-red-700 italic">"{section.roast}"</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold flex items-center">
-                      <ThumbsUp className="w-5 h-5 mr-2 text-green-600" />
-                      What's Good
-                    </h4>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700">
-                      {section.good_things.map((item, i) => (
-                        <li key={`good-${i}`}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold flex items-center">
-                      <ThumbsDown className="w-5 h-5 mr-2 text-yellow-600" />
-                      Areas for Improvement
-                    </h4>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700">
-                      {section.issues_found.map((item, i) => (
-                        <li key={`issue-${i}`}>{item}</li>
-                      ))}
-                    </ul>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-foreground">
+                      {section.score}
+                    </div>
+                    <Progress value={section.score} className="w-20 h-2" />
                   </div>
                 </div>
-                {section.quick_fixes.length > 0 && (
-                  <div className="space-y-2 pt-2 border-t mt-4">
-                    <h4 className="font-semibold flex items-center">
-                      <Wand2 className="w-5 h-5 mr-2 text-blue-600" />
-                      Quick Fixes
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-foreground">{section.analysis}</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Issues */}
+                {section.issues.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-red-600 mb-3 flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      Issues Found
                     </h4>
-                    <ul className="list-disc list-inside space-y-1 text-blue-700">
-                      {section.quick_fixes.map((item, i) => (
-                        <li key={`fix-${i}`}>{item}</li>
+                    <ul className="space-y-2">
+                      {section.issues.map((issue, i) => (
+                        <li
+                          key={i}
+                          className="text-sm text-foreground flex items-start"
+                        >
+                          <span className="w-2 h-2 bg-red-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                          {issue}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <>
-            <SectionSkeleton />
-            <SectionSkeleton />
-            <SectionSkeleton />
-          </>
-        )}
+
+                {/* Good Things */}
+                {section.goodThings.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-green-600 mb-3 flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      What We Liked
+                    </h4>
+                    <ul className="space-y-2">
+                      {section.goodThings.map((good, i) => (
+                        <li
+                          key={i}
+                          className="text-sm text-foreground flex items-start"
+                        >
+                          <span className="w-2 h-2 bg-green-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                          {good}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Quick Fixes */}
+                {section.quickFixes.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-blue-600 mb-3 flex items-center">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Quick Fixes
+                    </h4>
+                    <ul className="space-y-2">
+                      {section.quickFixes.map((fix, i) => (
+                        <li
+                          key={i}
+                          className="text-sm text-foreground flex items-start"
+                        >
+                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                          {fix}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {/* Bottom CTA */}
+      {isComplete && (
+        <Card className="border-primary bg-primary text-primary-foreground">
+          <CardContent className="p-8 text-center">
+            <h3 className="text-2xl font-bold mb-4">
+              Ready to fix your resume?
+            </h3>
+            <p className="text-primary-foreground/80 mb-6">
+              Let our AI rewrite your resume sections, optimize for ATS, and
+              create multiple versions for different roles.
+            </p>
+            <Button size="lg" variant="secondary" onClick={onStartImprovement}>
+              <Zap className="w-5 h-5 mr-2" />
+              Improve with AI - 2 Credits
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

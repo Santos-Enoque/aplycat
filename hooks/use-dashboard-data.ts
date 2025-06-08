@@ -107,24 +107,6 @@ export function usePrefetchDashboardData() {
       queryFn: fetchDashboardData,
       staleTime: 3 * 60 * 1000,
     });
-
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.resumes,
-      queryFn: fetchResumes,
-      staleTime: 5 * 60 * 1000,
-    });
-
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.analyses,
-      queryFn: fetchAnalyses,
-      staleTime: 5 * 60 * 1000,
-    });
-
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.improvements,
-      queryFn: fetchImprovements,
-      staleTime: 5 * 60 * 1000,
-    });
   };
 
   return { prefetchAll };

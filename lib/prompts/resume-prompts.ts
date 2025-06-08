@@ -69,6 +69,10 @@ OUTPUT FORMAT: Return ONLY valid JSON with this exact structure. Ensure all scor
   "ats_score": "[NUMBER 0-100 based on ATS compatibility]",
   "main_roast": "[Your brutal 8-12 word summary of the biggest problem]",
   "score_category": "[Critical/Needs Work/Good/Excellent based on overall_score]",
+  "improvement_potential": {
+    "points_possible": "[NUMBER, calculated as 95 minus overall_score. Only include if score < 90.]",
+    "headline": "[Short, punchy summary of potential, e.g., 'Significant upside with key changes.']"
+  },
   "resume_sections": [
     {
       "section_name": "[EXACT section name from resume]",
