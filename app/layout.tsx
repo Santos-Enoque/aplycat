@@ -81,7 +81,6 @@ export default function RootLayout({
                 <PerformanceTracker />
                 <UnifiedNavbar />
                 <main className="min-h-screen">{children}</main>
-                <ConditionalFooter />
               </ResumeProvider>
             </QueryProvider>
           </PostHogProvider>

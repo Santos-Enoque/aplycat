@@ -10,8 +10,15 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Upload, Linkedin } from "lucide-react";
+import {
+  FileText,
+  Upload,
+  Linkedin,
+  MessageSquare,
+  Instagram,
+} from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge"; // Added Badge
 
 interface DashboardUser {
   id: string;
@@ -170,6 +177,21 @@ export function DashboardContent({ user }: DashboardContentProps) {
     router.push("/linkedin");
   };
 
+  const openFeedback = () => {
+    window.open("https://upvoto.vercel.app/project/Aplycat", "_blank");
+  };
+
+  const openLinkedIn = () => {
+    window.open(
+      "https://www.linkedin.com/company/applicaai/?viewAsMember=true",
+      "_blank"
+    );
+  };
+
+  const openInstagram = () => {
+    window.open("https://instagram.com/aplycat", "_blank");
+  };
+
   const totalAnalyses = user.analyses.length;
   const totalImprovements = user.improvedResumes.length;
   const latestAnalysis =
@@ -265,7 +287,15 @@ export function DashboardContent({ user }: DashboardContentProps) {
                 <Linkedin className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <CardTitle>Connect LinkedIn</CardTitle>
+                <CardTitle className="flex items-center">
+                  Connect LinkedIn
+                  <Badge
+                    variant="outline"
+                    className="ml-2 text-xs bg-yellow-100 text-yellow-700 border-yellow-300"
+                  >
+                    Preview
+                  </Badge>
+                </CardTitle>
                 <CardDescription>
                   Analyze & optimize your profile
                 </CardDescription>
@@ -294,7 +324,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
               </div>
 
               <div className="flex items-center justify-between text-sm pt-2 border-t">
-                <span className="text-muted-foreground">Cost: 2 credits</span>
+                <span className="text-muted-foreground">Cost: 3 credits</span>
                 <span className="text-primary font-medium">
                   ~5 min analysis
                 </span>
@@ -304,25 +334,35 @@ export function DashboardContent({ user }: DashboardContentProps) {
         </Card>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-4 pt-8 border-t">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-foreground">
-            {totalAnalyses}
-          </div>
-          <div className="text-sm text-muted-foreground">Resumes Analyzed</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-foreground">
-            {currentATSScore}
-          </div>
-          <div className="text-sm text-muted-foreground">Current ATS Score</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-foreground">
-            {totalImprovements}
-          </div>
-          <div className="text-sm text-muted-foreground">Improvements Made</div>
+      {/* Feedback and Social Section */}
+      <div className="flex items-center justify-between pt-8 border-t">
+        <Button
+          onClick={openFeedback}
+          variant="outline"
+          size="sm"
+          className="text-sm"
+        >
+          <MessageSquare className="w-4 h-4 mr-2" />
+          Request feature / Report bug
+        </Button>
+
+        <div className="flex items-center space-x-2">
+          <Button
+            onClick={openLinkedIn}
+            variant="ghost"
+            size="sm"
+            className="p-2"
+          >
+            <Linkedin className="w-4 h-4 text-blue-600" />
+          </Button>
+          <Button
+            onClick={openInstagram}
+            variant="ghost"
+            size="sm"
+            className="p-2"
+          >
+            <Instagram className="w-4 h-4 text-pink-600" />
+          </Button>
         </div>
       </div>
     </div>

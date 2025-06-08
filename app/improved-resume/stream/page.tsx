@@ -734,8 +734,30 @@ export default function StreamingImprovedResumePage() {
 
   const handleTailoringComplete = (tailoringResult: any) => {
     console.log("Tailoring complete:", tailoringResult);
-    // You can now handle the tailored result, e.g., display it
-    setTailoringResult(tailoringResult);
+
+    if (tailoringResult.tailoredResume) {
+      setEditableResume(tailoringResult.tailoredResume);
+    }
+
+    if (tailoringResult.tailoringAnalysis) {
+      setTailoringAnalysis(tailoringResult.tailoringAnalysis);
+      const keywords = tailoringResult.tailoringAnalysis.keywordAlignment || [];
+      const newKeywordHighlights = keywords.map(
+        (keyword: string) => `keyword:${keyword}`
+      );
+
+      // Preserve AI improvement highlights and add new keyword highlights
+      setHighlightedFields((prev) => [
+        ...prev.filter((field) => !field.startsWith("keyword:")),
+        ...newKeywordHighlights,
+      ]);
+    }
+
+    if (tailoringResult.coverLetter) {
+      setCoverLetter(tailoringResult.coverLetter);
+      setActiveTab("coverLetter");
+    }
+
     setIsTailoring(false);
     setShowTailoring(false); // Optionally close the tailoring view
     toast.success("Resume tailored successfully!");

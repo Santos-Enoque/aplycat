@@ -303,21 +303,14 @@ export class ModelService {
   private provider: BaseModelProvider | null = null;
   private currentConfig: ModelConfig | null = null;
 
-  // Get the active model provider with configuration from cache
+  // Get the active model provider with configuration
   private async getProvider(): Promise<BaseModelProvider> {
     try {
-      // Get active configuration from cache
+      // Fetch the active model configuration from cache/db
       const modelConfig = await promptCache.getModelConfig();
       
-      if (!modelConfig) {
-        throw new Error('No active model configuration found');
-      }
-
       // Create new provider if config has changed
-      if (!this.provider || !this.currentConfig || 
-          this.currentConfig.provider !== modelConfig.provider ||
-          this.currentConfig.model !== modelConfig.model) {
-        
+      if (!this.provider || JSON.stringify(this.currentConfig) !== JSON.stringify(modelConfig)) {
         this.currentConfig = {
           provider: modelConfig.provider as ModelProvider,
           model: modelConfig.model,

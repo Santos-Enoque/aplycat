@@ -64,7 +64,7 @@ Senior Software Engineer, TechCorp (2018 - Present)
             console.error("Stream error:", err);
             controller.error(err);
           });
-          stream.on("response.done", async () => {
+          stream.on("response.output_text.done", async () => {
             controller.close();
           });
         },

@@ -10,9 +10,17 @@ import {
   Upload,
   Zap,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardHeader and CardTitle
+import { Badge } from "@/components/ui/badge"; // Added Badge
+import { SignInButton } from "@clerk/nextjs";
+import HeroVideoDialog from "@/components/magicui/hero-video-dialog";
+import {
+  HonestFeedbackPreview,
+  AiResumeGeneratorPreview,
+  JobTailoringPreview,
+  LinkedInPreview,
+} from "@/components/feature-previews";
 
 export function LandingPage() {
   return (
@@ -30,7 +38,7 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-purple-50 to-white">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-4 leading-tight">
             Tired of{" "}
             <span className="text-purple-500">"We went with someone else"</span>
             ?
@@ -40,20 +48,15 @@ export function LandingPage() {
             judgment — without the fake niceties.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button
-              size="lg"
-              className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-4 text-lg font-semibold"
-            >
-              <Upload className="mr-2 h-5 w-5" />
-              Upload Resume & Get Roasted
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-purple-500 text-purple-500 hover:bg-purple-50 px-8 py-4 text-lg font-semibold"
-            >
-              Fix My Resume
-            </Button>
+            <SignInButton mode="modal">
+              <Button
+                size="lg"
+                className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-4 text-lg font-semibold"
+              >
+                <Upload className="mr-2 h-5 w-5" />
+                Upload Resume & Get Roasted
+              </Button>
+            </SignInButton>
           </div>
           <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground">
             <div className="flex items-center">
@@ -79,32 +82,19 @@ export function LandingPage() {
               Watch how we turn resume disasters into job-winning masterpieces
             </p>
           </div>
-          <div className="max-w-4xl mx-auto">
-            <Card className="overflow-hidden border-purple-200 shadow-lg">
-              <CardContent className="p-0">
-                <div className="bg-gradient-to-br from-purple-50 to-gray-50 aspect-video flex items-center justify-center relative">
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mb-4 mx-auto">
-                      <Play className="h-8 w-8 text-white ml-1" />
-                    </div>
-                    <p className="text-lg font-semibold text-foreground mb-2">
-                      Product Demo Video
-                    </p>
-                    <p className="text-muted-foreground">
-                      Click to see Aplycat's dashboard and features
-                    </p>
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-purple-500">2:30 Demo</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="max-w-6xl mx-auto">
+            <HeroVideoDialog
+              videoSrc="https://www.youtube.com/embed/XUkq-0LtKvU" // Placeholder video source
+              thumbnailSrc="https://firebasestorage.googleapis.com/v0/b/foodapp-ee4f1.appspot.com/o/Frame%205.png?alt=media&token=e1fad3e3-bb8d-420c-8c8c-a566e4ef9bfe" // Placeholder thumbnail source
+              thumbnailAlt="Product video thumbnail"
+              animationStyle="from-center" // You can choose other animation styles
+              className="w-full"
+            />
           </div>
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Social Proof Section
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -190,7 +180,7 @@ export function LandingPage() {
             </Card>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Features Section with Alternating Layout */}
       <section className="py-20 bg-white">
@@ -235,23 +225,7 @@ export function LandingPage() {
               </ul>
             </div>
             <div>
-              <Card className="overflow-hidden border-purple-200 shadow-lg">
-                <CardContent className="p-0">
-                  <div className="bg-gradient-to-br from-red-50 to-orange-50 aspect-[4/3] flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-red-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                        <span className="text-white font-bold text-xl">📊</span>
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">
-                        Feedback Dashboard
-                      </p>
-                      <p className="text-muted-foreground">
-                        Screenshot placeholder
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <HonestFeedbackPreview />
             </div>
           </div>
 
@@ -284,23 +258,7 @@ export function LandingPage() {
               </ul>
             </div>
             <div className="lg:order-1">
-              <Card className="overflow-hidden border-purple-200 shadow-lg">
-                <CardContent className="p-0">
-                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 aspect-[4/3] flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                        <span className="text-white font-bold text-xl">🤖</span>
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">
-                        AI Generator Interface
-                      </p>
-                      <p className="text-muted-foreground">
-                        Screenshot placeholder
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <AiResumeGeneratorPreview />
             </div>
           </div>
 
@@ -333,23 +291,7 @@ export function LandingPage() {
               </ul>
             </div>
             <div>
-              <Card className="overflow-hidden border-purple-200 shadow-lg">
-                <CardContent className="p-0">
-                  <div className="bg-gradient-to-br from-green-50 to-teal-50 aspect-[4/3] flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-green-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                        <span className="text-white font-bold text-xl">🎯</span>
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">
-                        Tailoring Dashboard
-                      </p>
-                      <p className="text-muted-foreground">
-                        Screenshot placeholder
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <JobTailoringPreview />
             </div>
           </div>
 
@@ -382,23 +324,7 @@ export function LandingPage() {
               </ul>
             </div>
             <div className="lg:order-1">
-              <Card className="overflow-hidden border-purple-200 shadow-lg">
-                <CardContent className="p-0">
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 aspect-[4/3] flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-purple-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                        <span className="text-white font-bold text-xl">💼</span>
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">
-                        LinkedIn Optimizer
-                      </p>
-                      <p className="text-muted-foreground">
-                        Screenshot placeholder
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <LinkedInPreview />
             </div>
           </div>
         </div>
@@ -576,9 +502,11 @@ export function LandingPage() {
                 </ul>
               </CardContent>
               <div className="p-6 pt-0">
-                <Button className="w-full bg-purple-500 hover:bg-purple-600">
-                  Get Started
-                </Button>
+                <SignInButton mode="modal">
+                  <Button className="w-full bg-purple-500 hover:bg-purple-600">
+                    Get Started
+                  </Button>
+                </SignInButton>
               </div>
             </Card>
 
@@ -628,9 +556,11 @@ export function LandingPage() {
                 </ul>
               </CardContent>
               <div className="p-6 pt-0">
-                <Button className="w-full bg-purple-500 hover:bg-purple-600">
-                  Choose Professional
-                </Button>
+                <SignInButton mode="modal">
+                  <Button className="w-full bg-purple-500 hover:bg-purple-600">
+                    Choose Professional
+                  </Button>
+                </SignInButton>
               </div>
             </Card>
 
@@ -673,9 +603,11 @@ export function LandingPage() {
                 </ul>
               </CardContent>
               <div className="p-6 pt-0">
-                <Button className="w-full bg-purple-500 hover:bg-purple-600">
-                  Go Power User
-                </Button>
+                <SignInButton mode="modal">
+                  <Button className="w-full bg-purple-500 hover:bg-purple-600">
+                    Go Power User
+                  </Button>
+                </SignInButton>
               </div>
             </Card>
           </div>
@@ -691,13 +623,15 @@ export function LandingPage() {
           <p className="text-xl md:text-2xl mb-8 opacity-90">
             Fix your resume. Fix your luck.
           </p>
-          <Button
-            size="lg"
-            className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
-          >
-            <Upload className="mr-2 h-5 w-5" />
-            Upload Resume & Get Roasted
-          </Button>
+          <SignInButton mode="modal">
+            <Button
+              size="lg"
+              className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
+            >
+              <Upload className="mr-2 h-5 w-5" />
+              Upload Resume & Get Roasted
+            </Button>
+          </SignInButton>
           <p className="text-sm mt-4 opacity-75">
             🚀 Launch offer ends soon • Bonus credits on all packs
           </p>

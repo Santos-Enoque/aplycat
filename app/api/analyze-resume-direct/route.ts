@@ -124,11 +124,11 @@ export async function POST(request: NextRequest) {
 
     // Start background database save (don't wait for it)
     if (analysis) {
-      saveAnalysisInBackground(dbUser.id, fileName, fileData, analysis, processingTime)
-        .catch(error => {
-          console.error('[DIRECT_ANALYSIS] Background save failed:', error);
-          // Fail silently - user experience not affected
-        });
+      // saveAnalysisInBackground(dbUser.id, fileName, fileData, analysis, processingTime)
+      //   .catch(error => {
+      //     console.error('[DIRECT_ANALYSIS] Background save failed:', error);
+      //     // Fail silently - user experience not affected
+      //   });
     }
 
     return NextResponse.json({
@@ -174,52 +174,52 @@ export async function POST(request: NextRequest) {
 }
 
 // Background function to save analysis - runs asynchronously
-async function saveAnalysisInBackground(
-  userId: string, 
-  fileName: string, 
-  fileData: string, 
-  analysis: any, 
-  processingTime: number
-) {
-  try {
-    console.log('[DIRECT_ANALYSIS] Starting background database save...');
+// async function saveAnalysisInBackground(
+//   userId: string, 
+//   fileName: string, 
+//   fileData: string, 
+//   analysis: any, 
+//   processingTime: number
+// ) {
+//   try {
+//     console.log('[DIRECT_ANALYSIS] Starting background database save...');
     
-    // Create a simple resume record (no UploadThing URL)
-    const resume = await db.resume.create({
-      data: {
-        userId,
-        fileName,
-        fileUrl: `direct-analysis-${Date.now()}`, // Placeholder URL
-        fileSize: Math.round((fileData.length * 3) / 4), // Approximate size
-        mimeType: 'application/pdf',
-        title: fileName.replace('.pdf', ''),
-      },
-    });
+//     // Create a simple resume record (no UploadThing URL)
+//     const resume = await db.resume.create({
+//       data: {
+//         userId,
+//         fileName,
+//         fileUrl: `direct-analysis-${Date.now()}`, // Placeholder URL
+//         fileSize: Math.round((fileData.length * 3) / 4), // Approximate size
+//         mimeType: 'application/pdf',
+//         title: fileName.replace('.pdf', ''),
+//       },
+//     });
 
-    console.log('[DIRECT_ANALYSIS] Resume record created:', resume.id);
+//     console.log('[DIRECT_ANALYSIS] Resume record created:', resume.id);
 
-    // Create analysis record
-    const savedAnalysis = await db.analysis.create({
-      data: {
-        userId,
-        resumeId: resume.id,
-        fileName,
-        processingTimeMs: processingTime,
-        overallScore: analysis.overall_score || 0,
-        atsScore: analysis.ats_score || 0,
-        scoreCategory: analysis.score_category || 'Unknown',
-        mainRoast: analysis.main_roast || 'Analysis completed',
-        analysisData: analysis,
-        creditsUsed: 1,
-        isCompleted: true,
-      },
-    });
+//     // Create analysis record
+//     const savedAnalysis = await db.analysis.create({
+//       data: {
+//         userId,
+//         resumeId: resume.id,
+//         fileName,
+//         processingTimeMs: processingTime,
+//         overallScore: analysis.overall_score || 0,
+//         atsScore: analysis.ats_score || 0,
+//         scoreCategory: analysis.score_category || 'Unknown',
+//         mainRoast: analysis.main_roast || 'Analysis completed',
+//         analysisData: analysis,
+//         creditsUsed: 1,
+//         isCompleted: true,
+//       },
+//     });
 
-    console.log('[DIRECT_ANALYSIS] Analysis saved in background:', savedAnalysis.id);
+//     console.log('[DIRECT_ANALYSIS] Analysis saved in background:', savedAnalysis.id);
     
-    return { success: true, analysisId: savedAnalysis.id, resumeId: resume.id };
-  } catch (error) {
-    console.error('[DIRECT_ANALYSIS] Background save failed:', error);
-    throw error;
-  }
-} 
+//     return { success: true, analysisId: savedAnalysis.id, resumeId: resume.id };
+//   } catch (error) {
+//     console.error('[DIRECT_ANALYSIS] Background save failed:', error);
+//     throw error;
+//   }
+// } 

@@ -28,21 +28,21 @@ async function main() {
       configurationId_promptType_name: {
         configurationId: defaultConfig.id,
         promptType: PromptType.SYSTEM,
-        name: 'Resume Analysis Prompt'
+        name: 'RESUME_ANALYSIS_SYSTEM'
       }
     },
     update: {},
     create: {
-      name: 'Resume Analysis Prompt',
+      name: 'RESUME_ANALYSIS_SYSTEM',
       promptType: PromptType.SYSTEM,
-      promptText: RESUME_ANALYSIS_SYSTEM_PROMPT,
+      systemPrompt: RESUME_ANALYSIS_SYSTEM_PROMPT,
       version: 1,
       isActive: true,
       configurationId: defaultConfig.id,
     },
   });
 
-  console.log(`Upserted default prompt for: ${resumeAnalysisPrompt.service}`);
+  console.log(`Upserted default prompt: ${resumeAnalysisPrompt.name}`);
 
   console.log('Seeding finished.');
 }

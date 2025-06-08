@@ -538,15 +538,18 @@ export class StreamingModelService {
   private async getProvider(serviceName: string): Promise<BaseModelProvider> {
     try {
       // Fetch the active model configuration from cache/db
-      let modelConfig = await promptCache.getModelConfig(serviceName);
+      let modelConfig = await promptCache.getModelConfig();
       
       if (!modelConfig) {
         console.warn('[StreamingModelService] No active model configuration found in database. Falling back to default.');
         modelConfig = {
+          id: 'default-fallback-config',
           provider: 'openai',
           model: 'gpt-4o-mini',
           temperature: 0.1,
           maxTokens: 4000,
+          topP: 1.0,
+          isActive: true,
         };
       }
 
