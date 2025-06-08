@@ -31,6 +31,40 @@ interface ImproveResumeModalProps {
   onStartImprovement: (targetRole: string, targetIndustry: string) => void;
 }
 
+// Extracted FormContent component
+const FormContent = ({
+  targetRole,
+  setTargetRole,
+  targetIndustry,
+  setTargetIndustry,
+}: {
+  targetRole: string;
+  setTargetRole: (value: string) => void;
+  targetIndustry: string;
+  setTargetIndustry: (value: string) => void;
+}) => (
+  <div className="grid gap-4 py-4 px-4">
+    <div className="space-y-2">
+      <Label htmlFor="target-role">Target Role</Label>
+      <Input
+        id="target-role"
+        value={targetRole}
+        onChange={(e) => setTargetRole(e.target.value)}
+        placeholder="e.g., Senior Software Engineer"
+      />
+    </div>
+    <div className="space-y-2">
+      <Label htmlFor="target-industry">Industry</Label>
+      <Input
+        id="target-industry"
+        value={targetIndustry}
+        onChange={(e) => setTargetIndustry(e.target.value)}
+        placeholder="e.g., Tech / SaaS"
+      />
+    </div>
+  </div>
+);
+
 export function ImproveResumeModal({
   isOpen,
   onClose,
@@ -52,31 +86,6 @@ export function ImproveResumeModal({
     onStartImprovement(targetRole, targetIndustry);
   };
 
-  const FormContent = () => (
-    <>
-      <div className="grid gap-4 py-4 px-4">
-        <div className="space-y-2">
-          <Label htmlFor="target-role">Target Role</Label>
-          <Input
-            id="target-role"
-            value={targetRole}
-            onChange={(e) => setTargetRole(e.target.value)}
-            placeholder="e.g., Senior Software Engineer"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="target-industry">Industry</Label>
-          <Input
-            id="target-industry"
-            value={targetIndustry}
-            onChange={(e) => setTargetIndustry(e.target.value)}
-            placeholder="e.g., Tech / SaaS"
-          />
-        </div>
-      </div>
-    </>
-  );
-
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -91,7 +100,12 @@ export function ImproveResumeModal({
               it.
             </DialogDescription>
           </DialogHeader>
-          <FormContent />
+          <FormContent
+            targetRole={targetRole}
+            setTargetRole={setTargetRole}
+            targetIndustry={targetIndustry}
+            setTargetIndustry={setTargetIndustry}
+          />
           <DialogFooter>
             <Button
               type="button"
@@ -125,7 +139,12 @@ export function ImproveResumeModal({
             Tell us your goal, and our AI will rewrite your resume to match it.
           </DrawerDescription>
         </DrawerHeader>
-        <FormContent />
+        <FormContent
+          targetRole={targetRole}
+          setTargetRole={setTargetRole}
+          targetIndustry={targetIndustry}
+          setTargetIndustry={setTargetIndustry}
+        />
         <DrawerFooter className="pt-2">
           <Button
             type="button"
