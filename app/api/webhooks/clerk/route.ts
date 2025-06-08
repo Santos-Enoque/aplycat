@@ -97,7 +97,7 @@ async function handleUserCreated(data: ClerkEvent['data']) {
         firstName: data.first_name,
         lastName: data.last_name,
         imageUrl: data.image_url,
-        credits: 7, // Welcome bonus credits
+        credits: 0, // Credits are added via transaction below
         isPremium: false,
         isActive: true,
       },

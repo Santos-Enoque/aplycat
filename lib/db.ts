@@ -158,7 +158,7 @@ export const userHelpers = {
         firstName: clerkUser.firstName,
         lastName: clerkUser.lastName,
         imageUrl: clerkUser.imageUrl,
-        credits: 10, // Default free trial bonus
+        credits: 7, // Default free trial bonus
       }
     })
   },

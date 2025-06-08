@@ -55,7 +55,9 @@ export function UnifiedNavbar() {
               className="flex items-center gap-2"
             >
               <Cat className="h-8 w-8 text-purple-600" />
-              <span className="text-xl font-bold text-gray-900">Aplycat</span>
+              <span className="hidden sm:inline-block text-xl font-bold text-gray-900">
+                Aplycat
+              </span>
             </Link>
           </div>
 
@@ -64,7 +66,7 @@ export function UnifiedNavbar() {
             {isSignedIn ? (
               <>
                 {/* Credits Display */}
-                <div className="hidden sm:flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   {creditsLoading ? (
                     <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
                   ) : (
@@ -79,7 +81,7 @@ export function UnifiedNavbar() {
                 <Button
                   size="sm"
                   onClick={() => setIsCreditsModalOpen(true)}
-                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white hidden sm:flex"
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white flex"
                 >
                   <Zap className="h-4 w-4 mr-2" />
                   Buy Credits

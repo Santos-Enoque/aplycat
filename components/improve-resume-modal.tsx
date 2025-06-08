@@ -2,6 +2,21 @@
 
 import { useState } from "react";
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerClose,
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -9,11 +24,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Sparkles, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
 interface ImproveResumeModalProps {
   isOpen: boolean;
@@ -29,6 +39,7 @@ export function ImproveResumeModal({
   const [targetRole, setTargetRole] = useState("");
   const [targetIndustry, setTargetIndustry] = useState("");
   const [isImproving, setIsImproving] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const handleStart = () => {
     if (!targetRole.trim() || !targetIndustry.trim()) {
@@ -41,45 +52,81 @@ export function ImproveResumeModal({
     onStartImprovement(targetRole, targetIndustry);
   };
 
+  const FormContent = () => (
+    <>
+      <div className="grid gap-4 py-4 px-4">
+        <div className="space-y-2">
+          <Label htmlFor="target-role">Target Role</Label>
+          <Input
+            id="target-role"
+            value={targetRole}
+            onChange={(e) => setTargetRole(e.target.value)}
+            placeholder="e.g., Senior Software Engineer"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="target-industry">Industry</Label>
+          <Input
+            id="target-industry"
+            value={targetIndustry}
+            onChange={(e) => setTargetIndustry(e.target.value)}
+            placeholder="e.g., Tech / SaaS"
+          />
+        </div>
+      </div>
+    </>
+  );
+
+  if (isDesktop) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="text-purple-500" />
+              Improve Your Resume
+            </DialogTitle>
+            <DialogDescription>
+              Tell us your goal, and our AI will rewrite your resume to match
+              it.
+            </DialogDescription>
+          </DialogHeader>
+          <FormContent />
+          <DialogFooter>
+            <Button
+              type="button"
+              onClick={handleStart}
+              disabled={
+                isImproving || !targetRole.trim() || !targetIndustry.trim()
+              }
+            >
+              {isImproving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              Start Improvement
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Drawer open={isOpen} onOpenChange={onClose}>
+      <DrawerContent>
+        <DrawerHeader className="text-left">
+          <DrawerTitle className="flex items-center gap-2">
             <Sparkles className="text-purple-500" />
             Improve Your Resume
-          </DialogTitle>
-          <DialogDescription>
+          </DrawerTitle>
+          <DrawerDescription>
             Tell us your goal, and our AI will rewrite your resume to match it.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="target-role" className="text-right">
-              Target Role
-            </Label>
-            <Input
-              id="target-role"
-              value={targetRole}
-              onChange={(e) => setTargetRole(e.target.value)}
-              placeholder="e.g., Senior Software Engineer"
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="target-industry" className="text-right">
-              Industry
-            </Label>
-            <Input
-              id="target-industry"
-              value={targetIndustry}
-              onChange={(e) => setTargetIndustry(e.target.value)}
-              placeholder="e.g., Tech / SaaS"
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <DialogFooter>
+          </DrawerDescription>
+        </DrawerHeader>
+        <FormContent />
+        <DrawerFooter className="pt-2">
           <Button
             type="button"
             onClick={handleStart}
@@ -94,8 +141,11 @@ export function ImproveResumeModal({
             )}
             Start Improvement
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DrawerClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
