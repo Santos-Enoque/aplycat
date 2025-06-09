@@ -168,7 +168,7 @@ export function JobTailoringComponent({
               placeholder="https://company.com/job-posting..."
               value={jobUrl}
               onChange={(e) => setJobUrl(e.target.value)}
-              className="flex-1"
+              className="flex-1 text-base"
             />
             <Button
               onClick={extractJobInfo}
@@ -196,6 +196,7 @@ export function JobTailoringComponent({
               placeholder="e.g., Senior Software Engineer"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
+              className="text-base"
             />
           </div>
           <div className="space-y-2">
@@ -204,6 +205,7 @@ export function JobTailoringComponent({
               placeholder="e.g., Google"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
+              className="text-base"
             />
           </div>
         </div>
@@ -218,7 +220,7 @@ export function JobTailoringComponent({
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             rows={6}
-            className="resize-none"
+            className="resize-none text-base"
           />
           <p className="text-xs text-gray-500">
             Include requirements, responsibilities, and skills for best results
