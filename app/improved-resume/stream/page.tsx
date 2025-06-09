@@ -40,6 +40,8 @@ interface StreamingContext {
   targetRole: string;
   targetIndustry: string;
   timestamp: number;
+  tailoringResult?: any;
+  highlightedFields?: string[];
 }
 
 // ATS-Friendly Resume Preview Component
@@ -541,102 +543,47 @@ export default function StreamingImprovedResumePage() {
   const [tailoringAnalysis, setTailoringAnalysis] = useState<any>(null);
   const [isTailoring, setIsTailoring] = useState(false);
   const [showTailoring, setShowTailoring] = useState(false);
-  const [tailoringResult, setTailoringResult] = useState<any>(null);
+  const [tailoringResult, setTailoringResult] = useState<any>(() => {
+    if (typeof window === "undefined") return null;
+    const saved = sessionStorage.getItem("tailoringResult");
+    return saved ? JSON.parse(saved) : null;
+  });
   const { refetch: refetchCredits } = useUserCredits();
 
+  const originalResume = useRef<ImprovedResume | null>(null);
+
   useEffect(() => {
-    // Load streaming data from sessionStorage
-    const storedData = sessionStorage.getItem("streamingImprovement");
-    if (storedData) {
+    if (tailoringResult) {
+      sessionStorage.setItem(
+        "tailoringResult",
+        JSON.stringify(tailoringResult)
+      );
+    }
+  }, [tailoringResult]);
+
+  useEffect(() => {
+    const storedContext = sessionStorage.getItem("streamingImprovementContext");
+    if (storedContext) {
       try {
-        const data: StreamingContext = JSON.parse(storedData);
-        console.log("🔍 Loaded streaming data:", data);
+        const parsedContext: StreamingContext = JSON.parse(storedContext);
 
-        setStreamingData(data);
+        if (parsedContext.improvement) {
+          setStreamingData(parsedContext);
+          setEditableResume(parsedContext.improvement);
+          originalResume.current = parsedContext.improvement;
 
-        // Create a clean copy to avoid any reference issues
-        const cleanImprovement = JSON.parse(JSON.stringify(data.improvement));
-        console.log(
-          "📝 Experience entries:",
-          cleanImprovement.experience?.length
-        );
-        console.log(
-          "🎓 Education entries:",
-          cleanImprovement.education?.length
-        );
-
-        // Remove duplicates if they exist
-        if (cleanImprovement.experience) {
-          const uniqueExperience = cleanImprovement.experience.filter(
-            (exp: any, index: number, arr: any[]) => {
-              return (
-                index ===
-                arr.findIndex(
-                  (e) =>
-                    e.title === exp.title &&
-                    e.company === exp.company &&
-                    e.startDate === exp.startDate
-                )
-              );
-            }
-          );
-          cleanImprovement.experience = uniqueExperience;
-          console.log("✅ Unique experience entries:", uniqueExperience.length);
+          if (parsedContext.tailoringResult) {
+            setTailoringResult(parsedContext.tailoringResult);
+          }
+          if (parsedContext.highlightedFields) {
+            setHighlightedFields(parsedContext.highlightedFields);
+          }
+        } else {
+          console.error("No improvement object in parsed context");
+          router.push("/dashboard");
         }
-
-        if (cleanImprovement.education) {
-          const uniqueEducation = cleanImprovement.education.filter(
-            (edu: any, index: number, arr: any[]) => {
-              return (
-                index ===
-                arr.findIndex(
-                  (e) =>
-                    e.degree === edu.degree &&
-                    e.institution === edu.institution &&
-                    e.year === edu.year
-                )
-              );
-            }
-          );
-          cleanImprovement.education = uniqueEducation;
-          console.log("✅ Unique education entries:", uniqueEducation.length);
-        }
-
-        setEditableResume(cleanImprovement);
-
-        // Set up highlighting for AI changes
-        const highlighted: string[] = [];
-        const improvement = cleanImprovement;
-
-        // Check for illustrative metrics in experience achievements
-        if (improvement.experience) {
-          improvement.experience.forEach((exp: any, expIndex: number) => {
-            exp.achievements?.forEach(
-              (achievement: string, achIndex: number) => {
-                if (achievement.includes("[Illustrative:")) {
-                  highlighted.push(
-                    `experience.${expIndex}.achievements.${achIndex}`
-                  );
-                }
-              }
-            );
-          });
-        }
-
-        // Highlight professional summary if it was improved
-        if (
-          improvement.improvementsAnalysis?.keyRevisionsImplemented?.some(
-            (revision: string) =>
-              revision.toLowerCase().includes("summary") ||
-              revision.toLowerCase().includes("professional summary")
-          )
-        ) {
-          highlighted.push("professionalSummary");
-        }
-
-        setHighlightedFields([...new Set(highlighted)]);
       } catch (error) {
-        console.error("Failed to parse streaming data:", error);
+        console.error("Failed to parse streaming context:", error);
         router.push("/dashboard");
       }
     } else {
@@ -762,6 +709,9 @@ export default function StreamingImprovedResumePage() {
     setShowTailoring(false); // Optionally close the tailoring view
     toast.success("Resume tailored successfully!");
     refetchCredits(); // Refetch credits after tailoring
+
+    // Save tailored resume as the new "original" for further tailoring
+    originalResume.current = tailoringResult.tailoredResume;
   };
 
   const handleTailoringStart = () => {

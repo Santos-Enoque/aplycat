@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,9 @@ import {
   AlertCircle,
   Sparkles,
 } from "lucide-react";
+import { useUserCredits } from "@/hooks/use-user-credits";
+import { useCreditsModal } from "@/hooks/use-credits-modal";
+import * as Sentry from "@sentry/nextjs";
 
 interface JobTailoringComponentProps {
   currentResume: any;
@@ -32,15 +35,45 @@ export function JobTailoringComponent({
   onTailoringStart,
   isLoading: externalLoading,
 }: JobTailoringComponentProps) {
-  const [jobUrl, setJobUrl] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [includeCoverLetter, setIncludeCoverLetter] = useState(true);
+  const [jobUrl, setJobUrl] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return sessionStorage.getItem("tailoringJobUrl") || "";
+  });
+  const [jobDescription, setJobDescription] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return sessionStorage.getItem("tailoringJobDescription") || "";
+  });
+  const [jobTitle, setJobTitle] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return sessionStorage.getItem("tailoringJobTitle") || "";
+  });
+  const [companyName, setCompanyName] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return sessionStorage.getItem("tailoringCompanyName") || "";
+  });
+  const [includeCoverLetter, setIncludeCoverLetter] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return sessionStorage.getItem("tailoringIncludeCoverLetter") === "true";
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isExtractingJob, setIsExtractingJob] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const { openModal } = useCreditsModal();
+  const { credits, isLoading: isLoadingCredits } = useUserCredits();
+
+  const TAILORING_COST = 4; // This service costs 4 credits
+
+  useEffect(() => {
+    sessionStorage.setItem("tailoringJobUrl", jobUrl);
+    sessionStorage.setItem("tailoringJobDescription", jobDescription);
+    sessionStorage.setItem("tailoringJobTitle", jobTitle);
+    sessionStorage.setItem("tailoringCompanyName", companyName);
+    sessionStorage.setItem(
+      "tailoringIncludeCoverLetter",
+      String(includeCoverLetter)
+    );
+  }, [jobUrl, jobDescription, jobTitle, companyName, includeCoverLetter]);
 
   // Simulate progress for better UX
   React.useEffect(() => {
@@ -57,6 +90,10 @@ export function JobTailoringComponent({
 
   const extractJobInfo = async () => {
     if (!jobUrl.trim()) return;
+    if (isLoadingCredits || credits === null || credits <= 0) {
+      openModal();
+      return;
+    }
 
     setIsExtractingJob(true);
     setError(null);
@@ -78,6 +115,12 @@ export function JobTailoringComponent({
       if (result.company_name) setCompanyName(result.company_name);
       if (result.job_description) setJobDescription(result.job_description);
     } catch (err: any) {
+      Sentry.captureException(err, {
+        extra: {
+          jobUrl,
+          context: "JobTailoringComponent extractJobInfo catch block",
+        },
+      });
       setError("Failed to extract job info. Please fill manually.");
       toast.error("Failed to extract job information from the URL.", {
         description:
@@ -92,6 +135,12 @@ export function JobTailoringComponent({
   const handleTailoring = async () => {
     if (!jobDescription.trim()) {
       setError("Please provide a job description");
+      return;
+    }
+    if (isLoadingCredits || credits === null) return;
+
+    if (credits < TAILORING_COST) {
+      openModal(TAILORING_COST);
       return;
     }
 
@@ -126,6 +175,13 @@ export function JobTailoringComponent({
         onTailoringComplete(result);
       }, 500);
     } catch (err: any) {
+      Sentry.captureException(err, {
+        extra: {
+          jobTitle,
+          companyName,
+          context: "JobTailoringComponent handleTailoring catch block",
+        },
+      });
       setError(err.message || "An error occurred while tailoring your resume");
     } finally {
       setIsLoading(false);
@@ -278,7 +334,7 @@ export function JobTailoringComponent({
         <div className="flex gap-3">
           <Button
             onClick={handleTailoring}
-            disabled={!jobDescription.trim() || isLoading}
+            disabled={!jobDescription.trim() || isLoading || isLoadingCredits}
             className="flex-1 bg-purple-600 hover:bg-purple-700"
           >
             {isLoading ? (

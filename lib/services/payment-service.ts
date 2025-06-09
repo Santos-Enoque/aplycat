@@ -13,6 +13,7 @@ export interface CreateCheckoutParams {
   userId: string;
   packageType: CreditPackageType;
   userEmail: string;
+  returnUrl?: string;
 }
 
 export interface ProcessPaymentParams {
@@ -28,7 +29,7 @@ class PaymentService {
    * Create a checkout session for credit purchase
    */
   async createCheckout(params: CreateCheckoutParams) {
-    const { userId, packageType, userEmail } = params;
+    const { userId, packageType, userEmail, returnUrl } = params;
 
     try {
       console.log('[PAYMENT_SERVICE] Creating checkout:', params);
@@ -57,7 +58,8 @@ class PaymentService {
           userName: user.firstName && user.lastName 
             ? `${user.firstName} ${user.lastName}` 
             : user.firstName || user.email,
-        }
+        },
+        returnUrl
       );
 
       // Log the checkout creation

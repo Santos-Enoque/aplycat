@@ -1,4 +1,3 @@
-
 // app/api/payments/create-checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
@@ -8,6 +7,7 @@ import type { CreditPackageType } from '@/lib/stripe/config';
 
 const createCheckoutSchema = z.object({
   packageType: z.enum(['starter', 'professional', 'premium']),
+  returnUrl: z.string().url().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -23,12 +23,13 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
-    const { packageType } = createCheckoutSchema.parse(body);
+    const { packageType, returnUrl } = createCheckoutSchema.parse(body);
 
     console.log('[CREATE_CHECKOUT] Creating checkout:', {
       userId: user.id,
       packageType,
       email: user.emailAddresses[0]?.emailAddress,
+      returnUrl,
     });
 
     // Create checkout session
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       packageType: packageType as CreditPackageType,
       userEmail: user.emailAddresses[0]?.emailAddress || '',
+      returnUrl,
     });
 
     return NextResponse.json({

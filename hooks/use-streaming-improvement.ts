@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { ModelFileInput } from "@/lib/models";
+import * as Sentry from '@sentry/nextjs';
 
 // Updated interface to match the actual API response
 interface ImprovedResumeResponse {
@@ -90,9 +91,32 @@ export interface UseStreamingImprovementReturn {
 }
 
 export function useStreamingImprovement(): UseStreamingImprovementReturn {
-  const [improvement, setImprovement] = useState<Partial<ImprovedResumeResponse> | null>(null);
-  const [status, setStatus] = useState<StreamingStatus>('idle');
+  const [improvement, setImprovement] = useState<Partial<ImprovedResumeResponse> | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const saved = sessionStorage.getItem('streamingImprovement');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [status, setStatus] = useState<StreamingStatus>(() => {
+    if (typeof window === 'undefined') return 'idle';
+    return (sessionStorage.getItem('streamingImprovementStatus') as StreamingStatus) || 'idle';
+  });
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === 'idle' && improvement) {
+      const savedStatus = sessionStorage.getItem('streamingImprovementStatus') as StreamingStatus;
+      if (savedStatus && savedStatus !== 'idle') {
+        setStatus(savedStatus);
+      }
+    }
+  }, [status, improvement]);
+
+  useEffect(() => {
+    if (improvement) {
+      sessionStorage.setItem('streamingImprovement', JSON.stringify(improvement));
+    }
+    sessionStorage.setItem('streamingImprovementStatus', status);
+  }, [improvement, status]);
 
   const startImprovement = useCallback(
     async (
@@ -168,6 +192,12 @@ export function useStreamingImprovement(): UseStreamingImprovementReturn {
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'An unknown error occurred';
+        Sentry.captureException(err, {
+          extra: {
+            errorMessage,
+            context: "useStreamingImprovement catch block",
+          },
+        });
         console.error('[useStreamingImprovement] Error:', errorMessage);
         setError(errorMessage);
         setStatus('error');

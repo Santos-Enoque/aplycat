@@ -78,7 +78,7 @@ function ImprovePageContent() {
 
         // Store the improvement data for the improved resume page
         sessionStorage.setItem(
-          "streamingImprovement",
+          "streamingImprovementContext",
           JSON.stringify({
             improvement: result.improvedResume,
             targetRole,

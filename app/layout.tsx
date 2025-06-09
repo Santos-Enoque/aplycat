@@ -13,6 +13,7 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { ConditionalFooter } from "@/components/conditional-footer";
 import { PostHogProvider } from "@/components/providers/PostHogProvider";
+import { CreditsModalProvider } from "@/components/providers/credits-modal-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -77,13 +78,15 @@ export default function RootLayout({
             routerConfig={extractRouterConfig(ourFileRouter)}
           />
           <PostHogProvider>
-            <QueryProvider>
-              <ResumeProvider>
-                <PerformanceTracker />
-                <UnifiedNavbar />
-                <main className="min-h-screen">{children}</main>
-              </ResumeProvider>
-            </QueryProvider>
+            <CreditsModalProvider>
+              <QueryProvider>
+                <ResumeProvider>
+                  <PerformanceTracker />
+                  <UnifiedNavbar />
+                  <main className="min-h-screen">{children}</main>
+                </ResumeProvider>
+              </QueryProvider>
+            </CreditsModalProvider>
           </PostHogProvider>
           <Analytics />
           <Toaster />

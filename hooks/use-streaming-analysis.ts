@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { ResumeAnalysis } from '@/types/analysis';
+import * as Sentry from '@sentry/nextjs';
 
 interface StreamingChunk {
   type: 'partial_analysis' | 'complete_analysis' | 'error' | 'metadata';
@@ -26,14 +27,41 @@ export interface UseStreamingAnalysisReturn {
 }
 
 export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
-  const [analysis, setAnalysis] = useState<Partial<ResumeAnalysis> | null>(null);
-  const [status, setStatus] = useState<StreamingStatus>('idle');
+  const [analysis, setAnalysis] = useState<Partial<ResumeAnalysis> | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const saved = sessionStorage.getItem('streamingAnalysis');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [status, setStatus] = useState<StreamingStatus>(() => {
+    if (typeof window === 'undefined') return 'idle';
+    return (sessionStorage.getItem('streamingAnalysisStatus') as StreamingStatus) || 'idle';
+  });
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    return Number(sessionStorage.getItem('streamingAnalysisProgress')) || 0;
+  });
 
   const lastFile = useRef<File | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (status === 'idle' && analysis) {
+       const savedStatus = sessionStorage.getItem('streamingAnalysisStatus') as StreamingStatus;
+       if(savedStatus && savedStatus !== 'idle') {
+         setStatus(savedStatus);
+       }
+    }
+  }, [status, analysis]);
+
+  useEffect(() => {
+    if (analysis) {
+      sessionStorage.setItem('streamingAnalysis', JSON.stringify(analysis));
+    }
+    sessionStorage.setItem('streamingAnalysisStatus', status);
+    sessionStorage.setItem('streamingAnalysisProgress', progress.toString());
+  }, [analysis, status, progress]);
 
   const startAnalysis = useCallback(async (file: File) => {
     lastFile.current = file;
@@ -130,6 +158,12 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
         console.log('[useStreamingAnalysis] Analysis stopped by user.');
         setStatus('idle');
       } else {
+        Sentry.captureException(err, {
+          extra: {
+            errorMessage,
+            context: "useStreamingAnalysis catch block",
+          },
+        });
         console.error('[useStreamingAnalysis] Error:', errorMessage);
         setError(errorMessage);
         setStatus('error');

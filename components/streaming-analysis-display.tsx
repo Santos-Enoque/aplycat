@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -21,6 +22,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResumeAnalysis, ResumeSection } from "@/types/analysis";
+import { useUserCredits } from "@/hooks/use-user-credits";
+import { useCreditsModal } from "@/hooks/use-credits-modal";
 
 interface StreamingAnalysisDisplayProps {
   analysis: Partial<ResumeAnalysis> | null;
@@ -61,6 +64,17 @@ export function StreamingAnalysisDisplay({
   status,
   onStartImprovement,
 }: StreamingAnalysisDisplayProps) {
+  const { openModal } = useCreditsModal();
+  const { credits, isLoading: isLoadingCredits } = useUserCredits();
+
+  const handleStartImprovementClick = () => {
+    if (credits === null || credits <= 0) {
+      openModal();
+    } else {
+      onStartImprovement();
+    }
+  };
+
   if (status === "idle" || status === "connecting" || !analysis) {
     return (
       <div className="max-w-4xl mx-auto space-y-8">
@@ -265,8 +279,9 @@ export function StreamingAnalysisDisplay({
                 </p>
               </div>
               <Button
-                onClick={onStartImprovement}
+                onClick={handleStartImprovementClick}
                 className="bg-primary hover:bg-primary/90"
+                disabled={isLoadingCredits}
               >
                 <Zap className="w-4 h-4 mr-2" />
                 Improve with AI
@@ -387,7 +402,12 @@ export function StreamingAnalysisDisplay({
               Let our AI rewrite your resume sections, optimize for ATS, and
               create multiple versions for different roles.
             </p>
-            <Button size="lg" variant="secondary" onClick={onStartImprovement}>
+            <Button
+              size="lg"
+              variant="secondary"
+              onClick={handleStartImprovementClick}
+              disabled={isLoadingCredits}
+            >
               <Zap className="w-5 h-5 mr-2" />
               Improve with AI - 2 Credits
             </Button>

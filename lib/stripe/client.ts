@@ -35,7 +35,8 @@ class StripeClient {
       packageType: CreditPackageType;
       credits: number;
       userName: string;
-    }
+    },
+    returnUrl?: string
   ) {
     try {
       const packageDetails = this.getCreditPackage(packageType);
@@ -59,8 +60,8 @@ class StripeClient {
           },
         ],
         mode: 'payment',
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=cancelled`,
+        success_url: returnUrl ? `${returnUrl}?payment=success&session_id={CHECKOUT_SESSION_ID}` : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: returnUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=cancelled`,
         customer_email: userEmail,
         metadata,
         // Additional options

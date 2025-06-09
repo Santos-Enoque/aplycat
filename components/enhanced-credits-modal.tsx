@@ -13,7 +13,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Zap, CreditCard, Star, Loader2, ExternalLink, Shield, RefreshCw } from "lucide-react";
+import {
+  Check,
+  Zap,
+  CreditCard,
+  Star,
+  Loader2,
+  ExternalLink,
+  Shield,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface CreditPackage {
@@ -29,9 +38,15 @@ interface CreditsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreditsUpdated?: () => void;
+  requiredCredits?: number | null;
 }
 
-export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: CreditsModalProps) {
+export function EnhancedCreditsModal({
+  isOpen,
+  onClose,
+  onCreditsUpdated,
+  requiredCredits,
+}: CreditsModalProps) {
   const { user } = useUser();
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
@@ -43,17 +58,17 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
     const loadPackages = async () => {
       try {
         setIsLoadingPackages(true);
-        const response = await fetch('/api/payments/packages');
-        
+        const response = await fetch("/api/payments/packages");
+
         if (!response.ok) {
-          throw new Error('Failed to load packages');
+          throw new Error("Failed to load packages");
         }
-        
+
         const data = await response.json();
         setPackages(data.packages);
       } catch (error) {
-        console.error('Failed to load credit packages:', error);
-        toast.error('Failed to load credit packages. Please try again.');
+        console.error("Failed to load credit packages:", error);
+        toast.error("Failed to load credit packages. Please try again.");
       } finally {
         setIsLoadingPackages(false);
       }
@@ -75,7 +90,9 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
       `${improvementCredits} Resume Improvements`,
       `${jobTailoringCredits} Job-Tailored Resume + Cover Letter combos`,
       credits >= 30 ? "Priority Support" : "Email Support",
-      ...(credits >= 70 ? ["Premium Support", "Career change optimization"] : []),
+      ...(credits >= 70
+        ? ["Premium Support", "Career change optimization"]
+        : []),
     ];
   };
 
@@ -87,7 +104,7 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
   // Handle purchase
   const handlePurchase = async (packageId: string) => {
     if (!user) {
-      toast.error('Please sign in to purchase credits');
+      toast.error("Please sign in to purchase credits");
       return;
     }
 
@@ -95,45 +112,50 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
     setSelectedPackage(packageId);
 
     try {
-      console.log('Creating checkout for package:', packageId);
-      
-      const response = await fetch('/api/payments/create-checkout', {
-        method: 'POST',
+      console.log("Creating checkout for package:", packageId);
+
+      const response = await fetch("/api/payments/create-checkout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           packageType: packageId,
+          returnUrl: window.location.href,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create checkout');
+        throw new Error(errorData.message || "Failed to create checkout");
       }
 
       const data = await response.json();
-      
+
       if (!data.success || !data.checkoutUrl) {
-        throw new Error('Invalid checkout response');
+        throw new Error("Invalid checkout response");
       }
 
-      console.log('Checkout created, redirecting to:', data.checkoutUrl);
+      console.log("Checkout created, redirecting to:", data.checkoutUrl);
 
       // Store package info for success handling
-      localStorage.setItem('pendingPurchase', JSON.stringify({
-        packageId,
-        checkoutId: data.checkoutId,
-        timestamp: Date.now(),
-      }));
+      localStorage.setItem(
+        "pendingPurchase",
+        JSON.stringify({
+          packageId,
+          checkoutId: data.checkoutId,
+          timestamp: Date.now(),
+        })
+      );
 
       // Redirect to Lemon Squeezy checkout
       window.location.href = data.checkoutUrl;
-      
     } catch (error) {
-      console.error('Purchase failed:', error);
+      console.error("Purchase failed:", error);
       toast.error(
-        error instanceof Error ? error.message : 'Purchase failed. Please try again.'
+        error instanceof Error
+          ? error.message
+          : "Purchase failed. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -145,19 +167,21 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
   useEffect(() => {
     if (isOpen) {
       const urlParams = new URLSearchParams(window.location.search);
-      const paymentStatus = urlParams.get('payment');
-      
-      if (paymentStatus === 'success') {
+      const paymentStatus = urlParams.get("payment");
+
+      if (paymentStatus === "success") {
         // Clear the URL parameter
         const newUrl = window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-        
+        window.history.replaceState({}, "", newUrl);
+
         // Show success message
-        toast.success('🎉 Purchase successful! Your credits have been added to your account.');
-        
+        toast.success(
+          "🎉 Purchase successful! Your credits have been added to your account."
+        );
+
         // Clear pending purchase
-        localStorage.removeItem('pendingPurchase');
-        
+        localStorage.removeItem("pendingPurchase");
+
         // Notify parent component to refresh user data
         if (onCreditsUpdated) {
           onCreditsUpdated();
@@ -180,7 +204,7 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
               Loading credit packages...
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
           </div>
@@ -198,9 +222,17 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
             Buy Credits
           </DialogTitle>
           <DialogDescription className="text-center text-gray-600">
-            Choose the credit pack that best fits your needs. Credits never expire!
+            Choose the credit pack that best fits your needs. Credits never
+            expire!
           </DialogDescription>
         </DialogHeader>
+
+        {requiredCredits && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3 mx-4 my-4 text-center">
+            You need at least <strong>{requiredCredits} credits</strong> for
+            this action.
+          </div>
+        )}
 
         {/* Security Badge */}
         <div className="flex items-center justify-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mx-4">
@@ -212,7 +244,7 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
           {packages.map((pkg, index) => {
             const popular = isPopular(index, packages.length);
             const features = getPackageFeatures(pkg.credits);
-            
+
             return (
               <Card
                 key={pkg.id}
@@ -254,7 +286,10 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
                 <CardContent className="pt-0">
                   <ul className="space-y-2 mb-6">
                     {features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center text-sm">
+                      <li
+                        key={featureIndex}
+                        className="flex items-center text-sm"
+                      >
                         <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                         <span>{feature}</span>
                       </li>
@@ -302,7 +337,8 @@ export function EnhancedCreditsModal({ isOpen, onClose, onCreditsUpdated }: Cred
               • <strong>2 credits</strong> = 1 AI-powered resume improvement
             </li>
             <li>
-              • <strong>3 credits</strong> = 1 job-tailored resume + cover letter
+              • <strong>3 credits</strong> = 1 job-tailored resume + cover
+              letter
             </li>
             <li>• Credits never expire and can be used anytime</li>
             <li>• All features included regardless of pack size</li>

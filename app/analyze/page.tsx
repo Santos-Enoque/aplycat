@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Loader, XCircle, Zap, FileText, AlertCircle } from "lucide-react";
 import type { ModelFileInput } from "@/lib/models";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { toast } from "sonner";
 
 function AnalyzePageContent() {
   const router = useRouter();
@@ -61,7 +62,11 @@ function AnalyzePageContent() {
     targetRole: string,
     targetIndustry: string
   ) => {
-    if (!analysis || !originalFileRef.current) return;
+    if (!analysis || !originalFileRef.current) {
+      toast.error("Could not find the analysis data. Please try again.");
+      setIsImproveModalOpen(false);
+      return;
+    }
 
     sessionStorage.setItem(
       "improvementJobDetails",
