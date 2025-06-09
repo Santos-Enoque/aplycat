@@ -94,7 +94,7 @@ export default function ImproveV2Page() {
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
                   placeholder="e.g., Senior Software Engineer"
-                  className="py-6"
+                  className="py-6 text-base"
                 />
               </div>
               <div className="space-y-2">
@@ -104,7 +104,7 @@ export default function ImproveV2Page() {
                   value={targetIndustry}
                   onChange={(e) => setTargetIndustry(e.target.value)}
                   placeholder="e.g., Tech / SaaS"
-                  className="py-6"
+                  className="py-6 text-base"
                 />
               </div>
               <Button
