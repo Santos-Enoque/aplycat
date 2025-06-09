@@ -57,7 +57,7 @@ const FormContent = ({
         />
       </div>
     </div>
-    <DialogFooter>
+    <DialogFooter className="mt-4">
       <Button
         type="button"
         onClick={handleStart}
@@ -97,7 +97,7 @@ export function ImproveResumeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] w-[90%] rounded-lg">
+      <DialogContent className="sm:max-w-[425px] w-[90%] rounded-lg max-h-[90vh] overflow-y-auto fixed top-[5vh] left-1/2 -translate-x-1/2">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="text-purple-500" />
