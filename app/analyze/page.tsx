@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader, XCircle, Zap, FileText, AlertCircle } from "lucide-react";
 import type { ModelFileInput } from "@/lib/models";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 function AnalyzePageContent() {
   const router = useRouter();
@@ -19,6 +20,7 @@ function AnalyzePageContent() {
   const [hasInitiated, setHasInitiated] = useState(false);
   const [isImproveModalOpen, setIsImproveModalOpen] = useState(false);
   const originalFileRef = useRef<ModelFileInput | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
     if (status === "completed") {
@@ -74,6 +76,22 @@ function AnalyzePageContent() {
     router.push("/improve");
   };
 
+  const handleImprovementInitiation = () => {
+    if (isDesktop) {
+      setIsImproveModalOpen(true);
+    } else {
+      if (!analysis || !originalFileRef.current) return;
+      sessionStorage.setItem(
+        "improvementJobDetails",
+        JSON.stringify({
+          analysis,
+          originalFile: originalFileRef.current,
+        })
+      );
+      router.push("/improve-v2");
+    }
+  };
+
   const renderContent = () => {
     if (!hasInitiated || status === "connecting") {
       return (
@@ -94,7 +112,7 @@ function AnalyzePageContent() {
         <StreamingAnalysisDisplay
           analysis={analysis}
           status={status}
-          onStartImprovement={() => setIsImproveModalOpen(true)}
+          onStartImprovement={handleImprovementInitiation}
         />
       );
     }
