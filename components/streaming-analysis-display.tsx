@@ -68,8 +68,12 @@ export function StreamingAnalysisDisplay({
   const { credits, isLoading: isLoadingCredits } = useUserCredits();
 
   const handleStartImprovementClick = () => {
-    if (credits === null || credits <= 0) {
-      openModal();
+    if (isLoadingCredits || credits === null || credits === undefined) {
+      // Credits are still loading or not available
+      return;
+    }
+    if (credits <= 0) {
+      openModal(1); // Assuming improvement costs at least 1 credit
     } else {
       onStartImprovement();
     }

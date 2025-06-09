@@ -90,8 +90,13 @@ export function JobTailoringComponent({
 
   const extractJobInfo = async () => {
     if (!jobUrl.trim()) return;
-    if (isLoadingCredits || credits === null || credits <= 0) {
-      openModal();
+    if (isLoadingCredits || credits === null || credits === undefined) {
+      // Still loading credits or credits not available, do nothing
+      return;
+    }
+    if (credits < 1) {
+      // 1 credit for extraction
+      openModal(1);
       return;
     }
 
@@ -137,7 +142,10 @@ export function JobTailoringComponent({
       setError("Please provide a job description");
       return;
     }
-    if (isLoadingCredits || credits === null) return;
+    if (isLoadingCredits || credits === null || credits === undefined) {
+      // Still loading credits or credits not available, do nothing
+      return;
+    }
 
     if (credits < TAILORING_COST) {
       openModal(TAILORING_COST);
