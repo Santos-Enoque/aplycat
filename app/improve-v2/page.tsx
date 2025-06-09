@@ -14,11 +14,11 @@ import {
 } from "@/components/ui/card";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import type { Analysis } from "@/lib/streaming-parser";
+import type { ResumeAnalysis } from "@/types/analysis";
 import type { ModelFileInput } from "@/lib/models";
 
 interface ImprovementJobDetails {
-  analysis: Analysis;
+  analysis: ResumeAnalysis;
   originalFile: ModelFileInput;
   targetRole?: string;
   targetIndustry?: string;
