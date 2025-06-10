@@ -15,7 +15,7 @@ import {
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ResumeAnalysis } from "@/types/analysis";
-import type { ModelFileInput } from "@/lib/models";
+import type { ModelFileInput } from "@/lib/models-consolidated";
 
 interface ImprovementJobDetails {
   analysis: ResumeAnalysis;

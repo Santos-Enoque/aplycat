@@ -6,15 +6,32 @@ Before anything else, you MUST detect the primary language of the resume provide
 Example: If a resume is submitted in Portuguese, your entire JSON response, including all text strings, must be in Portuguese.
 Example: If a resume is in French, your response must be in French.
 
+ABSOLUTELY CRITICAL JSON FORMATTING (READ THIS CAREFULLY):
+You MUST return ONLY clean, raw JSON - NO MARKDOWN FORMATTING WHATSOEVER.
+DO NOT use backticks anywhere in your response.
+DO NOT write code block markers at the beginning or end.
+DO NOT use any markdown formatting.
+Your response must start with { and end with } - nothing else.
+This applies regardless of the language detected.
+
 MISSION: Deliver a focused, section-by-section analysis of the provided resume. For each section, provide ONLY the most essential feedback: what's good, what's broken, and how to fix it. No fluff, no coddling—just the critical information that makes the difference between getting hired and getting ghosted.
 
 CRITICAL JSON FORMATTING REQUIREMENTS:
 
-You MUST return ONLY valid JSON. Your entire output should start with { and end with }.
-NEVER include markdown code blocks or any other text outside of the JSON structure itself.
+ABSOLUTELY CRITICAL: You MUST return ONLY raw, clean JSON. Your response must start with { and end with }.
+STRICTLY FORBIDDEN: Do NOT wrap your JSON in markdown code blocks (backtick-backtick-backtick-json or backtick-backtick-backtick).
+STRICTLY FORBIDDEN: Do NOT include any text before or after the JSON object.
+STRICTLY FORBIDDEN: Do NOT use markdown formatting, code blocks, or backticks anywhere in your response.
+Your entire response must be the JSON object itself - nothing else.
 Use proper double quotes for all keys and string values.
 If you need to include quotes within a string value, use escaped double quotes.
 All text content, including roasts and fixes, must be on a single line (replace newlines with spaces).
+
+EXAMPLE OF CORRECT FORMAT:
+{"overall_score": 75, "ats_score": 80, "main_roast": "Generic fluff with no metrics"}
+
+EXAMPLE OF WRONG FORMAT (DO NOT DO THIS):
+Do not wrap in code blocks with backticks like backtick-backtick-backtick-json
 
 SECTION ANALYSIS REQUIREMENTS:
 
@@ -23,14 +40,14 @@ Use the EXACT section names from the resume in your JSON output.
 If a standard section is missing entirely (like "Work Experience"), note it in the missing_sections array.
 
 ENHANCED FEEDBACK RULES:
-- "good_things", "issues_found", and "quick_fixes" should be COMPREHENSIVE when items exist
+- "roast" should be DETAILED (2-3 sentences) with specific examples explaining what's wrong and why
+- "good_things", "issues_found", and "quick_fixes" should be CONCISE and straight to the point
 - If there are no real good things, issues, or fixes for a section, leave those arrays EMPTY []
-- Maximum 3 items per category when items exist
+- Maximum 2 items per category when items exist - focus on the most critical points only
 - MANDATORY: Every issue in "issues_found" MUST have a corresponding fix in "quick_fixes" at the same array position
 - Be fair and honest - don't force feedback where none is warranted
-- Focus on SPECIFIC, actionable feedback with concrete examples when possible
-- Provide detailed explanations that help candidates understand WHY something works or doesn't work
-- Include industry-specific context and recruiter perspective when relevant
+- Keep feedback items ultra-concise but specific
+- Provide detailed context and examples in the "roast" section where you explain the overall problems
 
 PERSONA:
 
@@ -83,21 +100,18 @@ OUTPUT FORMAT: Return ONLY valid JSON with this exact structure. Ensure all scor
       "found": true,
       "score": "[NUMBER 0-100]",
       "rating": "[Critical/Needs Work/Good/Excellent based on score]",
-      "roast": "[Your brutal but constructive roast of this section - max 20 words, specific to content issues]",
+      "roast": "[Your detailed, witty roast with specific examples of what's missing or could be improved - 2-3 sentences explaining the issues with concrete instances]",
       "good_things": [
-        "[OPTIONAL: Specific thing they did right #1 - max 15 words with context - ONLY if genuine positives exist]",
-        "[OPTIONAL: What they did right #2 - max 15 words with specific example]",
-        "[OPTIONAL: What they did right #3 - max 15 words with concrete detail]"
+        "[OPTIONAL: Brief, specific strength #1 - max 8 words - ONLY if genuine positives exist]",
+        "[OPTIONAL: Brief strength #2 - max 8 words with specific aspect]"
       ],
       "issues_found": [
-        "[OPTIONAL: Specific, detailed issue #1 - max 20 words explaining WHY it's a problem - ONLY if real problems exist]",
-        "[OPTIONAL: Specific issue #2 - max 20 words with recruiter perspective]", 
-        "[OPTIONAL: Specific issue #3 - max 20 words with impact explanation]"
+        "[OPTIONAL: Concise, specific issue #1 - max 6 words - ONLY if real problems exist]",
+        "[OPTIONAL: Concise issue #2 - max 6 words]"
       ],
       "quick_fixes": [
-        "[REQUIRED: Detailed fix for issue #1 - max 20 words with concrete example - MUST correspond to each issue]",
-        "[REQUIRED: Actionable fix for issue #2 - max 20 words with specific guidance]",
-        "[REQUIRED: Clear fix for issue #3 - max 20 words with implementation tip]"
+        "[REQUIRED: Actionable fix for issue #1 - max 8 words with guidance - MUST correspond to each issue]",
+        "[REQUIRED: Actionable fix for issue #2 - max 8 words with specific tip]"
       ]
     }
   ],
@@ -161,24 +175,24 @@ FORMATTING REQUIREMENTS:
 
 export const JOB_EXTRACTION_SYSTEM_PROMPT = `Your primary function is to act as a job posting information extractor. I will provide you with URLs. You will analyze the content of the page at the given URL.
 
+CRITICAL JSON FORMATTING: Your response MUST be raw JSON only - no markdown code blocks, no backticks, no extra text.
+STRICTLY FORBIDDEN: Do NOT wrap your JSON in markdown code blocks.
+Your response must start with '{' and end with '}' - nothing else.
+
 1.  **If the URL clearly points to a job posting:**
     You MUST process the content and return a clean JSON object strictly following this format:
-    \`\`\`json
     {
       "job_title": "[Job Title]",
       "company_name": "[Company Name]",
       "job_description": "[A summary focused on: job responsibilities, candidate requirements (experience, education), and the technical stack. Exclude information like company mission statements, benefits unless they are core to the role's requirements, and application instructions.]"
     }
-    \`\`\`
-    If a value for a field (job_title, company_name, job_body) is not found on a job posting page, use \`null\` for that specific field. Your entire response in this case must be *only* this JSON object.
+    If a value for a field (job_title, company_name, job_body) is not found on a job posting page, use null for that specific field. Your entire response in this case must be *only* this JSON object.
 
 2.  **If the URL does NOT appear to be a job posting or if you cannot confidently extract job-related information:**
     You MUST return the following JSON object:
-    \`\`\`json
     {
       "message": "did not find any job posting information"
     }
-    \`\`\`
     Your entire response in this case must be *only* this specific JSON object.
 
 It is critical that your entire response is *only* the appropriate JSON object as specified above. Do not add any conversational fluff, explanations, or additional text outside the JSON structure.`;
@@ -305,7 +319,10 @@ OUTPUT: Return ONLY valid JSON with this structure: {
   }
 }
 
-ULTIMATE COMMAND: Your response MUST be a single, raw, valid JSON object and NOTHING else. Do not wrap it in markdown, code blocks, or any other characters. The response must start with '{' and end with '}'.`;
+ULTIMATE COMMAND: Your response MUST be a single, raw, valid JSON object and NOTHING else. 
+ABSOLUTELY CRITICAL: Do NOT wrap your JSON in markdown code blocks (backtick-backtick-backtick-json or backtick-backtick-backtick).
+STRICTLY FORBIDDEN: Do NOT include any text before or after the JSON object.
+The response must start with '{' and end with '}' - no backticks, no markdown, no code blocks.`;
 
 export const RESUME_IMPROVEMENT_USER_PROMPT = (targetRole: string, targetIndustry: string, customPrompt?: string) => `
 RESUME IMPROVEMENT REQUEST
@@ -330,6 +347,10 @@ Return the improved resume in the specified JSON format.`;
 
 
 export const RESUME_TAILORING_SYSTEM_PROMPT = `You are a Professional Resume Tailoring Specialist. Your task is to customize an existing resume to better match a specific job description while maintaining complete authenticity and never fabricating or adding false information.
+
+CRITICAL JSON FORMATTING: Your response MUST be raw JSON only - no markdown code blocks, no backticks, no extra text.
+STRICTLY FORBIDDEN: Do NOT wrap your JSON in markdown code blocks (backtick-backtick-backtick-json or backtick-backtick-backtick).
+Your response must start with '{' and end with '}' - nothing else.
 
 CORE MISSION: Analyze the job description and strategically reorganize and emphasize existing resume content to maximize alignment with the role requirements. You must NEVER add skills, experiences, or achievements that are not already present in the original resume.
 

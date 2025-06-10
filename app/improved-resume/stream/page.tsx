@@ -12,7 +12,6 @@ import {
   Star,
   Clock,
   Target,
-  Building,
   Zap,
   Sparkles,
   FileText,
@@ -76,6 +75,11 @@ function ResumePreview({
   };
 
   const highlightKeywords = (text: string) => {
+    // Add null/undefined check for text parameter
+    if (!text || typeof text !== "string") {
+      return text || "";
+    }
+
     const keywords = highlightedFields
       .filter((field) => field.startsWith("keyword:"))
       .map((field) => field.replace("keyword:", ""));
@@ -84,6 +88,9 @@ function ResumePreview({
 
     let highlightedText = text;
     keywords.forEach((keyword) => {
+      // Add null check for keyword and highlightedText
+      if (!keyword || !highlightedText) return;
+
       const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const regex = new RegExp(`\\b(${escapedKeyword})\\b`, "gi");
       highlightedText = highlightedText.replace(
@@ -91,7 +98,7 @@ function ResumePreview({
         '<span class="bg-green-200 text-green-800 px-1 rounded font-medium">$1</span>'
       );
     });
-    return highlightedText;
+    return highlightedText || "";
   };
 
   const EditableText = ({
@@ -136,7 +143,7 @@ function ResumePreview({
     const handleBlur = () => {
       if (editableRef.current) {
         const newValue = editableRef.current.innerText;
-        if (newValue !== value) {
+        if (newValue !== safeValue) {
           onEdit(field, newValue);
         }
       }
@@ -150,14 +157,18 @@ function ResumePreview({
       }
       if (e.key === "Escape") {
         if (editableRef.current) {
-          editableRef.current.innerText = value;
+          editableRef.current.innerText = safeValue;
         }
         setIsEditing(false);
       }
     };
 
+    // Ensure value is never null/undefined before highlighting
+    const safeValue = value || "";
     const displayValue =
-      hasKeywordHighlights && !isEditing ? highlightKeywords(value) : value;
+      hasKeywordHighlights && !isEditing
+        ? highlightKeywords(safeValue)
+        : safeValue;
 
     const commonStyles = {
       ...style,
@@ -222,10 +233,10 @@ function ResumePreview({
         aria-label={`Edit ${field}`}
       >
         {isEditing ? (
-          value
+          safeValue
         ) : (
           <>
-            {value}
+            {safeValue}
             <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
             {isHighlighted(field) && (
               <Badge
@@ -1072,81 +1083,6 @@ export default function StreamingImprovedResumePage() {
                 </CardContent>
               </Card>
             )}
-
-            {/* Debug Panel - Remove in production */}
-            {process.env.NODE_ENV === "development" && (
-              <Card className="border-yellow-200 bg-yellow-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-yellow-800">
-                    🐛 Debug Info
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-yellow-800">
-                  <div className="space-y-2">
-                    <p>
-                      <strong>Experience Count:</strong>{" "}
-                      {editableResume?.experience?.length || 0}
-                    </p>
-                    <p>
-                      <strong>Education Count:</strong>{" "}
-                      {editableResume?.education?.length || 0}
-                    </p>
-                    <p>
-                      <strong>Projects Count:</strong>{" "}
-                      {editableResume?.projects?.length || 0}
-                    </p>
-                    <details className="mt-2">
-                      <summary className="cursor-pointer font-semibold">
-                        View Raw Data
-                      </summary>
-                      <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto max-h-32">
-                        {JSON.stringify(
-                          {
-                            experience: editableResume?.experience?.map(
-                              (exp, i) => ({
-                                index: i,
-                                title: exp.title,
-                                company: exp.company,
-                              })
-                            ),
-                            education: editableResume?.education?.map(
-                              (edu, i) => ({
-                                index: i,
-                                degree: edu.degree,
-                                institution: edu.institution,
-                              })
-                            ),
-                          },
-                          null,
-                          2
-                        )}
-                      </pre>
-                    </details>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Pro Features Coming Soon */}
-            <Card className="border-dashed border-2 border-gray-300">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gray-500">
-                  <Building className="h-5 w-5" />
-                  Pro Features
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center text-gray-500">
-                <div className="space-y-2">
-                  <p className="text-sm">✨ Job Tailoring</p>
-                  <p className="text-sm">📄 Cover Letters</p>
-                  <p className="text-sm">🎨 Multiple Templates</p>
-                  <p className="text-sm">🔗 LinkedIn Optimization</p>
-                </div>
-                <Badge variant="secondary" className="mt-3">
-                  Coming Soon
-                </Badge>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

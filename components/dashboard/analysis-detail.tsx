@@ -165,16 +165,16 @@ export function AnalysisDetail({ analysis, onBack }: AnalysisDetailProps) {
             </CardContent>
           </Card>
 
-          <Card className="bg-purple-50 border-2">
+          <Card className="bg-blue-50 border-2">
             <CardContent className="p-6 text-center">
-              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-purple-600" />
+              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Potential
               </h3>
-              <div className="text-4xl font-bold text-purple-600 mb-2">
+              <div className="text-4xl font-bold text-blue-600 mb-2">
                 {Math.min(100, analysis.overallScore + 25)}/100
               </div>
-              <Badge className="bg-purple-100 text-purple-800 mb-4">
+              <Badge className="bg-blue-100 text-blue-800 mb-4">
                 With improvements
               </Badge>
               <p className="text-sm text-gray-600">
@@ -199,7 +199,7 @@ export function AnalysisDetail({ analysis, onBack }: AnalysisDetailProps) {
                   onClick={() => setActiveTab(tab.key as any)}
                   className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.key
-                      ? "border-purple-500 text-purple-600"
+                      ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >

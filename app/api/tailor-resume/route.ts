@@ -1,7 +1,7 @@
 // app/api/tailor-resume/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { streamingModelService } from '@/lib/models-streaming';
+import { streamingModelService } from '@/lib/models-consolidated';
 import { getCurrentUserFromDB, decrementUserCredits } from '@/lib/auth/user-sync';
 
 export const revalidate = 0;

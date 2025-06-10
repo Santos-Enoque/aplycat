@@ -313,37 +313,37 @@ export function QuickResumeResults({
       )}
 
       {/* Upgrade CTA */}
-      <Card className="mb-6 sm:mb-8 border-2 border-purple-300 bg-gradient-to-r from-purple-50 to-pink-50">
+      <Card className="mb-6 sm:mb-8 border-2 border-blue-300 bg-gradient-to-r from-blue-50 to-blue-50">
         <CardContent className="p-4 sm:p-6 lg:p-8 text-center">
           <div className="mb-4">
-            <Sparkles className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mx-auto mb-3 sm:mb-4" />
-            <h3 className="text-lg sm:text-2xl font-bold text-purple-900 mb-2 break-words">
+            <Sparkles className="h-8 w-8 sm:h-12 sm:w-12 text-blue-600 mx-auto mb-3 sm:mb-4" />
+            <h3 className="text-lg sm:text-2xl font-bold text-blue-900 mb-2 break-words">
               Ready to Stop Being Roasted?
             </h3>
-            <p className="text-purple-700 mb-4 text-sm sm:text-base break-words">
+            <p className="text-blue-700 mb-4 text-sm sm:text-base break-words">
               {results.improvement_tease}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-            <div className="text-left p-3 sm:p-4 bg-white rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
+            <div className="text-left p-3 sm:p-4 bg-white rounded-lg border border-blue-200">
+              <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
                 <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                 AI Resume Makeover
               </h4>
-              <ul className="text-xs sm:text-sm text-purple-700 space-y-1">
+              <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
                 <li>• Complete resume rewrite</li>
                 <li>• Industry-specific optimization</li>
                 <li>• ATS-friendly formatting</li>
                 <li>• Quantified achievements</li>
               </ul>
             </div>
-            <div className="text-left p-3 sm:p-4 bg-white rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
+            <div className="text-left p-3 sm:p-4 bg-white rounded-lg border border-blue-200">
+              <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
                 <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
                 Job-Specific Tailoring
               </h4>
-              <ul className="text-xs sm:text-sm text-purple-700 space-y-1">
+              <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
                 <li>• Tailored for specific jobs</li>
                 <li>• Custom cover letters</li>
                 <li>• Keyword optimization</li>
@@ -355,7 +355,7 @@ export function QuickResumeResults({
           <Button
             onClick={onUpgrade}
             size="lg"
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 sm:px-8 py-2 sm:py-3 w-full sm:w-auto text-sm sm:text-base"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 sm:px-8 py-2 sm:py-3 w-full sm:w-auto text-sm sm:text-base"
           >
             Transform My Resume
             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
@@ -471,7 +471,7 @@ export function QuickResumeResults({
         <Button
           onClick={onUpgrade}
           size="lg"
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto text-sm sm:text-base"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto text-sm sm:text-base"
         >
           <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
           Get My Resume Fixed

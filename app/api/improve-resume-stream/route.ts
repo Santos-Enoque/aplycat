@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
-import { streamingModelService } from "@/lib/models-streaming";
-import type { ModelFileInput } from "@/lib/models";
+import { streamingModelService, type ModelFileInput } from "@/lib/models-consolidated";
 
 export const revalidate = 0;
 

@@ -1,138 +1,175 @@
-// app/api/analyze-resume-free/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { OpenAI } from 'openai';
-// @ts-ignore
-import { OpenAIStream, StreamingTextResponse } from 'ai';
-import { getClientIP } from '@/lib/middleware/edge-security';
+import { modelService } from '@/lib/models-consolidated';
+import * as Sentry from '@sentry/nextjs';
 
-export const runtime = 'edge';
+// Rate limiting storage (in production, use Redis)
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Rate limiting for free analysis (more restrictive)
-const freeAnalysisLimits = new Map<string, { count: number; resetTime: number }>();
-const FREE_RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
-const MAX_FREE_REQUESTS = 5; // Increased slightly for better user experience
-
-function checkFreeRateLimit(ip: string): boolean {
+// Clean up old entries periodically
+setInterval(() => {
   const now = Date.now();
-  const limit = freeAnalysisLimits.get(ip);
-
-  if (!limit || now > limit.resetTime) {
-    freeAnalysisLimits.set(ip, {
-      count: 1,
-      resetTime: now + FREE_RATE_LIMIT_WINDOW,
-    });
-    return true;
+  for (const [key, value] of rateLimitStore.entries()) {
+    if (now > value.resetTime) {
+      rateLimitStore.delete(key);
+    }
   }
+}, 5 * 60 * 1000); // Clean every 5 minutes
 
-  if (limit.count >= MAX_FREE_REQUESTS) {
-    return false;
+function getClientIP(request: NextRequest): string {
+  // Try various headers to get the real IP
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIP = request.headers.get('x-real-ip');
+  const cfConnectingIP = request.headers.get('cf-connecting-ip');
+  
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
   }
+  if (realIP) {
+    return realIP;
+  }
+  if (cfConnectingIP) {
+    return cfConnectingIP;
+  }
+  
+  // Fallback to a default (this shouldn't happen in production)
+  return 'unknown';
+}
 
-  limit.count++;
-  return true;
+function checkRateLimit(ip: string): { allowed: boolean; remaining: number; resetTime: number } {
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000; // 1 hour
+  const limit = 3; // 3 requests per hour
+  
+  const key = `rate_limit:${ip}`;
+  const current = rateLimitStore.get(key);
+  
+  if (!current || now > current.resetTime) {
+    // First request or window expired
+    const resetTime = now + windowMs;
+    rateLimitStore.set(key, { count: 1, resetTime });
+    return { allowed: true, remaining: limit - 1, resetTime };
+  }
+  
+  if (current.count >= limit) {
+    // Rate limit exceeded
+    return { allowed: false, remaining: 0, resetTime: current.resetTime };
+  }
+  
+  // Increment count
+  current.count++;
+  rateLimitStore.set(key, current);
+  return { allowed: true, remaining: limit - current.count, resetTime: current.resetTime };
+}
+
+function createLimitedAnalysis(fullAnalysis: any) {
+  // Return limited analysis for anonymous users
+  const limited = {
+    overall_score: fullAnalysis.overall_score,
+    ats_score: fullAnalysis.ats_score,
+    main_roast: fullAnalysis.main_roast,
+    score_category: fullAnalysis.score_category,
+    // Only show first 2 sections, blur the rest
+    resume_sections: fullAnalysis.resume_sections?.slice(0, 2) || [],
+    hidden_sections_count: Math.max(0, (fullAnalysis.resume_sections?.length || 0) - 2),
+    missing_sections: fullAnalysis.missing_sections?.slice(0, 2) || [],
+    is_limited: true,
+    upgrade_message: "Sign up to see complete analysis with detailed feedback for all resume sections"
+  };
+  
+  return limited;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    // Get client IP for rate limiting
     const clientIP = getClientIP(request);
-    if (!checkFreeRateLimit(clientIP)) {
+    
+    // Check rate limit
+    const rateLimit = checkRateLimit(clientIP);
+    
+    if (!rateLimit.allowed) {
+      const resetDate = new Date(rateLimit.resetTime).toISOString();
       return NextResponse.json(
-        {
-          error:
-            'Rate limit exceeded. You can analyze 5 resumes per hour for free. Upgrade for unlimited analysis!',
-          upgrade_suggested: true,
+        { 
+          error: 'Rate limit exceeded',
+          message: 'You have reached the limit of 3 free analyses per hour. Please sign up for unlimited access.',
+          resetTime: resetDate,
+          upgradeUrl: '/signup?trial=true'
         },
-        { status: 429 }
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '3',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': resetDate,
+          }
+        }
       );
     }
 
-    const { fileName, fileData } = await request.json();
+    const body = await request.json();
+    const { fileName, fileData } = body;
 
     if (!fileName || !fileData) {
       return NextResponse.json(
-        { error: 'Missing fileName or fileData' },
+        { error: 'Missing file data' },
         { status: 400 }
       );
     }
-    const base64String = fileData.split(',')[1] || fileData;
 
-    const systemPrompt = `You are a brutally honest, witty, and highly experienced resume reviewer for a company called "Aplycat". Your goal is to give users instant, harsh, but invaluable feedback on their resumes so they can stop getting rejected.
-      Your task is to return a JSON object with the following structure. Some fields are for premium users and you should fill them with specific placeholder text.
-      {
-        "overall_score": <number from 1 to 100, your overall assessment>,
-        "ats_score": <number from 1 to 100, how well it would pass an Applicant Tracking System>,
-        "main_roast": "<string, a short, witty, and brutally honest one-paragraph summary of the main issues>",
-        "summary": {
-           "strengths": "<string, a 1-2 sentence summary of what the resume does well. Keep it brief.>",
-           "weaknesses": "<string, a 1-2 sentence summary of the main areas for improvement.>"
-        },
-        "resume_sections": [
-          {
-            "section_name": "<string, e.g., 'Summary', 'Experience', 'Education', 'Skills'>",
-            "score": <number, a score from 1-100 for this specific section>,
-            "roast": "<string, a 1-2 sentence roast of this specific section>",
-            "improvement": "Upgrade to unlock AI-powered improvements for this section."
-          }
-        ],
-        "keyword_analysis": {
-          "found_keywords": [],
-          "missing_keywords": [],
-          "placeholder_text": "Upgrade to see how your resume keywords stack up against top-ranking resumes."
-        },
-        "is_free_analysis": true
+    // Extract base64 data from data URL if needed
+    let base64Data = fileData;
+    if (fileData.includes(',')) {
+      base64Data = fileData.split(',')[1];
+    }
+
+    console.log(`[FREE-ANALYSIS] Starting analysis for IP: ${clientIP}`);
+
+    // Analyze the resume using the model service
+    const response = await modelService.analyzeResume({
+      filename: fileName,
+      fileData: base64Data,
+      mimeType: 'application/pdf',
+    });
+
+    // Parse the response
+    let analysisData;
+    try {
+      analysisData = JSON.parse(response.content);
+    } catch (parseError) {
+      console.error('[FREE-ANALYSIS] Failed to parse AI response:', parseError);
+      return NextResponse.json(
+        { error: 'Failed to process analysis' },
+        { status: 500 }
+      );
+    }
+
+    // Create limited version for anonymous users
+    const limitedAnalysis = createLimitedAnalysis(analysisData);
+
+    console.log(`[FREE-ANALYSIS] Analysis completed for IP: ${clientIP}`);
+
+    return NextResponse.json({
+      analysis: limitedAnalysis,
+      rateLimit: {
+        remaining: rateLimit.remaining,
+        resetTime: new Date(rateLimit.resetTime).toISOString()
       }
-
-      Rules:
-      - Be brutally honest but also provide constructive criticism implicitly through the roast.
-      - The main_roast should be funny and memorable.
-      - Identify at least 3-4 key sections of the resume to roast individually. If you can't find clear sections, make educated guesses (e.g., "Opening Statement", "Work History").
-      - Keep all roasts and summaries concise.
-      - The scores should genuinely reflect the resume's quality. A terrible resume should get a low score.
-      - For 'improvement', 'found_keywords', and 'missing_keywords', you MUST use the exact placeholder text provided above. Do not generate content for these fields.
-      - IMPORTANT: The final output must be a single, valid JSON object. Do not include any text or formatting outside of the JSON structure.
-    `;
-
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4-1106-preview',
-      stream: true,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: `Here is the resume to analyze. It is a base64 encoded file named "${fileName}". File Content: ${base64String}`,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 2048,
-      response_format: { type: 'json_object' },
+    }, {
+      headers: {
+        'X-RateLimit-Limit': '3',
+        'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+        'X-RateLimit-Reset': new Date(rateLimit.resetTime).toISOString(),
+      }
     });
-
-    const stream = OpenAIStream(response, {
-      onStart: async () => {
-        console.log(`[FREE_ANALYSIS_STREAM] Started for ${fileName} from IP: ${clientIP.substring(0, 8)}***`);
-      },
-      onCompletion: async (completion: string) => {
-        console.log(`[FREE_ANALYSIS_STREAM] Completed for ${fileName}. Length: ${completion.length}`);
-      },
-    });
-
-    return new StreamingTextResponse(stream);
 
   } catch (error) {
-    console.error('[FREE_ANALYSIS_STREAM] Error:', error);
+    console.error('[FREE-ANALYSIS] Error:', error);
+    Sentry.captureException(error);
+    
     return NextResponse.json(
-      {
-        error: 'An error occurred while analyzing your resume. Please try again.',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
-}
+} 

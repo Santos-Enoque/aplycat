@@ -154,7 +154,9 @@ class PaymentService {
             userId: user.id, // Use internal database user ID
             type: CreditTransactionType.PURCHASE,
             amount: credits,
-            description: `Purchased ${STRIPE_CONFIG.creditPackages[packageType].name} - ${credits} credits`,
+            description: packageType === 'trial' 
+              ? `Purchased ${STRIPE_CONFIG.trialConfig.name} - ${credits} credits`
+              : `Purchased ${STRIPE_CONFIG.creditPackages[packageType].name} - ${credits} credits`,
           },
         });
 

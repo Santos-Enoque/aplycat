@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
-import type { ModelFileInput } from "@/lib/models";
+import type { ModelFileInput } from "@/lib/models-consolidated";
 import * as Sentry from '@sentry/nextjs';
 
 // Updated interface to match the actual API response

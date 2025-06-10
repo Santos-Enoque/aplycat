@@ -63,13 +63,19 @@ function ImprovePageContent() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to improve resume: ${response.status} ${errorText}`
-        );
+        const result = await response.json().catch(() => null);
+        const errorMessage =
+          result?.error || "Unable to improve resume. Please try again.";
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(
+          result.error || "Unable to improve resume. Please try again."
+        );
+      }
 
       if (result.improvedResume) {
         setProgress(100);
@@ -92,10 +98,30 @@ function ImprovePageContent() {
           router.push("/improved-resume/stream");
         }, 1500);
       } else {
-        throw new Error("No improved resume data received");
+        throw new Error(
+          "Unable to process your resume improvement. Please try again."
+        );
       }
     } catch (err: any) {
-      setError(err.message || "An unknown error occurred");
+      // Show user-friendly error messages
+      let userMessage =
+        "We're experiencing technical difficulties. Please try again later.";
+
+      if (err.message) {
+        // If the error message is already user-friendly (from our API), use it
+        if (
+          err.message.includes("credits") ||
+          err.message.includes("try again") ||
+          err.message.includes("technical difficulties") ||
+          err.message.includes("temporarily unavailable")
+        ) {
+          userMessage = err.message;
+        } else if (err.message.includes("Failed to improve resume")) {
+          userMessage = "Unable to improve resume. Please try again.";
+        }
+      }
+
+      setError(userMessage);
       setStatus("error");
       setProgress(0);
     }
@@ -231,11 +257,11 @@ function ImprovePageContent() {
 
 export default function ImprovePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <header className="text-center mb-12">
-            <div className="inline-block bg-purple-600 text-white rounded-full p-3 mb-4 shadow-lg">
+            <div className="inline-block bg-blue-600 text-white rounded-full p-3 mb-4 shadow-lg">
               <Zap className="w-8 h-8" />
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">

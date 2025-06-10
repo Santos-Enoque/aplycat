@@ -1,16 +1,18 @@
 // components/optimized-file-upload.tsx
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Upload, FileText, X, AlertCircle } from 'lucide-react';
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Upload, FileText, X, AlertCircle } from "lucide-react";
 
 interface OptimizedFileUploadProps {
   onAnalysisStarted?: () => void;
 }
 
-export function OptimizedFileUpload({ onAnalysisStarted }: OptimizedFileUploadProps) {
+export function OptimizedFileUpload({
+  onAnalysisStarted,
+}: OptimizedFileUploadProps) {
   const router = useRouter();
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -22,7 +24,7 @@ export function OptimizedFileUpload({ onAnalysisStarted }: OptimizedFileUploadPr
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        const base64 = result.split(',')[1];
+        const base64 = result.split(",")[1];
         resolve(base64);
       };
       reader.onerror = reject;
@@ -30,57 +32,62 @@ export function OptimizedFileUpload({ onAnalysisStarted }: OptimizedFileUploadPr
     });
   }, []);
 
-  const processFile = useCallback(async (file: File) => {
-    // Validate file
-    if (!file.type.includes('pdf')) {
-      setError('Please upload a PDF file only');
-      return;
-    }
+  const processFile = useCallback(
+    async (file: File) => {
+      // Validate file
+      if (!file.type.includes("pdf")) {
+        setError("Please upload a PDF file only");
+        return;
+      }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError('File size must be less than 10MB');
-      return;
-    }
+      if (file.size > 10 * 1024 * 1024) {
+        setError("File size must be less than 10MB");
+        return;
+      }
 
-    setError(null);
-    setSelectedFile(file);
-    setIsProcessing(true);
+      setError(null);
+      setSelectedFile(file);
+      setIsProcessing(true);
 
-    try {
-      // Convert to base64
-      const base64Data = await handleFileToBase64(file);
-      
-      // Store analysis data for immediate processing
-      const analysisData = {
-        fileName: file.name,
-        fileData: base64Data,
-        fileSize: file.size,
-        mimeType: file.type,
-        timestamp: new Date().toISOString(),
-      };
+      try {
+        // Convert to base64
+        const base64Data = await handleFileToBase64(file);
 
-      // Store in sessionStorage for immediate analysis
-      sessionStorage.setItem('aplycat_resume_data', JSON.stringify(analysisData));
+        // Store analysis data for immediate processing
+        const analysisData = {
+          fileName: file.name,
+          fileData: base64Data,
+          fileSize: file.size,
+          mimeType: file.type,
+          timestamp: new Date().toISOString(),
+        };
 
-      // Start background processes immediately (don't wait)
-      startBackgroundProcesses(analysisData);
+        // Store in sessionStorage for immediate analysis
+        sessionStorage.setItem(
+          "aplycat_resume_data",
+          JSON.stringify(analysisData)
+        );
 
-      // Navigate immediately to analysis with enhanced loading
-      const params = new URLSearchParams({
-        fileName: encodeURIComponent(file.name),
-        fileSize: file.size.toString(),
-        immediate: 'true',
-      });
+        // Start background processes immediately (don't wait)
+        startBackgroundProcesses(analysisData);
 
-      onAnalysisStarted?.();
-      router.push(`/analyze?${params.toString()}`);
+        // Navigate immediately to analysis with enhanced loading
+        const params = new URLSearchParams({
+          fileName: encodeURIComponent(file.name),
+          fileSize: file.size.toString(),
+          immediate: "true",
+        });
 
-    } catch (error) {
-      console.error('Error processing file:', error);
-      setError('Failed to process file. Please try again.');
-      setIsProcessing(false);
-    }
-  }, [handleFileToBase64, router, onAnalysisStarted]);
+        onAnalysisStarted?.();
+        router.push(`/analyze?${params.toString()}`);
+      } catch (error) {
+        console.error("Error processing file:", error);
+        setError("Failed to process file. Please try again.");
+        setIsProcessing(false);
+      }
+    },
+    [handleFileToBase64, router, onAnalysisStarted]
+  );
 
   // Background processes that don't block user experience
   const startBackgroundProcesses = async (analysisData: any) => {
@@ -88,12 +95,14 @@ export function OptimizedFileUpload({ onAnalysisStarted }: OptimizedFileUploadPr
     Promise.allSettled([
       uploadToUploadThing(analysisData),
       saveResumeMetadata(analysisData),
-    ]).then(() => {
-      console.log('[BACKGROUND] File upload and metadata save completed');
-    }).catch((error) => {
-      console.error('[BACKGROUND] Background processes failed:', error);
-      // Handle gracefully - user experience not affected
-    });
+    ])
+      .then(() => {
+        console.log("[BACKGROUND] File upload and metadata save completed");
+      })
+      .catch((error) => {
+        console.error("[BACKGROUND] Background processes failed:", error);
+        // Handle gracefully - user experience not affected
+      });
   };
 
   const uploadToUploadThing = async (analysisData: any) => {
@@ -105,74 +114,80 @@ export function OptimizedFileUpload({ onAnalysisStarted }: OptimizedFileUploadPr
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const file = new File([byteArray], analysisData.fileName, { 
-        type: analysisData.mimeType 
+      const file = new File([byteArray], analysisData.fileName, {
+        type: analysisData.mimeType,
       });
 
       // This would integrate with your UploadThing setup
       // For now, we'll simulate the upload
-      console.log('[BACKGROUND] Starting UploadThing upload...');
-      
+      console.log("[BACKGROUND] Starting UploadThing upload...");
+
       // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('[BACKGROUND] UploadThing upload completed');
-      return { success: true, url: 'mock-upload-url' };
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      console.log("[BACKGROUND] UploadThing upload completed");
+      return { success: true, url: "mock-upload-url" };
     } catch (error) {
-      console.error('[BACKGROUND] UploadThing upload failed:', error);
+      console.error("[BACKGROUND] UploadThing upload failed:", error);
       throw error;
     }
   };
 
   const saveResumeMetadata = async (analysisData: any) => {
     try {
-      console.log('[BACKGROUND] Saving resume metadata...');
-      
-      const response = await fetch('/api/save-resume-metadata', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      console.log("[BACKGROUND] Saving resume metadata...");
+
+      const response = await fetch("/api/save-resume-metadata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fileName: analysisData.fileName,
           fileSize: analysisData.fileSize,
           mimeType: analysisData.mimeType,
           // We'll update with real fileUrl once UploadThing completes
-          fileUrl: 'pending-upload',
+          fileUrl: "pending-upload",
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save metadata');
+        throw new Error("Failed to save metadata");
       }
 
       const result = await response.json();
-      console.log('[BACKGROUND] Resume metadata saved:', result.resumeId);
-      
+      console.log("[BACKGROUND] Resume metadata saved:", result.resumeId);
+
       // Store resumeId for later use
-      sessionStorage.setItem('aplycat_resume_id', result.resumeId);
-      
+      sessionStorage.setItem("aplycat_resume_id", result.resumeId);
+
       return result;
     } catch (error) {
-      console.error('[BACKGROUND] Failed to save resume metadata:', error);
+      console.error("[BACKGROUND] Failed to save resume metadata:", error);
       throw error;
     }
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      processFile(files[0]);
-    }
-  }, [processFile]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      processFile(files[0]);
-    }
-  }, [processFile]);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        processFile(files[0]);
+      }
+    },
+    [processFile]
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        processFile(files[0]);
+      }
+    },
+    [processFile]
+  );
 
   const clearFile = useCallback(() => {
     setSelectedFile(null);
@@ -219,9 +234,10 @@ export function OptimizedFileUpload({ onAnalysisStarted }: OptimizedFileUploadPr
       <div
         className={`
           relative border-2 border-dashed rounded-lg p-8 text-center transition-all
-          ${isDragOver 
-            ? 'border-purple-500 bg-purple-50' 
-            : 'border-gray-300 hover:border-purple-400'
+          ${
+            isDragOver
+              ? "border-blue-500 bg-blue-50"
+              : "border-gray-300 hover:border-blue-400"
           }
         `}
         onDrop={handleDrop}
@@ -232,10 +248,10 @@ export function OptimizedFileUpload({ onAnalysisStarted }: OptimizedFileUploadPr
         onDragLeave={() => setIsDragOver(false)}
       >
         <div className="flex flex-col items-center gap-4">
-          <div className="p-3 bg-purple-100 rounded-full">
-            <Upload className="w-6 h-6 text-purple-600" />
+          <div className="p-3 bg-blue-100 rounded-full">
+            <Upload className="w-6 h-6 text-blue-600" />
           </div>
-          
+
           <div>
             <p className="text-lg font-medium text-gray-900">
               Drop your resume here
@@ -247,8 +263,8 @@ export function OptimizedFileUpload({ onAnalysisStarted }: OptimizedFileUploadPr
 
           <Button
             variant="default"
-            className="bg-purple-600 hover:bg-purple-700"
-            onClick={() => document.getElementById('file-input')?.click()}
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => document.getElementById("file-input")?.click()}
           >
             <FileText className="w-4 h-4 mr-2" />
             Choose PDF File

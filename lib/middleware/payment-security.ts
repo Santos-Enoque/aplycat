@@ -49,7 +49,7 @@ export function verifyWebhookSignature(
 
 // Input validation schemas
 export const createCheckoutSchema = z.object({
-  packageType: z.enum(['starter', 'professional', 'premium']),
+  packageType: z.enum(['trial', 'starter', 'professional', 'premium']),
 });
 
 export const webhookSchema = z.object({

@@ -14,6 +14,9 @@ class StripeClient {
    * Get credit package details
    */
   getCreditPackage(packageType: CreditPackageType) {
+    if (packageType === 'trial') {
+      return STRIPE_CONFIG.trialConfig;
+    }
     return STRIPE_CONFIG.creditPackages[packageType];
   }
 
@@ -21,6 +24,9 @@ class StripeClient {
    * Get Stripe Price ID for a package type
    */
   getPriceId(packageType: CreditPackageType): string {
+    if (packageType === 'trial') {
+      return STRIPE_CONFIG.trialConfig.priceId;
+    }
     return STRIPE_CONFIG.creditPackages[packageType].priceId;
   }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { modelService } from '@/lib/models-updated';
+import { modelService } from '@/lib/models-consolidated';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -43,20 +43,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[EXTRACT_JOB_INFO] Sending to model service with web search tool...');
+    console.log('[EXTRACT_JOB_INFO] Sending to model service...');
     
-    // Use the model service for job extraction with web search tool
-    const tools = [
-      {
-        "type": "web_search_preview",
-        "user_location": {
-          "type": "approximate"
-        },
-        "search_context_size": "medium"
-      }
-    ];
-
-    const response = await modelService.extractJobInfo(jobUrl, tools);
+    // Force OpenAI for URL extraction operations since web search tools are incompatible with Gemini
+    // This ensures reliable URL processing regardless of the default model configuration
+    const response = await modelService.extractJobInfo(jobUrl, undefined, true); // true = forceOpenAI
 
     const result = response.content;
     
@@ -66,23 +57,35 @@ export async function POST(request: NextRequest) {
 
     console.log(`[EXTRACT_JOB_INFO] Model response length: ${result.length} characters`);
 
-    // Parse the JSON response
+    // Parse the JSON response with enhanced cleaning
     let jobInfo;
+    let cleanedResult = '';
     try {
-      // Clean up the response text
-      let cleanedResult = result.trim();
+      // Enhanced JSON cleaning
+      cleanedResult = result.trim();
       
+      // Remove markdown code blocks
       if (cleanedResult.startsWith('```json')) {
         cleanedResult = cleanedResult.replace(/^```json\s*/, '').replace(/\s*```$/, '');
       } else if (cleanedResult.startsWith('```')) {
         cleanedResult = cleanedResult.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      // Remove HTML comments (like <!-- Generated using fallback model -->)
+      cleanedResult = cleanedResult.replace(/<!--[\s\S]*?-->/g, '').trim();
+      
+      // Remove any trailing text after the JSON
+      const jsonMatch = cleanedResult.match(/^\s*{[\s\S]*}\s*/);
+      if (jsonMatch) {
+        cleanedResult = jsonMatch[0].trim();
       }
 
       jobInfo = JSON.parse(cleanedResult);
     } catch (parseError) {
       console.error('JSON Parse Error:', parseError);
       console.error('Raw response:', result);
-      throw new Error('Failed to parse job information from response');
+      console.error('Cleaned result that failed to parse:', cleanedResult);
+      throw new Error('Unable to process the job information. Please try again.');
     }
 
     const processingTime = Date.now() - startTime;
@@ -106,10 +109,26 @@ export async function POST(request: NextRequest) {
     console.error('[EXTRACT_JOB_INFO] Error:', error);
     console.error('[EXTRACT_JOB_INFO] Stack trace:', error.stack);
     
+    // Provide user-friendly error messages
+    let userFriendlyMessage = "We're experiencing technical difficulties. Please try again later.";
+    
+    if (error instanceof Error) {
+      if (error.message.includes("Unable to process the job information")) {
+        userFriendlyMessage = "Unable to extract job information from this URL. Please try a different job posting.";
+      } else if (error.message.includes("Invalid URL")) {
+        userFriendlyMessage = "Please provide a valid job posting URL.";
+      } else if (error.message.includes("credits")) {
+        userFriendlyMessage = "Insufficient credits to extract job information.";
+      } else if (error.message.includes("API")) {
+        userFriendlyMessage = "Our AI service is temporarily unavailable. Please try again in a few minutes.";
+      } else if (error.message.includes("Authentication")) {
+        userFriendlyMessage = "Please log in to extract job information.";
+      }
+    }
+    
     return NextResponse.json(
       { 
-        error: 'Failed to extract job information',
-        details: error.message,
+        error: userFriendlyMessage,
         processingTimeMs: processingTime,
         timestamp: new Date().toISOString()
       },

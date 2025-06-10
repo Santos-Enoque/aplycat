@@ -8,8 +8,8 @@ import { ImproveResumeModal } from "@/components/improve-resume-modal";
 import { useUserCredits } from "@/hooks/use-user-credits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader, XCircle, Zap, FileText, AlertCircle } from "lucide-react";
-import type { ModelFileInput } from "@/lib/models";
+import { Loader, XCircle, Zap, AlertCircle } from "lucide-react";
+import type { ModelFileInput } from "@/lib/models-consolidated";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { toast } from "sonner";
 
@@ -157,19 +157,19 @@ function AnalyzePageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-6xl mx-auto">
-          <header className="text-center mb-12">
-            <div className="inline-block bg-blue-600 text-white rounded-full p-3 mb-4 shadow-lg">
-              <Zap className="w-8 h-8" />
+          <header className="text-center mb-8 md:mb-12">
+            <div className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full p-3 mb-4 shadow-lg">
+              <Zap className="w-6 h-6 md:w-8 md:h-8" />
             </div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              Real-Time Resume Analysis
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
+              AI Resume Analysis
             </h1>
-            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              Our AI is analyzing your resume. Watch the results appear live
-              below.
+            <p className="mt-3 md:mt-4 text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-4">
+              Get instant, detailed feedback on your resume with actionable
+              insights to land your dream job.
             </p>
           </header>
 

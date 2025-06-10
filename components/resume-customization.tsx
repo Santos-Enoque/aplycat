@@ -1,7 +1,7 @@
 // components/resume-customization.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,10 +42,30 @@ export function ResumeCustomization({
   const [isTailoring, setIsTailoring] = useState(false);
   const [activeTab, setActiveTab] = useState<"feedback" | "tailor">("feedback");
 
+  // AbortController refs for request cleanup
+  const updateAbortControllerRef = useRef<AbortController | null>(null);
+  const tailorAbortControllerRef = useRef<AbortController | null>(null);
+
+  // Cleanup function to abort ongoing requests when component unmounts
+  useEffect(() => {
+    return () => {
+      if (updateAbortControllerRef.current) {
+        updateAbortControllerRef.current.abort();
+      }
+      if (tailorAbortControllerRef.current) {
+        tailorAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   const handleUpdateResume = async () => {
     if (!userFeedback.trim()) return;
 
     setIsUpdating(true);
+
+    // Create new AbortController for update request
+    updateAbortControllerRef.current = new AbortController();
+
     try {
       const response = await fetch("/api/update-resume", {
         method: "POST",
@@ -58,6 +78,7 @@ export function ResumeCustomization({
           targetRole,
           targetIndustry,
         }),
+        signal: updateAbortControllerRef.current.signal,
       });
 
       const result = await response.json();
@@ -69,10 +90,17 @@ export function ResumeCustomization({
       onResumeUpdate(result.updatedResume);
       setUserFeedback("");
     } catch (error: any) {
+      // Handle abort error gracefully
+      if (error.name === "AbortError") {
+        console.log("[ResumeUpdate] Request was aborted");
+        return;
+      }
+
       console.error("Error updating resume:", error);
       toast.error("Failed to update resume. Please try again.");
     } finally {
       setIsUpdating(false);
+      updateAbortControllerRef.current = null;
     }
   };
 
@@ -80,6 +108,10 @@ export function ResumeCustomization({
     if (!jobDescription.trim()) return;
 
     setIsTailoring(true);
+
+    // Create new AbortController for tailor request
+    tailorAbortControllerRef.current = new AbortController();
+
     try {
       const response = await fetch("/api/tailor-resume", {
         method: "POST",
@@ -93,6 +125,7 @@ export function ResumeCustomization({
           companyName: companyName.trim() || undefined,
           jobTitle: jobTitle.trim() || undefined,
         }),
+        signal: tailorAbortControllerRef.current.signal,
       });
 
       const result = await response.json();
@@ -103,10 +136,17 @@ export function ResumeCustomization({
 
       onTailoredResume(result);
     } catch (error: any) {
+      // Handle abort error gracefully
+      if (error.name === "AbortError") {
+        console.log("[ResumeTailor] Request was aborted");
+        return;
+      }
+
       console.error("Error tailoring resume:", error);
       toast.error("Failed to tailor resume. Please try again.");
     } finally {
       setIsTailoring(false);
+      tailorAbortControllerRef.current = null;
     }
   };
 

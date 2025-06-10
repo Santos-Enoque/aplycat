@@ -52,19 +52,19 @@ export function PaymentIntegration({
     },
     onError: (error) => {
       clearPendingPurchase();
-      console.error('Payment error:', error);
+      console.error("Payment error:", error);
     },
   });
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case 'PURCHASE':
+      case "PURCHASE":
         return <CreditCard className="h-4 w-4 text-green-600" />;
-      case 'ANALYSIS_USE':
+      case "ANALYSIS_USE":
         return <TrendingUp className="h-4 w-4 text-blue-600" />;
-      case 'IMPROVEMENT_USE':
-        return <Zap className="h-4 w-4 text-purple-600" />;
-      case 'BONUS_CREDIT':
+      case "IMPROVEMENT_USE":
+        return <Zap className="h-4 w-4 text-blue-600" />;
+      case "BONUS_CREDIT":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       default:
         return <DollarSign className="h-4 w-4 text-gray-600" />;
@@ -102,14 +102,16 @@ export function PaymentIntegration({
           <CardContent className="space-y-4">
             {/* Current Balance */}
             <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600 mb-2">
+              <div className="text-4xl font-bold text-blue-600 mb-2">
                 {userCredits}
               </div>
               <p className="text-sm text-gray-600">Credits Available</p>
             </div>
 
             {/* Credit Status */}
-            <div className={`p-3 rounded-lg ${getCreditStatusColor(userCredits)}`}>
+            <div
+              className={`p-3 rounded-lg ${getCreditStatusColor(userCredits)}`}
+            >
               <p className="text-sm font-medium">
                 {getCreditStatusMessage(userCredits)}
               </p>
@@ -140,7 +142,8 @@ export function PaymentIntegration({
                   </span>
                 </div>
                 <p className="text-yellow-700 text-xs mt-1">
-                  You have {userCredits} credits remaining. Consider purchasing more.
+                  You have {userCredits} credits remaining. Consider purchasing
+                  more.
                 </p>
               </div>
             )}
@@ -149,25 +152,31 @@ export function PaymentIntegration({
             <div className="space-y-2">
               <Button
                 onClick={() => setShowCreditsModal(true)}
-                className="w-full bg-purple-600 hover:bg-purple-700"
+                className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={!!pendingPurchase}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                {pendingPurchase ? 'Purchase in Progress...' : 'Buy Credits'}
+                {pendingPurchase ? "Purchase in Progress..." : "Buy Credits"}
               </Button>
-              
+
               {userCredits > 0 && (
                 <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
                   <div className="text-center">
-                    <div className="font-medium">{Math.floor(userCredits / 1)}</div>
+                    <div className="font-medium">
+                      {Math.floor(userCredits / 1)}
+                    </div>
                     <div>Analyses</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-medium">{Math.floor(userCredits / 2)}</div>
+                    <div className="font-medium">
+                      {Math.floor(userCredits / 2)}
+                    </div>
                     <div>Improvements</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-medium">{Math.floor(userCredits / 3)}</div>
+                    <div className="font-medium">
+                      {Math.floor(userCredits / 3)}
+                    </div>
                     <div>Job Tailoring</div>
                   </div>
                 </div>
@@ -199,9 +208,12 @@ export function PaymentIntegration({
                           {transaction.description}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {formatDistanceToNow(new Date(transaction.createdAt), {
-                            addSuffix: true,
-                          })}
+                          {formatDistanceToNow(
+                            new Date(transaction.createdAt),
+                            {
+                              addSuffix: true,
+                            }
+                          )}
                         </p>
                       </div>
                     </div>
@@ -215,12 +227,12 @@ export function PaymentIntegration({
                         {transaction.amount}
                       </span>
                       <p className="text-xs text-gray-500 capitalize">
-                        {transaction.type.replace('_', ' ').toLowerCase()}
+                        {transaction.type.replace("_", " ").toLowerCase()}
                       </p>
                     </div>
                   </div>
                 ))}
-                
+
                 {transactions.length > 8 && (
                   <div className="text-center pt-2">
                     <Button variant="ghost" size="sm" className="text-xs">
@@ -241,7 +253,7 @@ export function PaymentIntegration({
                 <Button
                   onClick={() => setShowCreditsModal(true)}
                   size="sm"
-                  className="bg-purple-600 hover:bg-purple-700"
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Plus className="h-3 w-3 mr-1" />
                   Buy Your First Credits

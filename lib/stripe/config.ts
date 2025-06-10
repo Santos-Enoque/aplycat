@@ -28,6 +28,15 @@ export const STRIPE_CONFIG = {
       priceId: process.env.STRIPE_PREMIUM_PRICE_ID!,
     },
   } as const,
+
+  // Special trial configuration (separate from main packages)
+  trialConfig: {
+    credits: 7,
+    price: 1.00,
+    name: '🚀 Trial Pack',
+    description: 'Try all AI features for $1',
+    priceId: process.env.STRIPE_TRIAL_PRICE_ID!,
+  },
 };
 
 // Stripe webhook event types we care about
@@ -38,7 +47,7 @@ export const STRIPE_WEBHOOK_EVENTS = {
 } as const;
 
 // Types
-export type CreditPackageType = keyof typeof STRIPE_CONFIG.creditPackages;
+export type CreditPackageType = keyof typeof STRIPE_CONFIG.creditPackages | 'trial';
 
 export interface StripeCheckoutMetadata {
   userId: string;

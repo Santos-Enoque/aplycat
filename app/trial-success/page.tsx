@@ -1,166 +1,241 @@
-// app/trial-success/page.tsx
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useUser, SignIn } from '@clerk/nextjs';
+import { useUser } from "@clerk/nextjs";
+import { useEffect, useState, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Zap, Upload, ArrowRight, Loader } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  CheckCircle,
+  Sparkles,
+  ArrowRight,
+  Target,
+  Zap,
+  Star,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
-export default function TrialSuccessPage() {
-  const { user, isSignedIn, isLoaded } = useUser();
-  const searchParams = useSearchParams();
+function TrialSuccessContent() {
+  const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
-    const sessionIdParam = searchParams.get('session_id');
-    if (sessionIdParam) {
-      setSessionId(sessionIdParam);
+    if (isLoaded && !user) {
+      router.push("/signup?trial=true");
     }
-  }, [searchParams]);
+  }, [isLoaded, user, router]);
 
-  useEffect(() => {
-    if (isLoaded && isSignedIn && sessionId) {
-      // User is signed in and we have session ID - redirect to dashboard
-      setIsProcessing(false);
-      setTimeout(() => {
-        router.push('/dashboard?trial=success');
-      }, 2000);
-    } else if (isLoaded && !isSignedIn) {
-      // User needs to sign in/up
-      setIsProcessing(false);
-    }
-  }, [isLoaded, isSignedIn, sessionId, router]);
-
-  if (!isLoaded || isProcessing) {
+  if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="p-8 text-center">
-            <Loader className="w-12 h-12 text-green-500 animate-spin mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Processing Your Trial...
-            </h2>
-            <p className="text-gray-600">
-              Please wait while we set up your account.
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
-  if (isSignedIn) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-        <Card className="max-w-2xl w-full mx-4">
-          <CardContent className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-12 h-12 text-white" />
-            </div>
-            
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Welcome to Aplycat Premium! 🎉
-            </h1>
-            
-            <p className="text-lg text-gray-600 mb-6">
-              Your $1 trial is active! You now have 10 credits to transform your resume.
-            </p>
+  if (!user) {
+    return null;
+  }
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-green-900 mb-4">What you can do with 10 credits:</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span>5× Resume Improvements (2 credits each)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span>3× Job-Tailored Resumes (3 credits each)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span>1× LinkedIn Analysis (1 credit)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span>Complete analysis & detailed feedback</span>
-                </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full space-y-8">
+        {/* Success Header */}
+        <div className="text-center">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center animate-pulse">
+            <CheckCircle className="h-12 w-12 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            🎉 Welcome to Your Trial!
+          </h1>
+          <p className="text-xl text-gray-600">
+            Payment successful! You now have 7 AI credits to use.
+          </p>
+        </div>
+
+        {/* Payment Confirmation */}
+        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <Badge className="bg-white/20 text-white mb-2">
+                  PAYMENT CONFIRMED
+                </Badge>
+                <CardTitle className="text-2xl">Trial Activated!</CardTitle>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold">$1.00</div>
+                <div className="text-sm opacity-90">One-time payment</div>
               </div>
             </div>
-
-            <div className="space-y-4">
-              <Button 
-                size="lg"
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-lg font-semibold"
-                onClick={() => router.push('/dashboard')}
-              >
-                <Zap className="mr-2 h-5 w-5" />
-                Go to Dashboard
-              </Button>
-              
-              <p className="text-sm text-gray-500">
-                Redirecting automatically in a few seconds...
-              </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <Star className="h-5 w-5" />
+                <span>7 AI Credits Added</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="h-5 w-5" />
+                <span>All Features Unlocked</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-5 w-5" />
+                <span>No Monthly Fees</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="h-5 w-5" />
+                <span>30-Day Guarantee</span>
+              </div>
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
 
-  // User needs to sign in/up
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-      <Card className="max-w-md w-full mx-4">
-        <CardHeader>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-10 h-10 text-white" />
-            </div>
-            <CardTitle className="text-2xl text-gray-900">
-              Payment Successful! 🎉
+        {/* Quick Start Actions - Temporarily Hidden 
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-blue-600" />
+              What Would You Like to Do First?
             </CardTitle>
-            <p className="text-gray-600 mt-2">
-              Create your account to access your 10 credits
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Link href="/analyze" className="block">
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-blue-50 border-blue-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <Star className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-blue-900">
+                          Analyze Resume
+                        </h3>
+                        <p className="text-sm text-blue-700">
+                          Get detailed feedback
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/improve" className="block">
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-green-50 border-green-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                        <Sparkles className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-green-900">
+                          Improve Resume
+                        </h3>
+                        <p className="text-sm text-green-700">
+                          AI rewrite sections
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/tailor" className="block">
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-purple-50 border-purple-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <ArrowRight className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-purple-900">
+                          Tailor Resume
+                        </h3>
+                        <p className="text-sm text-purple-700">
+                          Match job posting
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/dashboard" className="block">
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-gray-50 border-gray-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-600 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">
+                          View Dashboard
+                        </h3>
+                        <p className="text-sm text-gray-700">
+                          Check your credits
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+        */}
+
+        {/* Support & Next Steps */}
+        <Card>
+          <CardContent className="p-6 text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Need Help Getting Started?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Our AI tools are designed to be intuitive, but we're here if you
+              need assistance.
             </p>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-900 mb-2">Your $1 Trial Includes:</h4>
-            <ul className="text-sm text-green-800 space-y-1">
-              <li>• 10 premium credits (worth $8.30)</li>
-              <li>• Complete resume analysis</li>
-              <li>• AI resume improvements</li>
-              <li>• Job-specific tailoring</li>
-              <li>• Cover letter generation</li>
-            </ul>
-          </div>
+            <div className="flex gap-3 justify-center">
+              <Button
+                variant="outline"
+                onClick={() => window.open("mailto:support@aplycat.com")}
+              >
+                Contact Support
+              </Button>
+              <Button onClick={() => router.push("/dashboard")}>
+                Go to Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="space-y-4">
-            <SignIn 
-              appearance={{
-                elements: {
-                  formButtonPrimary: "bg-green-600 hover:bg-green-700 text-sm normal-case",
-                  card: "shadow-none border-0",
-                },
-              }}
-              forceRedirectUrl="/dashboard?trial=success"
-              fallbackRedirectUrl="/dashboard?trial=success"
-            />
+        {/* Session ID for reference */}
+        {sessionId && (
+          <div className="text-center">
+            <p className="text-xs text-gray-400">Transaction ID: {sessionId}</p>
           </div>
-
-          <p className="text-xs text-gray-500 text-center">
-            Your credits are waiting for you after signup!
-          </p>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
+  );
+}
+
+export default function TrialSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <TrialSuccessContent />
+    </Suspense>
   );
 }

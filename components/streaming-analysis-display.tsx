@@ -24,11 +24,15 @@ import { Button } from "@/components/ui/button";
 import { ResumeAnalysis, ResumeSection } from "@/types/analysis";
 import { useUserCredits } from "@/hooks/use-user-credits";
 import { useCreditsModal } from "@/hooks/use-credits-modal";
+import { AccordionSection } from "@/components/ui/accordion-section";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface StreamingAnalysisDisplayProps {
   analysis: Partial<ResumeAnalysis> | null;
   status: "idle" | "connecting" | "streaming" | "completed" | "error";
   onStartImprovement: () => void;
+  isAnonymous?: boolean;
 }
 
 const SectionSkeleton = () => (
@@ -63,13 +67,21 @@ export function StreamingAnalysisDisplay({
   analysis,
   status,
   onStartImprovement,
+  isAnonymous = false,
 }: StreamingAnalysisDisplayProps) {
   const { openModal } = useCreditsModal();
   const { credits, isLoading: isLoadingCredits } = useUserCredits();
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
   const handleStartImprovementClick = () => {
+    if (isAnonymous) {
+      onStartImprovement();
+      return;
+    }
+
     if (isLoadingCredits || credits === null || credits === undefined) {
-      // Credits are still loading or not available
+      // Credits are still loading or not available for a logged-in user
+      toast.info("Verifying your credit balance...");
       return;
     }
     if (credits <= 0) {
@@ -177,16 +189,6 @@ export function StreamingAnalysisDisplay({
                 {analysisData.overallScore}
                 <span className="text-xl text-muted-foreground">/100</span>
               </div>
-              <div
-                className={`flex-1 ${
-                  analysis.overall_score === undefined && "animate-pulse"
-                }`}
-              >
-                <Progress
-                  value={analysisData.overallScore}
-                  className={`h-2 ${getCategoryColor(analysisData.category)}`}
-                />
-              </div>
             </div>
             {analysis.overall_score !== undefined && (
               <Badge
@@ -211,13 +213,6 @@ export function StreamingAnalysisDisplay({
               <div className="text-3xl font-bold text-foreground">
                 {analysisData.atsScore}
                 <span className="text-xl text-muted-foreground">/100</span>
-              </div>
-              <div
-                className={`flex-1 ${
-                  analysis.ats_score === undefined && "animate-pulse"
-                }`}
-              >
-                <Progress value={analysisData.atsScore} className="h-2" />
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
@@ -305,94 +300,88 @@ export function StreamingAnalysisDisplay({
           analysisData.sections.length === 0 &&
           [...Array(3)].map((_, i) => <SectionSkeleton key={i} />)}
 
-        {analysisData.sections.map((section, index) => (
-          <Card key={index}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{section.name}</CardTitle>
-                <div className="flex items-center space-x-3">
-                  <Badge className={getRatingColor(section.rating)}>
-                    {section.rating}
-                  </Badge>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-foreground">
-                      {section.score}
-                    </div>
-                    <Progress value={section.score} className="w-20 h-2" />
+        <div className="space-y-3">
+          {analysisData.sections.map((section, index) => (
+            <AccordionSection
+              key={index}
+              section={{
+                section_name: section.name,
+                score: section.score,
+                rating: section.rating,
+                roast: section.analysis,
+                good_things: section.goodThings,
+                issues_found: section.issues,
+                quick_fixes: section.quickFixes,
+              }}
+              isOpen={openAccordion === section.name}
+              onToggle={() =>
+                setOpenAccordion(
+                  openAccordion === section.name ? null : section.name
+                )
+              }
+            />
+          ))}
+
+          {/* Show blurred sections for anonymous users with limited data */}
+          {(analysis as any)?.is_limited &&
+            (analysis as any)?.hidden_sections_count > 0 && (
+              <div className="relative">
+                {/* Blur overlay with upgrade prompt */}
+                <div className="h-40 bg-gradient-to-b from-transparent to-white absolute inset-0 z-10 flex items-end justify-center pb-4">
+                  <div className="text-center">
+                    <Button
+                      onClick={handleStartImprovementClick}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg font-semibold rounded-xl mb-2"
+                    >
+                      Sign Up to See {(analysis as any).hidden_sections_count}{" "}
+                      More Sections
+                    </Button>
+                    <p className="text-sm text-gray-600">
+                      Get complete analysis + $1 trial for all AI features
+                    </p>
                   </div>
                 </div>
+
+                {/* Blurred placeholder sections */}
+                <div className="blur-sm opacity-50 space-y-4">
+                  {Array.from({
+                    length: Math.min(
+                      (analysis as any).hidden_sections_count,
+                      3
+                    ),
+                  }).map((_, i) => (
+                    <div
+                      key={`blurred-${i}`}
+                      className="border border-gray-200 rounded-lg overflow-hidden"
+                    >
+                      <div className="p-4 bg-gray-100 border-b flex items-center justify-between">
+                        <div className="h-5 bg-gray-300 rounded w-32"></div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 bg-gray-300 rounded w-16"></div>
+                          <div className="h-5 bg-gray-300 rounded w-12"></div>
+                        </div>
+                      </div>
+                      <div className="p-4 space-y-3">
+                        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-full"></div>
+                        <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                        <div className="space-y-1">
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {(analysis as any).hidden_sections_count > 3 && (
+                    <div className="text-center py-4">
+                      <div className="h-4 bg-gray-300 rounded w-48 mx-auto"></div>
+                      <div className="h-3 bg-gray-200 rounded w-32 mx-auto mt-2"></div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-foreground">{section.analysis}</p>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Issues */}
-                {section.issues.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-red-600 mb-3 flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      Issues Found
-                    </h4>
-                    <ul className="space-y-2">
-                      {section.issues.map((issue: string, i: number) => (
-                        <li
-                          key={i}
-                          className="text-sm text-foreground flex items-start"
-                        >
-                          <span className="w-2 h-2 bg-red-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                          {issue}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Good Things */}
-                {section.goodThings.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-green-600 mb-3 flex items-center">
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      What We Liked
-                    </h4>
-                    <ul className="space-y-2">
-                      {section.goodThings.map((good, i) => (
-                        <li
-                          key={i}
-                          className="text-sm text-foreground flex items-start"
-                        >
-                          <span className="w-2 h-2 bg-green-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                          {good}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Quick Fixes */}
-                {section.quickFixes.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-blue-600 mb-3 flex items-center">
-                      <Zap className="w-4 h-4 mr-2" />
-                      Quick Fixes
-                    </h4>
-                    <ul className="space-y-2">
-                      {section.quickFixes.map((fix, i) => (
-                        <li
-                          key={i}
-                          className="text-sm text-foreground flex items-start"
-                        >
-                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                          {fix}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+            )}
+        </div>
       </div>
 
       {/* Bottom CTA */}

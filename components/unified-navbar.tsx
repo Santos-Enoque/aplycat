@@ -102,7 +102,7 @@ export function UnifiedNavbar() {
                   </Button>
                 </SignInButton>
                 <SignInButton mode="modal">
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                     <Zap className="h-4 w-4 mr-2" />
                     Try Free
                   </Button>

@@ -6,7 +6,7 @@ import { z } from 'zod';
 import type { CreditPackageType } from '@/lib/stripe/config';
 
 const createCheckoutSchema = z.object({
-  packageType: z.enum(['starter', 'professional', 'premium']),
+  packageType: z.enum(['trial', 'starter', 'professional', 'premium']),
   returnUrl: z.string().url().optional(),
 });
 

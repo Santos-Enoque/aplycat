@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
-import { streamingModelService } from "@/lib/models-streaming";
-import type { ModelFileInput } from "@/lib/models";
+import { streamingModelService, type ModelFileInput } from "@/lib/models-consolidated";
 import { getCurrentUserFromDB, decrementUserCredits } from "@/lib/auth/user-sync";
 
 export const revalidate = 0;
@@ -62,8 +61,24 @@ export async function POST(request: NextRequest) {
       resumeFile
     );
 
-    // Parse the JSON response
-    const improvedResumeData = JSON.parse(response.content);
+    // Parse the JSON response with additional cleaning
+    let improvedResumeData;
+    try {
+      // Clean the response content in case it has markdown code blocks
+      let cleanContent = response.content.trim();
+      if (cleanContent.startsWith("```json")) {
+        cleanContent = cleanContent.slice(7).trim();
+      }
+      if (cleanContent.endsWith("```")) {
+        cleanContent = cleanContent.slice(0, -3).trim();
+      }
+      
+      improvedResumeData = JSON.parse(cleanContent);
+    } catch (parseError) {
+      console.error("[IMPROVE_API] Failed to parse JSON response:", parseError);
+      console.error("[IMPROVE_API] Raw response content:", response.content);
+      throw new Error("Failed to process the AI response. Please try again.");
+    }
 
     console.log(`[IMPROVE_API] Improvement completed successfully for user ${user.id}`);
     
@@ -81,12 +96,25 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("[IMPROVE_API] Error:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    
+    // Determine user-friendly error message
+    let userFriendlyMessage = "We're experiencing technical difficulties. Please try again later.";
+    
+    if (error instanceof Error) {
+      // Check for specific error types to provide more helpful messages
+      if (error.message.includes("credits")) {
+        userFriendlyMessage = error.message; // Credit-related errors are already user-friendly
+      } else if (error.message.includes("Failed to process the AI response")) {
+        userFriendlyMessage = "There was an issue processing your resume. Please try again.";
+      } else if (error.message.includes("API")) {
+        userFriendlyMessage = "Our AI service is temporarily unavailable. Please try again in a few minutes.";
+      }
+    }
     
     return NextResponse.json(
       { 
         success: false,
-        error: errorMessage,
+        error: userFriendlyMessage,
         timestamp: new Date().toISOString()
       },
       { status: 500 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { streamingModelService } from '@/lib/models-streaming';
+import { streamingModelService } from '@/lib/models-consolidated';
 import { getCurrentUserFromDB, decrementUserCredits } from '@/lib/auth/user-sync';
 // import { db } from '@/lib/db'; // Temporarily disabled
 
@@ -102,8 +102,21 @@ export async function POST(request: NextRequest) {
 
         } catch (error) {
           console.error('[STREAM_API] Error during stream generation:', error);
-          const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-          controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ error: errorMessage })}\n\n`));
+          
+          // Provide user-friendly error message
+          let userFriendlyMessage = "We're experiencing technical difficulties. Please try again later.";
+          
+          if (error instanceof Error) {
+            if (error.message.includes("credits")) {
+              userFriendlyMessage = "Insufficient credits to analyze resume.";
+            } else if (error.message.includes("API")) {
+              userFriendlyMessage = "Our AI service is temporarily unavailable. Please try again in a few minutes.";
+            } else if (error.message.includes("parse") || error.message.includes("JSON")) {
+              userFriendlyMessage = "There was an issue processing your resume. Please try again.";
+            }
+          }
+          
+          controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ error: userFriendlyMessage })}\n\n`));
         } finally {
           if (streamSuccessful) {
             try {
@@ -129,6 +142,20 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[STREAM_API] General Error:', error);
-    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
+    
+    // Provide user-friendly error message
+    let userFriendlyMessage = "We're experiencing technical difficulties. Please try again later.";
+    
+    if (error instanceof Error) {
+      if (error.message.includes("credits")) {
+        userFriendlyMessage = "Insufficient credits to analyze resume.";
+      } else if (error.message.includes("Unauthorized")) {
+        userFriendlyMessage = "Please log in to analyze your resume.";
+      } else if (error.message.includes("file")) {
+        userFriendlyMessage = "There was an issue with your file. Please try uploading again.";
+      }
+    }
+    
+    return NextResponse.json({ error: userFriendlyMessage }, { status: 500 });
   }
 }
