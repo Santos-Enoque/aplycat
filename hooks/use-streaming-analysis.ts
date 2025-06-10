@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { ResumeAnalysis } from '@/types/analysis';
-import * as Sentry from '@sentry/nextjs';
+// import * as Sentry from '@sentry/nextjs';
 
 interface StreamingChunk {
   type: 'partial_analysis' | 'complete_analysis' | 'error' | 'metadata';
@@ -158,12 +158,12 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
         console.log('[useStreamingAnalysis] Analysis stopped by user.');
         setStatus('idle');
       } else {
-        Sentry.captureException(err, {
-          extra: {
-            errorMessage,
-            context: "useStreamingAnalysis catch block",
-          },
-        });
+        // Sentry.captureException(err, {
+        //   extra: {
+        //     errorMessage,
+        //     context: "useStreamingAnalysis catch block",
+        //   },
+        // });
         console.error('[useStreamingAnalysis] Error:', errorMessage);
         setError(errorMessage);
         setStatus('error');

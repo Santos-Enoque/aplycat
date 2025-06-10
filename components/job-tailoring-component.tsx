@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useUserCredits } from "@/hooks/use-user-credits";
 import { useCreditsModal } from "@/hooks/use-credits-modal";
-import * as Sentry from "@sentry/nextjs";
+// import * as Sentry from "@sentry/nextjs";
 
 interface JobTailoringComponentProps {
   currentResume: any;
@@ -153,12 +153,12 @@ export function JobTailoringComponent({
 
       setExtractionSuccessful(false);
       setShowManualEntry(true); // Show manual entry on failure
-      Sentry.captureException(err, {
-        extra: {
-          jobUrl,
-          context: "JobTailoringComponent extractJobInfo catch block",
-        },
-      });
+      // Sentry.captureException(err, {
+      //   extra: {
+      //     jobUrl,
+      //     context: "JobTailoringComponent extractJobInfo catch block",
+      //   },
+      // });
       setError(
         "Failed to extract job info from URL. Please fill details manually."
       );
@@ -224,13 +224,13 @@ export function JobTailoringComponent({
         return;
       }
 
-      Sentry.captureException(err, {
-        extra: {
-          jobTitle,
-          companyName,
-          context: "JobTailoringComponent handleTailoring catch block",
-        },
-      });
+      // Sentry.captureException(err, {
+      //   extra: {
+      //     jobTitle,
+      //     companyName,
+      //     context: "JobTailoringComponent handleTailoring catch block",
+      //   },
+      // });
       setError(err.message || "An error occurred while tailoring your resume");
     } finally {
       setIsLoading(false);

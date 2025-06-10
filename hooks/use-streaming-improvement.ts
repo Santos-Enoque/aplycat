@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import type { ModelFileInput } from "@/lib/models-consolidated";
-import * as Sentry from '@sentry/nextjs';
+// import * as Sentry from '@sentry/nextjs';
 
 // Updated interface to match the actual API response
 interface ImprovedResumeResponse {
@@ -192,12 +192,12 @@ export function useStreamingImprovement(): UseStreamingImprovementReturn {
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'An unknown error occurred';
-        Sentry.captureException(err, {
-          extra: {
-            errorMessage,
-            context: "useStreamingImprovement catch block",
-          },
-        });
+        // Sentry.captureException(err, {
+        //   extra: {
+        //     errorMessage,
+        //     context: "useStreamingImprovement catch block",
+        //   },
+        // });
         console.error('[useStreamingImprovement] Error:', errorMessage);
         setError(errorMessage);
         setStatus('error');

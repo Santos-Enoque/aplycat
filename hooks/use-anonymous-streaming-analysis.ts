@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import * as Sentry from '@sentry/nextjs';
+// import * as Sentry from '@sentry/nextjs';
 
 interface AnonymousStreamingChunk {
   type: 'rate_limit' | 'complete' | 'error';
@@ -152,12 +152,12 @@ export function useAnonymousStreamingAnalysis(): UseAnonymousStreamingAnalysisRe
         console.log('[useAnonymousStreamingAnalysis] Analysis stopped by user.');
         setStatus('idle');
       } else {
-        Sentry.captureException(err, {
-          extra: {
-            errorMessage,
-            context: "useAnonymousStreamingAnalysis catch block",
-          },
-        });
+        // Sentry.captureException(err, {
+        //   extra: {
+        //     errorMessage,
+        //     context: "useAnonymousStreamingAnalysis catch block",
+        //   },
+        // });
         console.error('[useAnonymousStreamingAnalysis] Error:', errorMessage);
         setError(errorMessage);
         setStatus('error');

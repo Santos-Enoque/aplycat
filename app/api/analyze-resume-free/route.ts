@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { modelService } from '@/lib/models-consolidated';
-import * as Sentry from '@sentry/nextjs';
+// import * as Sentry from '@sentry/nextjs';
 
 // Rate limiting storage (in production, use Redis)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[FREE-ANALYSIS] Error:', error);
-    Sentry.captureException(error);
+    // Sentry.captureException(error);
     
     return NextResponse.json(
       { error: 'Internal server error' },
