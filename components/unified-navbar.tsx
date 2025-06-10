@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,6 +16,7 @@ import {
 import { useUser, SignInButton, UserButton, useClerk } from "@clerk/nextjs";
 import { EnhancedCreditsModal } from "@/components/enhanced-credits-modal";
 import { useUserCredits } from "@/hooks/use-user-credits";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import {
   Cat,
   Home,
@@ -32,6 +34,8 @@ import {
 } from "lucide-react";
 
 export function UnifiedNavbar() {
+  const t = useTranslations('navbar');
+  const tCommon = useTranslations('common');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false);
   const router = useRouter();
@@ -61,8 +65,11 @@ export function UnifiedNavbar() {
             </Link>
           </div>
 
-          {/* Right side - Auth and user menu */}
+          {/* Right side - Language switcher, Auth and user menu */}
           <div className="flex items-center gap-4">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {isSignedIn ? (
               <>
                 {/* Credits Display */}
@@ -72,7 +79,7 @@ export function UnifiedNavbar() {
                   ) : (
                     <Badge className="bg-purple-100 text-purple-800 px-3 py-1 font-medium">
                       <CreditCard className="h-3 w-3 mr-1" />
-                      {userCredits} Credits
+                      {userCredits} {tCommon('credits')}
                     </Badge>
                   )}
                 </div>
@@ -84,7 +91,7 @@ export function UnifiedNavbar() {
                   className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white flex"
                 >
                   <Zap className="h-4 w-4 mr-2" />
-                  Buy Credits
+                  {tCommon('buyCredits')}
                 </Button>
 
                 {/* Clerk UserButton */}
@@ -98,13 +105,13 @@ export function UnifiedNavbar() {
                     variant="ghost"
                     className="text-gray-600 hover:text-gray-900"
                   >
-                    Sign In
+                    {t('signIn')}
                   </Button>
                 </SignInButton>
                 <SignInButton mode="modal">
                   <Button className="bg-purple-600 hover:bg-purple-700 text-white">
                     <Zap className="h-4 w-4 mr-2" />
-                    Try Free
+                    {t('tryFree')}
                   </Button>
                 </SignInButton>
               </div>

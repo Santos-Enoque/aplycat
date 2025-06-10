@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import {
   Card,
   CardContent,
@@ -97,6 +98,7 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ user }: DashboardContentProps) {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const [dragActive, setDragActive] = useState(false);
 
@@ -208,10 +210,10 @@ export function DashboardContent({ user }: DashboardContentProps) {
       {/* Welcome Section */}
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-foreground">
-          Ready to get roasted?
+          {t('title')}
         </h2>
         <p className="text-muted-foreground text-lg">
-          Upload your resume or connect LinkedIn to get brutally honest feedback
+          {t('subtitle')}
         </p>
       </div>
 
@@ -225,9 +227,9 @@ export function DashboardContent({ user }: DashboardContentProps) {
                 <FileText className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <CardTitle>Upload Resume</CardTitle>
+                <CardTitle>{t('uploadResume.title')}</CardTitle>
                 <CardDescription>
-                  Get your ATS score + honest feedback
+                  {t('uploadResume.description')}
                 </CardDescription>
               </div>
             </div>
@@ -251,13 +253,13 @@ export function DashboardContent({ user }: DashboardContentProps) {
             >
               <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
               <h3 className="font-semibold text-foreground mb-2">
-                Drop your resume here
+                {t('uploadResume.dropZone')}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                PDF, DOC, or DOCX • Max 5MB
+                {t('uploadResume.fileFormats')}
               </p>
               <Button variant="outline" size="sm">
-                Choose File
+                {t('uploadResume.chooseFile')}
               </Button>
               <input
                 id="file-upload"
@@ -270,9 +272,9 @@ export function DashboardContent({ user }: DashboardContentProps) {
 
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Cost: 1 credit</span>
+                <span className="text-muted-foreground">{t('uploadResume.cost')}</span>
                 <span className="text-primary font-medium">
-                  ~2 min analysis
+                  {t('uploadResume.duration')}
                 </span>
               </div>
             </div>
@@ -288,16 +290,16 @@ export function DashboardContent({ user }: DashboardContentProps) {
               </div>
               <div>
                 <CardTitle className="flex items-center">
-                  Connect LinkedIn
+                  {t('linkedIn.title')}
                   <Badge
                     variant="outline"
                     className="ml-2 text-xs bg-yellow-100 text-yellow-700 border-yellow-300"
                   >
-                    Preview
+                    {t('linkedIn.preview')}
                   </Badge>
                 </CardTitle>
                 <CardDescription>
-                  Analyze & optimize your profile
+                  {t('linkedIn.description')}
                 </CardDescription>
               </div>
             </div>
@@ -308,25 +310,24 @@ export function DashboardContent({ user }: DashboardContentProps) {
               <div className="bg-muted/30 rounded-lg p-6 text-center">
                 <Linkedin className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                 <h3 className="font-semibold text-foreground mb-2">
-                  Connect Your Profile
+                  {t('linkedIn.connectProfile')}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  We'll analyze your profile and suggest improvements to get you
-                  noticed by recruiters
+                  {t('linkedIn.profileDesc')}
                 </p>
                 <Button
                   onClick={connectLinkedIn}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Linkedin className="w-4 h-4 mr-2" />
-                  Connect LinkedIn
+                  {t('linkedIn.connectButton')}
                 </Button>
               </div>
 
               <div className="flex items-center justify-between text-sm pt-2 border-t">
-                <span className="text-muted-foreground">Cost: 3 credits</span>
+                <span className="text-muted-foreground">{t('linkedIn.cost')}</span>
                 <span className="text-primary font-medium">
-                  ~5 min analysis
+                  {t('linkedIn.duration')}
                 </span>
               </div>
             </div>
@@ -343,7 +344,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
           className="text-sm"
         >
           <MessageSquare className="w-4 h-4 mr-2" />
-          Request feature / Report bug
+          {t('feedback')}
         </Button>
 
         <div className="flex items-center space-x-2">

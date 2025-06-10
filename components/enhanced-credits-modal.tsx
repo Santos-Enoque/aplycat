@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -48,6 +49,7 @@ export function EnhancedCreditsModal({
   requiredCredits,
 }: CreditsModalProps) {
   const { user } = useUser();
+  const t = useTranslations('creditsModal');
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,12 +88,12 @@ export function EnhancedCreditsModal({
     const jobTailoringCredits = Math.floor(credits / 3);
 
     return [
-      `${analysisCredits} Resume Analyses`,
-      `${improvementCredits} Resume Improvements`,
-      `${jobTailoringCredits} Job-Tailored Resume + Cover Letter combos`,
-      credits >= 30 ? "Priority Support" : "Email Support",
+      t('packageFeatures.analyses', { count: analysisCredits }),
+      t('packageFeatures.improvements', { count: improvementCredits }),
+      t('packageFeatures.jobTailoring', { count: jobTailoringCredits }),
+      credits >= 30 ? t('packageFeatures.prioritySupport') : t('packageFeatures.emailSupport'),
       ...(credits >= 70
-        ? ["Premium Support", "Career change optimization"]
+        ? [t('packageFeatures.premiumSupport'), t('packageFeatures.careerOptimization')]
         : []),
     ];
   };
@@ -198,10 +200,10 @@ export function EnhancedCreditsModal({
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center">
               <Zap className="h-6 w-6 inline mr-2 text-purple-600" />
-              Buy Credits
+              {t('title')}
             </DialogTitle>
             <DialogDescription className="text-center text-gray-600">
-              Loading credit packages...
+              {t('loadingPackages')}
             </DialogDescription>
           </DialogHeader>
 
@@ -219,25 +221,23 @@ export function EnhancedCreditsModal({
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
             <Zap className="h-6 w-6 inline mr-2 text-purple-600" />
-            Buy Credits
+            {t('title')}
           </DialogTitle>
           <DialogDescription className="text-center text-gray-600">
-            Choose the credit pack that best fits your needs. Credits never
-            expire!
+            {t('subtitle')}
           </DialogDescription>
         </DialogHeader>
 
         {requiredCredits && (
           <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3 mx-4 my-4 text-center">
-            You need at least <strong>{requiredCredits} credits</strong> for
-            this action.
+            {t('requiredCredits', { credits: requiredCredits })}
           </div>
         )}
 
         {/* Security Badge */}
         <div className="flex items-center justify-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mx-4">
           <Shield className="h-4 w-4 text-green-600" />
-          <span>Secure payment processing by Lemon Squeezy</span>
+          <span>{t('securePayment')}</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
@@ -258,7 +258,7 @@ export function EnhancedCreditsModal({
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-purple-600 text-white px-3 py-1">
                       <Star className="h-3 w-3 mr-1" />
-                      Most Popular
+                      {t('mostPopular')}
                     </Badge>
                   </div>
                 )}
@@ -275,7 +275,7 @@ export function EnhancedCreditsModal({
                       {pkg.credits} credits
                     </div>
                     <div className="text-xs text-green-600 font-medium mt-1">
-                      ${pkg.pricePerCredit} per credit
+                      ${pkg.pricePerCredit} {t('perCredit')}
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 text-center">
@@ -308,12 +308,12 @@ export function EnhancedCreditsModal({
                     {isLoading && selectedPackage === pkg.id ? (
                       <div className="flex items-center">
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
+                        {t('processing')}
                       </div>
                     ) : (
                       <div className="flex items-center">
                         <CreditCard className="h-4 w-4 mr-2" />
-                        Buy Now
+                        {t('buyNow')}
                         <ExternalLink className="h-3 w-3 ml-1" />
                       </div>
                     )}
@@ -327,21 +327,14 @@ export function EnhancedCreditsModal({
         {/* Features Info */}
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <h3 className="font-semibold text-gray-900 mb-2">
-            What are credits used for?
+            {t('featuresTitle')}
           </h3>
           <ul className="text-sm text-gray-600 space-y-1">
-            <li>
-              • <strong>1 credit</strong> = 1 comprehensive resume analysis
-            </li>
-            <li>
-              • <strong>2 credits</strong> = 1 AI-powered resume improvement
-            </li>
-            <li>
-              • <strong>3 credits</strong> = 1 job-tailored resume + cover
-              letter
-            </li>
-            <li>• Credits never expire and can be used anytime</li>
-            <li>• All features included regardless of pack size</li>
+            <li>• <strong>{t('features.analysis')}</strong></li>
+            <li>• <strong>{t('features.improvement')}</strong></li>
+            <li>• <strong>{t('features.tailoring')}</strong></li>
+            <li>• {t('features.noExpiry')}</li>
+            <li>• {t('features.allFeatures')}</li>
           </ul>
         </div>
 
@@ -349,9 +342,8 @@ export function EnhancedCreditsModal({
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
             <Shield className="h-3 w-3" />
-            Secure payment processing • 30-day money-back guarantee
+            {t('guarantees')}
             <RefreshCw className="h-3 w-3" />
-            Instant credit delivery
           </p>
         </div>
       </DialogContent>

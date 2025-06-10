@@ -1,0 +1,253 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "tryAgain": "Tentar Novamente",
+    "close": "Fechar",
+    "continue": "Continuar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "submit": "Enviar",
+    "upload": "Enviar",
+    "download": "Baixar",
+    "credits": "Créditos",
+    "buyCredits": "Comprar Créditos"
+  },
+  "navbar": {
+    "signIn": "Entrar",
+    "tryFree": "Experimentar Grátis",
+    "dashboard": "Painel",
+    "language": "Idioma",
+    "english": "Inglês",
+    "portuguese": "Português"
+  },
+  "creditsModal": {
+    "title": "Comprar Créditos",
+    "subtitle": "Escolha o pacote de créditos que melhor se adequa às suas necessidades. Créditos nunca expiram!",
+    "loadingPackages": "Carregando pacotes de créditos...",
+    "securePayment": "Processamento de pagamento seguro pelo Lemon Squeezy",
+    "mostPopular": "Mais Popular",
+    "perCredit": "por crédito",
+    "buyNow": "Comprar Agora",
+    "processing": "Processando...",
+    "requiredCredits": "Você precisa de pelo menos {credits} créditos para esta ação.",
+    "featuresTitle": "Para que são usados os créditos?",
+    "features": {
+      "analysis": "1 crédito = 1 análise abrangente de currículo",
+      "improvement": "2 créditos = 1 melhoria de currículo movida pela IA",
+      "tailoring": "3 créditos = 1 currículo personalizado para vaga + carta de apresentação",
+      "noExpiry": "Créditos nunca expiram e podem ser usados a qualquer momento",
+      "allFeatures": "Todos os recursos incluídos, independentemente do tamanho do pacote"
+    },
+    "guarantees": "Processamento de pagamento seguro • Garantia de reembolso de 30 dias • Entrega instantânea de créditos",
+    "packageFeatures": {
+      "analyses": "{count} Análises de Currículo",
+      "improvements": "{count} Melhorias de Currículo",
+      "jobTailoring": "{count} combos de Currículo + Carta de Apresentação Personalizados",
+      "emailSupport": "Suporte por Email",
+      "prioritySupport": "Suporte Prioritário",
+      "premiumSupport": "Suporte Premium",
+      "careerOptimization": "Otimização para mudança de carreira"
+    }
+  },
+  "landingPage": {
+    "hero": {
+      "title": "Faça Seu Currículo Ser Criticado Brutalmente",
+      "subtitle": "Instantâneo e Grátis",
+      "description": "Envie seu currículo e receba feedback honesto da IA em segundos. Sem pegadinha, sem cadastro, apenas a verdade brutal sobre por que você está sendo rejeitado.",
+      "freeAnalysis": "Análise de Currículo GRATUITA • Sem Cadastro Necessário",
+      "dropResume": "Solte Seu Currículo Aqui",
+      "analysisDesc": "Análise instantânea da IA • Sem cadastro necessário • Completamente gratuito",
+      "fileFormats": "PDF, DOC ou DOCX • Máx 10MB",
+      "clickToBrowse": "Ou Clique para Navegar"
+    },
+    "analyzing": {
+      "title": "A IA está analisando seu currículo...",
+      "description": "Isso levará apenas alguns segundos",
+      "complete": "% completo"
+    },
+    "results": {
+      "overallScore": "Pontuação Geral",
+      "atsScore": "Pontuação ATS",
+      "honestFeedback": "Feedback Brutalmente Honesto",
+      "topIssues": "Principais Problemas a Corrigir",
+      "upgradeTitle": "Quer a Transformação Completa da IA?",
+      "upgradeDesc": "Obtenha currículo reescrito pela IA, personalização para vagas, cartas de apresentação e mais",
+      "upgradeBtn": "Obter Todos os Recursos IA por $1 →"
+    },
+    "testimonials": {
+      "title": "Junte-se a 50.000+ Que Pararam de Ser Rejeitados",
+      "analyzed": "50.000+ currículos criticados",
+      "rating": "4.9/5 avaliação",
+      "interviews": "78% conseguiram mais entrevistas"
+    },
+    "features": {
+      "title": "Pare de Ser Rejeitado. Comece a Ser Contratado.",
+      "subtitle": "Sem enrolação. Sem assinaturas. Apenas honestidade brutal e correções da IA.",
+      "honestFeedback": {
+        "title": "Feedback Honesto do Currículo",
+        "description": "Receba feedback brutalmente honesto que os recrutadores realmente pensam. Sem açúcar, apenas a verdade sobre por que seu currículo não está funcionando.",
+        "feature1": "Pontuação ATS 0-100 com análise detalhada",
+        "feature2": "Análise seção por seção e correções",
+        "feature3": "Julgamentos de nível de recrutador"
+      },
+      "aiGenerator": {
+        "title": "Gerador de Currículo IA",
+        "description": "Currículos totalmente novos adaptados à sua indústria e função. Construídos do zero com as melhores práticas de recrutadores.",
+        "feature1": "Modelos e formatos específicos da indústria",
+        "feature2": "Estrutura e palavras-chave otimizadas para ATS",
+        "feature3": "Otimização de conteúdo baseada na função"
+      },
+      "jobTailoring": {
+        "title": "Personalização Específica para Vaga",
+        "description": "Cole qualquer descrição de vaga, obtenha um currículo perfeitamente correspondente. Pare de enviar currículos genéricos e comece a conseguir entrevistas.",
+        "feature1": "Reescritas de currículo personalizadas para cada vaga",
+        "feature2": "Cartas de apresentação sob medida que realmente funcionam",
+        "feature3": "Otimização inteligente de palavras-chave e correspondência"
+      },
+      "linkedIn": {
+        "title": "Crítica e Reescrita do LinkedIn",
+        "description": "Corrija seu LinkedIn para que os recrutadores parem de ignorá-lo. Seja encontrado, seja contatado, seja contratado.",
+        "feature1": "Auditoria completa de otimização do perfil",
+        "feature2": "Reescrita profissional do título e resumo",
+        "feature3": "Otimização SEO para buscas de recrutadores"
+      }
+    },
+    "beforeAfter": {
+      "title": "Do Lixo ao Tesouro",
+      "subtitle": "Veja o que acontece quando a honestidade brutal encontra a inteligência da IA",
+      "before": "Antes (Terrível)",
+      "after": "Depois (Aceitável)",
+      "roastResult": "Resultado da Crítica:",
+      "result": "Resultado:"
+    },
+    "howItWorks": {
+      "title": "Como Funciona",
+      "subtitle": "Três passos para parar de se envergonhar",
+      "step1": {
+        "title": "Envie Seu Currículo",
+        "description": "Solte seu currículo atual (PDF, DOC, qualquer desastre que você tenha estado enviando). Nós o escaneamos em segundos."
+      },
+      "step2": {
+        "title": "Seja Criticado + Veja Sua Pontuação",
+        "description": "Receba feedback brutal mas honesto, sua pontuação ATS (0-100) e melhorias seção por seção. Sem açúcar."
+      },
+      "step3": {
+        "title": "Corrija Com IA",
+        "description": "Gere um currículo totalmente novo, adapte-o a vagas específicas ou obtenha reescritas da IA. Sua escolha, sua carreira."
+      }
+    },
+    "pricing": {
+      "title": "Preços Simples. Sem Assinaturas.",
+      "subtitle": "Compre créditos uma vez. Use-os sempre que precisar de um impulso na carreira.",
+      "launchOffer": "OFERTA DE LANÇAMENTO: CRÉDITOS BÔNUS EM TODOS OS PACOTES",
+      "starter": {
+        "title": "Pacote Iniciante",
+        "price": "$4.99",
+        "credits": "5 Créditos + 2 Bônus!",
+        "feature1": "1x Análise LinkedIn (3 créditos)",
+        "feature2": "1x Melhoria de Currículo (2 créditos)",
+        "feature3": "1x Personalização para Vaga (2 créditos)",
+        "button": "Começar"
+      },
+      "professional": {
+        "title": "Pacote Profissional",
+        "price": "$12.49",
+        "credits": "30 Créditos + 15 Bônus!",
+        "mostPopular": "Mais Popular",
+        "feature1": "15x Melhorias de Currículo",
+        "feature2": "10x Currículo + Carta de Apresentação Personalizada",
+        "feature3": "Suporte Prioritário",
+        "button": "Escolher Profissional"
+      },
+      "powerUser": {
+        "title": "Pacote Usuário Avançado",
+        "price": "$24.99",
+        "credits": "70 Créditos + 30 Bônus!",
+        "feature1": "35x Melhorias de Currículo",
+        "feature2": "23x Currículo + Carta de Apresentação Personalizada",
+        "feature3": "Suporte Premium e Otimização para Mudança de Carreira",
+        "button": "Ser Usuário Avançado"
+      }
+    },
+    "finalCta": {
+      "title": "Você já foi rejeitado o suficiente.",
+      "subtitle": "Corrija seu currículo. Corrija sua sorte.",
+      "button": "Enviar Currículo e Ser Criticado",
+      "offer": "Oferta de lançamento termina em breve • Créditos bônus em todos os pacotes"
+    },
+    "trial": {
+      "limitedOffer": "OFERTA POR TEMPO LIMITADO",
+      "title": "Experimente Todos os Recursos IA por $1",
+      "subtitle": "Desbloqueie a experiência completa do Aplycat com 10 créditos",
+      "value": "Valor $8.30",
+      "creditsIncluded": "10 Créditos Incluídos:",
+      "feature1": "5× Melhorias de Currículo (valor $4.15)",
+      "feature2": "3× Currículos + Cartas de Apresentação Personalizadas (valor $2.49)",
+      "feature3": "1× Análise LinkedIn (valor $0.83)",
+      "feature4": "1× Melhoria Personalizada (valor $0.83)",
+      "expiresIn": "Oferta expira em",
+      "ctaButton": "Obter Todos os Recursos IA por $1 →",
+      "maybeLater": "Talvez mais tarde",
+      "guarantee": "Pagamento único • Sem assinatura • Garantia de reembolso de 30 dias"
+    }
+  },
+  "dashboard": {
+    "title": "Pronto para ser criticado?",
+    "subtitle": "Envie seu currículo ou conecte o LinkedIn para receber feedback brutalmente honesto",
+    "uploadResume": {
+      "title": "Enviar Currículo",
+      "description": "Obtenha sua pontuação ATS + feedback honesto",
+      "dropZone": "Solte seu currículo aqui",
+      "fileFormats": "PDF, DOC ou DOCX • Máx 5MB",
+      "chooseFile": "Escolher Arquivo",
+      "cost": "Custo: 1 crédito",
+      "duration": "~2 min análise"
+    },
+    "linkedIn": {
+      "title": "Conectar LinkedIn",
+      "description": "Analisar e otimizar seu perfil",
+      "preview": "Prévia",
+      "connectProfile": "Conecte Seu Perfil",
+      "profileDesc": "Analisaremos seu perfil e sugeriremos melhorias para você ser notado pelos recrutadores",
+      "connectButton": "Conectar LinkedIn",
+      "cost": "Custo: 3 créditos",
+      "duration": "~5 min análise"
+    },
+    "feedback": "Solicitar recurso / Reportar bug"
+  },
+  "analyze": {
+    "title": "Análise de Currículo em Tempo Real",
+    "subtitle": "Nossa IA está analisando seu currículo. Veja os resultados aparecerem ao vivo abaixo.",
+    "connecting": "Conectando...",
+    "initializing": "Inicializando...",
+    "initDesc": "Por favor, aguarde enquanto preparamos o mecanismo de análise.",
+    "analysisFor": "Análise para:",
+    "analysisFailed": "Análise Falhou",
+    "returnToDashboard": "Voltar ao Painel",
+    "noResumeFound": "Nenhum Currículo Encontrado para Análise",
+    "noResumeDesc": "Por favor, envie um currículo do seu painel para começar.",
+    "goToDashboard": "Ir ao Painel"
+  },
+  "improve": {
+    "title": "Melhoria de Currículo Movida pela IA",
+    "subtitle": "Nossa IA está reescrevendo seu currículo para máximo impacto na sua função alvo.",
+    "improving": "A IA está melhorando seu currículo...",
+    "improvingDesc": "Isso pode levar um momento. Por favor, não feche esta página.",
+    "processing": "Processando",
+    "improvementFailed": "Melhoria Falhou",
+    "improvementSuccess": "Currículo Melhorado com Sucesso!",
+    "redirecting": "Redirecionando para seu currículo melhorado...",
+    "steps": {
+      "analyzing": "Analisando currículo original",
+      "optimizing": "Otimizando para função alvo",
+      "enhancing": "Aprimorando com melhorias da IA",
+      "finalizing": "Finalizando currículo melhorado"
+    }
+  }
+}

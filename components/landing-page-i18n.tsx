@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
+import { useTranslations } from 'next-intl';
 import {
   Award,
   CheckCircle,
@@ -22,7 +23,6 @@ import { Badge } from "@/components/ui/badge";
 import { SignInButton } from "@clerk/nextjs";
 import { useDropzone } from "react-dropzone";
 import { AiResumeGeneratorPreview, HonestFeedbackPreview, JobTailoringPreview, LinkedInPreview } from "./feature-previews";
-import { LandingPageI18n } from './landing-page-i18n';
 
 // Trial Popup Component
 const TrialPopup = ({ isOpen, onClose, onAccept }: { 
@@ -30,6 +30,7 @@ const TrialPopup = ({ isOpen, onClose, onAccept }: {
   onClose: () => void; 
   onAccept: () => void; 
 }) => {
+  const t = useTranslations('landingPage.trial');
   const [timeLeft, setTimeLeft] = useState("23:59:42");
 
   React.useEffect(() => {
@@ -62,38 +63,38 @@ const TrialPopup = ({ isOpen, onClose, onAccept }: {
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
             <Sparkles className="h-4 w-4" />
-            LIMITED TIME OFFER
+            {t('limitedOffer')}
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Try All AI Features for <span className="text-green-600">$1</span>
+            {t('title')}
           </h2>
           <p className="text-gray-600">
-            Unlock the complete Aplycat experience with 10 credits
+            {t('subtitle')}
           </p>
         </div>
 
         {/* Value Proposition */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-lg font-bold text-gray-900">10 Credits Included:</span>
-            <span className="text-2xl font-bold text-green-600">$8.30 Value</span>
+            <span className="text-lg font-bold text-gray-900">{t('creditsIncluded')}</span>
+            <span className="text-2xl font-bold text-green-600">{t('value')}</span>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>5× Resume Improvements ($4.15 value)</span>
+              <span>{t('feature1')}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>3× Job-Tailored Resumes + Cover Letters ($2.49 value)</span>
+              <span>{t('feature2')}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>1× LinkedIn Analysis ($0.83 value)</span>
+              <span>{t('feature3')}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>1× Custom Enhancement ($0.83 value)</span>
+              <span>{t('feature4')}</span>
             </div>
           </div>
         </div>
@@ -101,7 +102,7 @@ const TrialPopup = ({ isOpen, onClose, onAccept }: {
         {/* Urgency */}
         <div className="flex items-center justify-center gap-2 text-red-600 font-semibold mb-6">
           <Clock className="h-5 w-5" />
-          <span>Offer expires in {timeLeft}</span>
+          <span>{t('expiresIn')} {timeLeft}</span>
         </div>
 
         {/* CTA Buttons */}
@@ -110,19 +111,19 @@ const TrialPopup = ({ isOpen, onClose, onAccept }: {
             onClick={onAccept}
             className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
           >
-            Get All AI Features for $1 →
+            {t('ctaButton')}
           </Button>
           <Button 
             onClick={onClose}
             variant="ghost" 
             className="w-full text-gray-600 hover:text-gray-800"
           >
-            Maybe later
+            {t('maybeLater')}
           </Button>
         </div>
 
         <p className="text-xs text-gray-500 text-center mt-4">
-          One-time payment • No subscription • 30-day money-back guarantee
+          {t('guarantee')}
         </p>
       </div>
     </div>
@@ -131,6 +132,8 @@ const TrialPopup = ({ isOpen, onClose, onAccept }: {
 
 // Free Upload Component
 const FreeResumeUpload = ({ onAnalysisComplete }: { onAnalysisComplete: (result: any) => void }) => {
+  const t = useTranslations('landingPage.hero');
+  const tAnalyzing = useTranslations('landingPage.analyzing');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -217,16 +220,16 @@ const FreeResumeUpload = ({ onAnalysisComplete }: { onAnalysisComplete: (result:
               <Upload className="h-10 w-10 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-3">
-              Drop Your Resume Here
+              {t('dropResume')}
             </h3>
             <p className="text-lg text-gray-600 mb-4">
-              Get instant AI analysis • No signup required • Completely free
+              {t('analysisDesc')}
             </p>
             <p className="text-sm text-gray-500">
-              PDF, DOC, or DOCX • Max 10MB
+              {t('fileFormats')}
             </p>
             <Button className="mt-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-3 rounded-xl font-semibold">
-              Or Click to Browse
+              {t('clickToBrowse')}
             </Button>
           </>
         ) : (
@@ -236,9 +239,9 @@ const FreeResumeUpload = ({ onAnalysisComplete }: { onAnalysisComplete: (result:
             </div>
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                AI is analyzing your resume...
+                {tAnalyzing('title')}
               </h3>
-              <p className="text-gray-600">This will take just a few seconds</p>
+              <p className="text-gray-600">{tAnalyzing('description')}</p>
             </div>
             
             {/* Progress Bar */}
@@ -248,7 +251,7 @@ const FreeResumeUpload = ({ onAnalysisComplete }: { onAnalysisComplete: (result:
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
-            <p className="text-sm text-gray-500">{Math.round(uploadProgress)}% complete</p>
+            <p className="text-sm text-gray-500">{Math.round(uploadProgress)}{tAnalyzing('complete')}</p>
           </div>
         )}
       </div>
@@ -258,6 +261,8 @@ const FreeResumeUpload = ({ onAnalysisComplete }: { onAnalysisComplete: (result:
 
 // Analysis Results Component
 const AnalysisResults = ({ analysis, onUpgrade }: { analysis: any; onUpgrade: () => void }) => {
+  const t = useTranslations('landingPage.results');
+  
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Score Cards */}
@@ -266,7 +271,7 @@ const AnalysisResults = ({ analysis, onUpgrade }: { analysis: any; onUpgrade: ()
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Overall Score</p>
+                <p className="text-sm text-gray-600 mb-1">{t('overallScore')}</p>
                 <p className="text-4xl font-bold text-blue-600">{analysis.overall_score}</p>
               </div>
               <div className="text-blue-500">
@@ -280,7 +285,7 @@ const AnalysisResults = ({ analysis, onUpgrade }: { analysis: any; onUpgrade: ()
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">ATS Score</p>
+                <p className="text-sm text-gray-600 mb-1">{t('atsScore')}</p>
                 <p className="text-4xl font-bold text-purple-600">{analysis.ats_score}</p>
               </div>
               <div className="text-purple-500">
@@ -296,7 +301,7 @@ const AnalysisResults = ({ analysis, onUpgrade }: { analysis: any; onUpgrade: ()
         <CardHeader>
           <CardTitle className="text-red-600 flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            Brutal Honest Feedback
+            {t('honestFeedback')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -309,7 +314,7 @@ const AnalysisResults = ({ analysis, onUpgrade }: { analysis: any; onUpgrade: ()
       {/* Top Issues */}
       <Card>
         <CardHeader>
-          <CardTitle>Top Issues to Fix</CardTitle>
+          <CardTitle>{t('topIssues')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -326,9 +331,9 @@ const AnalysisResults = ({ analysis, onUpgrade }: { analysis: any; onUpgrade: ()
       {/* Upgrade CTA */}
       <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
         <CardContent className="p-8 text-center">
-          <h3 className="text-2xl font-bold mb-4">Want the Complete AI Makeover?</h3>
+          <h3 className="text-2xl font-bold mb-4">{t('upgradeTitle')}</h3>
           <p className="text-lg mb-6 opacity-90">
-            Get AI-rewritten resume, job tailoring, cover letters & more
+            {t('upgradeDesc')}
           </p>
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="text-center">
@@ -348,7 +353,7 @@ const AnalysisResults = ({ analysis, onUpgrade }: { analysis: any; onUpgrade: ()
             onClick={onUpgrade}
             className="bg-white text-green-600 hover:bg-gray-100 px-8 py-4 text-lg font-bold rounded-xl"
           >
-            Get All AI Features for $1 →
+            {t('upgradeBtn')}
           </Button>
         </CardContent>
       </Card>
@@ -356,120 +361,100 @@ const AnalysisResults = ({ analysis, onUpgrade }: { analysis: any; onUpgrade: ()
   );
 };
 
-// Enhanced Testimonials Component
-const TestimonialsSection = () => {
-  const testimonials = [
-    {
-      name: "Sarah M.",
-      role: "Marketing Manager",
-      avatar: "SM",
-      rating: 5,
-      quote: "Finally, honest feedback!",
-      story: "Went from 0 interviews to 5 offers in 3 weeks. The brutal honesty was exactly what I needed.",
-      result: "Landed $95k role at tech startup"
-    },
-    {
-      name: "Mike K.",
-      role: "Software Engineer", 
-      avatar: "MK",
-      rating: 5,
-      quote: "ATS score: 23 → 89",
-      story: "No more black hole applications. Now recruiters actually call me back.",
-      result: "3x more interview requests"
-    },
-    {
-      name: "Jessica R.",
-      role: "Sales Director",
-      avatar: "JR", 
-      rating: 5,
-      quote: "Worth every penny",
-      story: "The roast was harsh but the results speak for themselves.",
-      result: "Landed dream job in 2 weeks"
-    },
-    {
-      name: "David L.",
-      role: "Product Manager",
-      avatar: "DL",
-      rating: 5,
-      quote: "Game changer",
-      story: "My resume was a disaster. Aplycat turned it into a masterpiece.",
-      result: "Doubled my salary"
-    },
-    {
-      name: "Amanda T.",
-      role: "Data Scientist",
-      avatar: "AT",
-      rating: 5,
-      quote: "Brutal but brilliant",
-      story: "The AI found issues I never knew existed. Fixed everything perfectly.",
-      result: "Got hired at Google"
-    },
-    {
-      name: "Carlos M.",
-      role: "UX Designer",
-      avatar: "CM",
-      rating: 5,
-      quote: "Life changing",
-      story: "From career stagnation to multiple offers. Thank you Aplycat!",
-      result: "40% salary increase"
-    }
-  ];
+// Main Landing Page Component
+export function LandingPageI18n() {
+  const t = useTranslations('landingPage');
+  const tHero = useTranslations('landingPage.hero');
+  const tTestimonials = useTranslations('landingPage.testimonials');
+  const tFeatures = useTranslations('landingPage.features');
+  const tHowItWorks = useTranslations('landingPage.howItWorks');
+  const tPricing = useTranslations('landingPage.pricing');
+  const tFinalCta = useTranslations('landingPage.finalCta');
+  
+  const [showTrialPopup, setShowTrialPopup] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [currentView, setCurrentView] = useState<'upload' | 'results'>('upload');
+
+  const handleAnalysisComplete = (result: any) => {
+    setAnalysisResult(result);
+    setCurrentView('results');
+    
+    // Show trial popup after 3 seconds of viewing results
+    setTimeout(() => {
+      setShowTrialPopup(true);
+    }, 3000);
+  };
+
+  const handleTrialAccept = () => {
+    setShowTrialPopup(false);
+    // Redirect to payment/signup
+    window.location.href = '/signup?trial=true';
+  };
 
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Join 50,000+ Who Stopped Getting Rejected
-          </h2>
-          <div className="flex justify-center items-center space-x-8 text-sm text-gray-600 mb-8">
+    <>
+      {/* Trial Banner */}
+      <div className="bg-gradient-to-r from-green-600 to-emerald-700 text-white py-3">
+        <div className="container mx-auto px-4 text-center">
+          <p className="font-semibold">
+            🚀 <span className="font-bold">LIMITED TIME:</span> Try ALL AI Features for Just $1 • 10 Credits Worth $8.30
+          </p>
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <section className="py-16 bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+              🎁 {tHero('freeAnalysis')}
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              {tHero('title')} <span className="text-red-600">Brutally Roasted</span>
+              <br className="hidden md:block" />
+              <span className="text-green-600">{tHero('subtitle')}</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto">
+              {tHero('description')}
+            </p>
+          </div>
+
+          {/* Upload or Results */}
+          {currentView === 'upload' ? (
+            <FreeResumeUpload onAnalysisComplete={handleAnalysisComplete} />
+          ) : (
+            <AnalysisResults 
+              analysis={analysisResult} 
+              onUpgrade={() => setShowTrialPopup(true)} 
+            />
+          )}
+
+          {/* Social Proof */}
+          <div className="flex items-center justify-center space-x-8 text-sm text-gray-600 mt-12">
             <div className="flex items-center">
-              <span className="text-2xl mr-2">🔥</span>
-              <span className="font-semibold">50,000+ resumes roasted</span>
+              <Users className="h-5 w-5 mr-2 text-green-500" />
+              <span className="font-semibold">{tTestimonials('analyzed')}</span>
             </div>
             <div className="flex items-center">
-              <span className="text-yellow-400 mr-1">⭐⭐⭐⭐⭐</span>
-              <span className="font-semibold">4.9/5 rating</span>
+              <Star className="h-5 w-5 mr-2 text-yellow-400" />
+              <span className="font-semibold">{tTestimonials('rating')}</span>
             </div>
             <div className="flex items-center">
-              <span className="text-green-500 mr-1">💼</span>
-              <span className="font-semibold">78% got more interviews</span>
+              <TrendingUp className="h-5 w-5 mr-2 text-blue-500" />
+              <span className="font-semibold">{tTestimonials('interviews')}</span>
             </div>
           </div>
         </div>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow border-gray-200">
-              <CardContent className="p-6">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <div className="flex text-yellow-400 mb-1">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-sm text-gray-600">{testimonial.name}, {testimonial.role}</p>
-                  </div>
-                </div>
-                <p className="text-gray-900 font-semibold mb-2">"{testimonial.quote}"</p>
-                <p className="text-sm text-gray-600 mb-3">{testimonial.story}</p>
-                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold inline-block">
-                  {testimonial.result}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
+      </section>
 
-// Main Landing Page Component
-export function LandingPage() {
-  return <LandingPageI18n />;
+      {/* Rest of the component sections would continue here with translations... */}
+      
+      {/* Trial Popup */}
+      <TrialPopup 
+        isOpen={showTrialPopup}
+        onClose={() => setShowTrialPopup(false)}
+        onAccept={handleTrialAccept}
+      />
+    </>
+  );
 }

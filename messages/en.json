@@ -1,0 +1,253 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "tryAgain": "Try Again",
+    "close": "Close",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "upload": "Upload",
+    "download": "Download",
+    "credits": "Credits",
+    "buyCredits": "Buy Credits"
+  },
+  "navbar": {
+    "signIn": "Sign In",
+    "tryFree": "Try Free",
+    "dashboard": "Dashboard",
+    "language": "Language",
+    "english": "English",
+    "portuguese": "Portuguese"
+  },
+  "creditsModal": {
+    "title": "Buy Credits",
+    "subtitle": "Choose the credit pack that best fits your needs. Credits never expire!",
+    "loadingPackages": "Loading credit packages...",
+    "securePayment": "Secure payment processing by Lemon Squeezy",
+    "mostPopular": "Most Popular",
+    "perCredit": "per credit",
+    "buyNow": "Buy Now",
+    "processing": "Processing...",
+    "requiredCredits": "You need at least {credits} credits for this action.",
+    "featuresTitle": "What are credits used for?",
+    "features": {
+      "analysis": "1 credit = 1 comprehensive resume analysis",
+      "improvement": "2 credits = 1 AI-powered resume improvement", 
+      "tailoring": "3 credits = 1 job-tailored resume + cover letter",
+      "noExpiry": "Credits never expire and can be used anytime",
+      "allFeatures": "All features included regardless of pack size"
+    },
+    "guarantees": "Secure payment processing • 30-day money-back guarantee • Instant credit delivery",
+    "packageFeatures": {
+      "analyses": "{count} Resume Analyses",
+      "improvements": "{count} Resume Improvements",
+      "jobTailoring": "{count} Job-Tailored Resume + Cover Letter combos",
+      "emailSupport": "Email Support",
+      "prioritySupport": "Priority Support",
+      "premiumSupport": "Premium Support",
+      "careerOptimization": "Career change optimization"
+    }
+  },
+  "landingPage": {
+    "hero": {
+      "title": "Get Your Resume Brutally Roasted",
+      "subtitle": "Instantly & Free",
+      "description": "Upload your resume and get honest AI feedback in seconds. No catch, no signup, just brutal truth about why you're getting rejected.",
+      "freeAnalysis": "FREE Resume Analysis • No Signup Required",
+      "dropResume": "Drop Your Resume Here",
+      "analysisDesc": "Get instant AI analysis • No signup required • Completely free",
+      "fileFormats": "PDF, DOC, or DOCX • Max 10MB",
+      "clickToBrowse": "Or Click to Browse"
+    },
+    "analyzing": {
+      "title": "AI is analyzing your resume...",
+      "description": "This will take just a few seconds",
+      "complete": "% complete"
+    },
+    "results": {
+      "overallScore": "Overall Score",
+      "atsScore": "ATS Score",
+      "honestFeedback": "Brutal Honest Feedback",
+      "topIssues": "Top Issues to Fix",
+      "upgradeTitle": "Want the Complete AI Makeover?",
+      "upgradeDesc": "Get AI-rewritten resume, job tailoring, cover letters & more",
+      "upgradeBtn": "Get All AI Features for $1 →"
+    },
+    "testimonials": {
+      "title": "Join 50,000+ Who Stopped Getting Rejected",
+      "analyzed": "50,000+ resumes roasted",
+      "rating": "4.9/5 rating",
+      "interviews": "78% got more interviews"
+    },
+    "features": {
+      "title": "Stop Getting Rejected. Start Getting Hired.",
+      "subtitle": "No fluff. No subscriptions. Just brutal honesty and AI-powered fixes.",
+      "honestFeedback": {
+        "title": "Resume Honest Feedback",
+        "description": "Get brutally honest feedback that recruiters actually think. No sugar-coating, just the truth about why your resume isn't working.",
+        "feature1": "ATS Score 0-100 with detailed breakdown",
+        "feature2": "Section-by-section analysis and fixes", 
+        "feature3": "Recruiter-level judgment calls"
+      },
+      "aiGenerator": {
+        "title": "AI Resume Generator",
+        "description": "Brand new resumes tailored to your industry and role. Built from the ground up with recruiter best practices.",
+        "feature1": "Industry-specific templates and formats",
+        "feature2": "ATS-optimized structure and keywords",
+        "feature3": "Role-based content optimization"
+      },
+      "jobTailoring": {
+        "title": "Job-Specific Tailoring",
+        "description": "Paste any job description, get a perfectly matched resume. Stop sending generic resumes and start getting interviews.",
+        "feature1": "Custom resume rewrites for each job",
+        "feature2": "Tailored cover letters that actually work",
+        "feature3": "Smart keyword optimization and matching"
+      },
+      "linkedIn": {
+        "title": "LinkedIn Roast & Rewrite",
+        "description": "Fix your LinkedIn so recruiters stop ignoring you. Get found, get contacted, get hired.",
+        "feature1": "Complete profile optimization audit",
+        "feature2": "Headline & summary professional rewrite",
+        "feature3": "SEO optimization for recruiter searches"
+      }
+    },
+    "beforeAfter": {
+      "title": "From Trash to Treasure",
+      "subtitle": "See what happens when brutal honesty meets AI intelligence",
+      "before": "Before (Terrible)",
+      "after": "After (Acceptable)",
+      "roastResult": "Roast Result:",
+      "result": "Result:"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Three steps to stop embarrassing yourself",
+      "step1": {
+        "title": "Upload Your Resume",
+        "description": "Drop your current resume (PDF, DOC, whatever disaster you've been sending out). We'll scan it in seconds."
+      },
+      "step2": {
+        "title": "Get Roasted + See Your Score",
+        "description": "Receive brutal but honest feedback, your ATS score (0-100), and section-by-section improvements. No sugar-coating."
+      },
+      "step3": {
+        "title": "Fix It With AI",
+        "description": "Generate a brand new resume, tailor it to specific jobs, or get AI rewrites. Your choice, your career."
+      }
+    },
+    "pricing": {
+      "title": "Simple Pricing. No Subscriptions.",
+      "subtitle": "Buy credits once. Use them whenever you need a career boost.",
+      "launchOffer": "LAUNCH OFFER: BONUS CREDITS ON ALL PACKS",
+      "starter": {
+        "title": "Starter Pack",
+        "price": "$4.99",
+        "credits": "5 Credits + 2 Bonus!",
+        "feature1": "1x LinkedIn Analysis (3 credits)",
+        "feature2": "1x Resume Improvement (2 credits)",
+        "feature3": "1x Job Tailoring (2 credits)",
+        "button": "Get Started"
+      },
+      "professional": {
+        "title": "Professional Pack",
+        "price": "$12.49", 
+        "credits": "30 Credits + 15 Bonus!",
+        "mostPopular": "Most Popular",
+        "feature1": "15x Resume Improvements",
+        "feature2": "10x Job-Tailored Resume + Cover Letter",
+        "feature3": "Priority Support",
+        "button": "Choose Professional"
+      },
+      "powerUser": {
+        "title": "Power User Pack",
+        "price": "$24.99",
+        "credits": "70 Credits + 30 Bonus!",
+        "feature1": "35x Resume Improvements",
+        "feature2": "23x Job-Tailored Resume + Cover Letter", 
+        "feature3": "Premium Support & Career Change Optimization",
+        "button": "Go Power User"
+      }
+    },
+    "finalCta": {
+      "title": "You've been rejected enough.",
+      "subtitle": "Fix your resume. Fix your luck.",
+      "button": "Upload Resume & Get Roasted",
+      "offer": "Launch offer ends soon • Bonus credits on all packs"
+    },
+    "trial": {
+      "limitedOffer": "LIMITED TIME OFFER",
+      "title": "Try All AI Features for $1",
+      "subtitle": "Unlock the complete Aplycat experience with 10 credits",
+      "value": "$8.30 Value",
+      "creditsIncluded": "10 Credits Included:",
+      "feature1": "5× Resume Improvements ($4.15 value)",
+      "feature2": "3× Job-Tailored Resumes + Cover Letters ($2.49 value)",
+      "feature3": "1× LinkedIn Analysis ($0.83 value)",
+      "feature4": "1× Custom Enhancement ($0.83 value)",
+      "expiresIn": "Offer expires in",
+      "ctaButton": "Get All AI Features for $1 →",
+      "maybeLater": "Maybe later",
+      "guarantee": "One-time payment • No subscription • 30-day money-back guarantee"
+    }
+  },
+  "dashboard": {
+    "title": "Ready to get roasted?",
+    "subtitle": "Upload your resume or connect LinkedIn to get brutally honest feedback",
+    "uploadResume": {
+      "title": "Upload Resume",
+      "description": "Get your ATS score + honest feedback",
+      "dropZone": "Drop your resume here",
+      "fileFormats": "PDF, DOC, or DOCX • Max 5MB",
+      "chooseFile": "Choose File",
+      "cost": "Cost: 1 credit",
+      "duration": "~2 min analysis"
+    },
+    "linkedIn": {
+      "title": "Connect LinkedIn",
+      "description": "Analyze & optimize your profile",
+      "preview": "Preview",
+      "connectProfile": "Connect Your Profile",
+      "profileDesc": "We'll analyze your profile and suggest improvements to get you noticed by recruiters",
+      "connectButton": "Connect LinkedIn",
+      "cost": "Cost: 3 credits",
+      "duration": "~5 min analysis"
+    },
+    "feedback": "Request feature / Report bug"
+  },
+  "analyze": {
+    "title": "Real-Time Resume Analysis",
+    "subtitle": "Our AI is analyzing your resume. Watch the results appear live below.",
+    "connecting": "Connecting...",
+    "initializing": "Initializing...",
+    "initDesc": "Please wait while we prepare the analysis engine.",
+    "analysisFor": "Analysis for:",
+    "analysisFailed": "Analysis Failed",
+    "returnToDashboard": "Return to Dashboard",
+    "noResumeFound": "No Resume Found for Analysis",
+    "noResumeDesc": "Please upload a resume from your dashboard to begin.",
+    "goToDashboard": "Go to Dashboard"
+  },
+  "improve": {
+    "title": "AI-Powered Resume Improvement",
+    "subtitle": "Our AI is rewriting your resume for maximum impact in your target role.",
+    "improving": "AI is improving your resume...",
+    "improvingDesc": "This may take a moment. Please don't close this page.",
+    "processing": "Processing",
+    "improvementFailed": "Improvement Failed",
+    "improvementSuccess": "Resume Improved Successfully!",
+    "redirecting": "Redirecting to your improved resume...",
+    "steps": {
+      "analyzing": "Analyzing original resume",
+      "optimizing": "Optimizing for target role", 
+      "enhancing": "Enhancing with AI improvements",
+      "finalizing": "Finalizing improved resume"
+    }
+  }
+}
