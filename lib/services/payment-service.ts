@@ -257,7 +257,7 @@ class PaymentService {
       reference,
       description: `${packageDetails.name} - ${packageDetails.credits} AI Credits`,
       return_url: `${returnUrl}?payment=success&provider=paysuite`,
-      callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/paysuite`,
+      callback_url: `${process.env.WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/paysuite`,
       method: 'mobile_money', // PaySuite mobile money (Emola)
     };
 

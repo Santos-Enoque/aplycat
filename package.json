@@ -20,7 +20,9 @@
     "payment:migrate": "npx prisma migrate dev --name add_payment_system",
     "payment:seed": "node scripts/seed-payment-data.js",
     "payment:test": "npm run test -- --testPathPattern=payment",
-    "webhook:test": "node scripts/test-webhook.js"
+    "webhook:test": "node scripts/test-webhook.js",
+    "recover-payment": "tsx scripts/recover-paysuite-payment.ts",
+    "test-webhook": "tsx scripts/test-webhook-url.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.19",
