@@ -13,6 +13,17 @@ const isProtectedRoute = createRouteMatcher([
   '/improve(.*)',
   '/preview(.*)',
   '/improved-resume(.*)',
+  // Localized protected routes
+  '/en/dashboard(.*)',
+  '/pt/dashboard(.*)',
+  '/en/analyze(.*)',
+  '/pt/analyze(.*)',
+  '/en/improve(.*)',
+  '/pt/improve(.*)',
+  '/en/preview(.*)',
+  '/pt/preview(.*)',
+  '/en/improved-resume(.*)',
+  '/pt/improved-resume(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -70,6 +81,8 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    '/((?!api|trpc|_next|_vercel|.*\\..*).*)'
+    '/((?!_next|_vercel|.*\\..*).*)',
+    // Include API routes for authentication
+    '/api/(.*)'
   ],
 };

@@ -13,6 +13,10 @@
     "startTrial": "🚀 Start $1 Trial (Pay with Card) →",
     "signUpFirst": "Sign Up First (No Payment)",
     "maybeLater": "Maybe later",
+    "choosePaymentMethod": "Choose your payment method:",
+    "payWithCreditCard": "💳 Pay with Credit Card",
+    "payWithMobileMoney": "📱 Pay with Mobile Money (Emola)",
+    "backToOptions": "← Back to options",
     "disclaimer": "One-time payment • No subscription • 30-day money-back guarantee"
   },
   "hero": {
@@ -208,51 +212,54 @@
     ]
   },
   "pricing": {
-    "badge": "🚀 LAUNCH OFFER: BONUS CREDITS ON ALL PACKS",
+    "launchOffer": "🚀 LAUNCH OFFER: BONUS CREDITS ON ALL PACKS",
     "title": "Simple Pricing. No Subscriptions.",
     "subtitle": "Buy credits once. Use them whenever you need a career boost.",
     "mostPopular": "Most Popular",
-    "packs": {
-      "starter": {
-        "title": "Starter Pack",
-        "price": "$4.99",
-        "credits": "5 Credits + 2 Bonus!",
+    "packages": [
+      {
+        "name": "Starter Pack (TEST)",
+        "price": "$0.16",
+        "credits": "5 Credits (TEST MODE)",
+        "isPopular": false,
         "features": [
-          "1x LinkedIn Analysis (3 credits)",
-          "1x Resume Improvement (2 credits)",
-          "1x Job Tailoring (2 credits)"
+          "<span class=\"font-bold text-foreground\">2x</span> Resume Analysis (1 credit each)",
+          "<span class=\"font-bold text-foreground\">1x</span> Resume Improvement (2 credits)",
+          "<span class=\"font-bold text-foreground\">1x</span> Job Tailoring (2 credits)"
         ],
-        "button": "Get Started"
+        "buttonText": "Test for ~10 MZN"
       },
-      "professional": {
-        "title": "Professional Pack",
+      {
+        "name": "Professional Pack",
         "price": "$12.49",
         "credits": "30 Credits + 15 Bonus!",
+        "isPopular": true,
         "features": [
-          "15x Resume Improvements",
-          "10x Job-Tailored Resume + Cover Letter",
-          "Priority Support"
+          "<span class=\"font-bold text-foreground\">15x</span> Resume Improvements",
+          "<span class=\"font-bold text-foreground\">10x</span> Job-Tailored Resume + Cover Letter",
+          "<span class=\"font-bold text-foreground\">Priority</span> Support"
         ],
-        "button": "Choose Professional"
+        "buttonText": "Choose Professional"
       },
-      "powerUser": {
-        "title": "Power User Pack",
+      {
+        "name": "Power User Pack",
         "price": "$24.99",
         "credits": "70 Credits + 30 Bonus!",
+        "isPopular": false,
         "features": [
-          "35x Resume Improvements",
-          "23x Job-Tailored Resume + Cover Letter",
-          "Premium Support & Career Change Optimization"
+          "<span class=\"font-bold text-foreground\">35x</span> Resume Improvements",
+          "<span class=\"font-bold text-foreground\">23x</span> Job-Tailored Resume + Cover Letter",
+          "<span class=\"font-bold text-foreground\">Premium</span> Support & Career Change Optimization"
         ],
-        "button": "Go Power User"
+        "buttonText": "Go Power User"
       }
-    }
+    ]
   },
-  "finalCta": {
+  "finalCTA": {
     "title": "You've been rejected enough.",
     "subtitle": "Fix your resume. Fix your luck.",
-    "button": "Upload Resume & Get Roasted",
-    "offer": "🚀 Launch offer ends soon • Bonus credits on all packs"
+    "buttonText": "Upload Resume & Get Roasted",
+    "offerNote": "🚀 Launch offer ends soon • Bonus credits on all packs"
   },
   "navbar": {
     "languageSelector": "Language"
@@ -263,5 +270,195 @@
   "HomePage": {
     "title": "Brutally Honest Resume Analysis",
     "about": "Go to the about page"
+  },
+  "analysisCards": {
+    "readyToFix": "🚀 Ready to Fix Everything?",
+    "transformResume": "Let our AI transform your resume into an ATS-optimized masterpiece",
+    "improveWithAI": "Improve with AI",
+    "overallScore": "Overall Score",
+    "atsScore": "ATS Score",
+    "robotApproval": "Robot Approval",
+    "mainRoast": "Main Roast",
+    "sections": "Sections",
+    "sectionsFound": "{count} found",
+    "detailedReview": "📋 Detailed Section-by-Section Review",
+    "brutalTruth": "The brutal truth about each part of your resume",
+    "exceptional": "🏆 Exceptional",
+    "goodThings": "Good Things",
+    "issuesFound": "Issues Found",
+    "quickFixes": "Quick Fixes",
+    "missingSections": "🕳️ Missing Sections",
+    "criticalGaps": "Critical gaps in your resume",
+    "critical": "Critical",
+    "important": "Important",
+    "recommended": "Recommended",
+    "advancedAnalysis": "🔍 Advanced Analysis",
+    "advancedAnalysisDesc": "Get detailed keyword analysis, formatting tips, and ATS optimization advice",
+    "actionPlan": "🚀 Action Plan",
+    "actionPlanDesc": "Receive a step-by-step improvement plan with priority actions",
+    "industryInsights": "🎯 Industry Insights",
+    "industryInsightsDesc": "Get industry-specific advice and standards for your field",
+    "readyForFull": "Ready for the Full Analysis?",
+    "readyForFullDesc": "Sign in to unlock all sections, get detailed feedback, and access our AI-powered resume improvement tools.",
+    "signInUnlock": "Sign In & Unlock Everything",
+    "freeForever": "Free forever • No credit card required • Get started in seconds",
+    "transformYourResume": "🔧 Transform Your Resume",
+    "getAIPowered": "Get AI-powered improvements and optimization suggestions",
+    "startImproving": "Start Improving Now",
+    "premium": "Premium",
+    "signInToUnlock": "Sign In to Unlock",
+    "processing": "Processing...",
+    "unknown": "Unknown"
+  },
+  "dashboard": {
+    "welcome": {
+      "title": "Ready to get roasted?",
+      "subtitle": "Upload your resume or connect LinkedIn to get brutally honest feedback"
+    },
+    "trialCard": {
+      "claimTrial": "Claim Your $1 Trial!",
+      "limitedTime": "LIMITED TIME",
+      "oneStepAway": "You're one step away from unlocking all AI features for just $1",
+      "creditsIncluded": "7 Credits Included ($5.81 value):",
+      "resumeImprovements": "3× Resume Improvements",
+      "jobTailoredResumes": "2× Job-Tailored Resumes + Cover Letters",
+      "linkedinAnalysis": "1× LinkedIn Analysis",
+      "customEnhancement": "1× Custom Enhancement",
+      "price": "$1.00",
+      "oneTimePayment": "One-time payment • No subscription",
+      "claimTrialNow": "Claim $1 Trial Now",
+      "choosePaymentMethod": "Choose your payment method:",
+      "creditCard": "Credit Card",
+      "mobileMoney": "Mobile Money",
+      "backToOptions": "← Back to options",
+      "processing": "Processing...",
+      "securePayment": "🔒 Secure payment • 30-day money-back guarantee"
+    },
+    "uploadCard": {
+      "title": "Upload Resume",
+      "description": "Get your ATS score + honest feedback",
+      "dragAndDrop": "Drag and drop your resume here",
+      "supportedFormats": "PDF, DOC, DOCX (Max 5MB)",
+      "browseFiles": "Browse Files",
+      "recentlyUploaded": "Recently uploaded:",
+      "noFiles": "No files uploaded yet"
+    },
+    "linkedinCard": {
+      "title": "Connect LinkedIn",
+      "description": "Get LinkedIn profile roast + optimization",
+      "comingSoon": "Coming Soon",
+      "stayTuned": "LinkedIn analysis will be available soon!"
+    },
+    "stats": {
+      "resumesUploaded": "Resumes Uploaded",
+      "analysesCompleted": "Analyses Completed",
+      "improvementsMade": "Improvements Made",
+      "creditsAvailable": "Credits Available",
+      "totalResumes": "Total resumes in your account",
+      "resumeAnalysesDone": "Resume analyses done",
+      "resumeImprovementsGenerated": "Resume improvements generated",
+      "creditsReadyToUse": "Credits ready to use"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "recentAnalyses": "Recent Analyses",
+      "recentImprovements": "Recent Improvements",
+      "noActivity": "No activity yet",
+      "startByUploading": "Start by uploading your first resume!",
+      "overall": "Overall",
+      "ats": "ATS",
+      "viewAll": "View All"
+    },
+    "footer": {
+      "requestFeature": "Request feature / Report bug",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram"
+    },
+    "errors": {
+      "invalidFileType": "Invalid file type",
+      "invalidFileTypeDesc": "Please upload a PDF, DOC, or DOCX file.",
+      "fileTooLarge": "File is too large",
+      "fileTooLargeDesc": "Maximum file size is 5MB.",
+      "failedToLoad": "Failed to load dashboard",
+      "tryRefreshing": "Please try refreshing the page"
+    },
+    "header": {
+      "welcomeBack": "Welcome back, {displayName}! 👋",
+      "makeBetter": "Let's make your resume even better today",
+      "credits": "Credits",
+      "premium": "Premium ✨",
+      "directAnalysis": "⚡ Direct Analysis",
+      "standardAnalysis": "Standard Analysis"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "resumes": "Resumes",
+      "analyses": "Analyses",
+      "improvements": "Improvements",
+      "credits": "Credits",
+      "upgrade": "Upgrade",
+      "settings": "Settings",
+      "help": "Help"
+    },
+    "analysis": {
+      "backToDashboard": "Back to Dashboard",
+      "analyzed": "Analyzed {timeAgo}",
+      "share": "Share",
+      "downloadReport": "Download Report",
+      "scoreBreakdown": "Score Breakdown",
+      "overallAnalysis": "Overall Analysis",
+      "sectionAnalysis": "Section Analysis",
+      "recommendations": "Recommendations",
+      "improvementPlan": "Improvement Plan"
+    },
+    "resumes": {
+      "title": "Your Resumes",
+      "uploadNew": "Upload New Resume",
+      "noResumes": "No resumes uploaded yet",
+      "uploadFirst": "Upload your first resume to get started",
+      "lastAnalyzed": "Last analyzed {timeAgo}",
+      "notAnalyzed": "Not analyzed yet",
+      "analyze": "Analyze",
+      "improve": "Improve",
+      "view": "View",
+      "delete": "Delete",
+      "uploadedOn": "Uploaded {timeAgo}"
+    },
+    "analyses": {
+      "title": "Analysis History",
+      "totalAnalyses": "{total} analyses",
+      "noAnalyses": "No analyses yet",
+      "startAnalyzing": "Start by analyzing your first resume",
+      "viewDetails": "View Details",
+      "creditsUsed": "{credits} credits",
+      "scoreImprovement": "Score: {before} → {after}"
+    },
+    "improvements": {
+      "title": "Resume Improvements",
+      "totalImprovements": "{total} improvements",
+      "noImprovements": "No improvements yet",
+      "createFirst": "Create your first improved resume",
+      "version": "Version {version}",
+      "targetRole": "Target: {role}",
+      "download": "Download",
+      "preview": "Preview",
+      "improvedScore": "Improved Score: {score}"
+    },
+    "credits": {
+      "title": "Credits & Usage",
+      "currentBalance": "Current Balance",
+      "totalUsed": "Total Used",
+      "recentTransactions": "Recent Transactions",
+      "buyMore": "Buy More Credits",
+      "transactionHistory": "Transaction History",
+      "noTransactions": "No transactions yet",
+      "type": {
+        "ANALYSIS_USE": "Analysis",
+        "IMPROVEMENT_USE": "Improvement",
+        "PURCHASE": "Purchase",
+        "REFUND": "Refund",
+        "BONUS": "Bonus"
+      }
+    }
   }
 }

@@ -1,19 +1,23 @@
 {
   "trialPopup": {
     "limitedTimeOffer": "OFERTA POR TEMPO LIMITADO",
-    "title": "Experimente todos os recursos de IA por {price}",
-    "subtitle": "Desbloqueie a experiência completa do Aplycat com 10 créditos",
-    "creditsIncluded": "10 créditos incluídos:",
+    "title": "Experimente Todos os Recursos de IA por {price}",
+    "subtitle": "Desbloqueie a experiência completa Aplycat com 10 créditos",
+    "creditsIncluded": "10 Créditos Incluídos:",
     "creditsValue": "Valor de $8.30",
-    "resumeImprovements": "5× Melhorias de Currículo (valor de $4.15)",
-    "jobTailoredResumes": "3× Currículos e Cartas de Apresentação Personalizados (valor de $2.49)",
-    "linkedinAnalysis": "1× Análise do LinkedIn (valor de $0.83)",
-    "customEnhancement": "1× Melhoria Personalizada (valor de $0.83)",
-    "offerExpires": "A oferta expira em {timeLeft}",
-    "startTrial": "🚀 Iniciar teste de $1 (pagar com cartão) →",
-    "signUpFirst": "Inscreva-se primeiro (sem pagamento)",
+    "resumeImprovements": "5× Melhorias de Currículo (valor $4.15)",
+    "jobTailoredResumes": "3× Currículos Personalizados + Cartas de Apresentação (valor $2.49)",
+    "linkedinAnalysis": "1× Análise do LinkedIn (valor $0.83)",
+    "customEnhancement": "1× Melhoria Personalizada (valor $0.83)",
+    "offerExpires": "Oferta expira em {timeLeft}",
+    "startTrial": "🚀 Iniciar Teste de $1 (Pagar com Cartão) →",
+    "signUpFirst": "Cadastre-se Primeiro (Sem Pagamento)",
     "maybeLater": "Talvez mais tarde",
-    "disclaimer": "Pagamento único • Sem assinatura • Garantia de devolução do dinheiro em 30 dias"
+    "choosePaymentMethod": "Escolha seu método de pagamento:",
+    "payWithCreditCard": "💳 Pagar com Cartão de Crédito",
+    "payWithMobileMoney": "📱 Pagar com Mobile Money (Emola)",
+    "backToOptions": "← Voltar às opções",
+    "disclaimer": "Pagamento único • Sem assinatura • Garantia de reembolso de 30 dias"
   },
   "hero": {
     "badge": "🎁 Análise GRATUITA de Currículo • Sem Cadastro Necessário",
@@ -208,51 +212,54 @@
     ]
   },
   "pricing": {
-    "badge": "🚀 OFERTA DE LANÇAMENTO: CRÉDITOS BÔNUS EM TODOS OS PACOTES",
+    "launchOffer": "🚀 OFERTA DE LANÇAMENTO: CRÉDITOS BÔNUS EM TODOS OS PACOTES",
     "title": "Preços Simples. Sem Assinaturas.",
     "subtitle": "Compre créditos uma vez. Use quando precisar de um impulso na carreira.",
     "mostPopular": "Mais Popular",
-    "packs": {
-      "starter": {
-        "title": "Pacote Iniciante",
-        "price": "$4.99",
-        "credits": "5 Créditos + 2 Bônus!",
+    "packages": [
+      {
+        "name": "Pacote Iniciante (TESTE)",
+        "price": "$0.16",
+        "credits": "5 Créditos (MODO TESTE)",
+        "isPopular": false,
         "features": [
-          "1x Análise do LinkedIn (3 créditos)",
-          "1x Melhoria de Currículo (2 créditos)",
-          "1x Personalização para Vaga (2 créditos)"
+          "<span class=\"font-bold text-foreground\">2x</span> Análise de Currículo (1 crédito cada)",
+          "<span class=\"font-bold text-foreground\">1x</span> Melhoria de Currículo (2 créditos)",
+          "<span class=\"font-bold text-foreground\">1x</span> Personalização para Vaga (2 créditos)"
         ],
-        "button": "Começar"
+        "buttonText": "Testar por ~10 MZN"
       },
-      "professional": {
-        "title": "Pacote Profissional",
+      {
+        "name": "Pacote Profissional",
         "price": "$12.49",
         "credits": "30 Créditos + 15 Bônus!",
+        "isPopular": true,
         "features": [
-          "15x Melhorias de Currículo",
-          "10x Currículo Personalizado + Carta de Apresentação",
-          "Suporte Prioritário"
+          "<span class=\"font-bold text-foreground\">15x</span> Melhorias de Currículo",
+          "<span class=\"font-bold text-foreground\">10x</span> Currículo Personalizado + Carta de Apresentação",
+          "<span class=\"font-bold text-foreground\">Suporte</span> Prioritário"
         ],
-        "button": "Escolher Profissional"
+        "buttonText": "Escolher Profissional"
       },
-      "powerUser": {
-        "title": "Pacote Power User",
+      {
+        "name": "Pacote Power User",
         "price": "$24.99",
         "credits": "70 Créditos + 30 Bônus!",
+        "isPopular": false,
         "features": [
-          "35x Melhorias de Currículo",
-          "23x Currículo Personalizado + Carta de Apresentação",
-          "Suporte Premium & Otimização para Mudança de Carreira"
+          "<span class=\"font-bold text-foreground\">35x</span> Melhorias de Currículo",
+          "<span class=\"font-bold text-foreground\">23x</span> Currículo Personalizado + Carta de Apresentação",
+          "<span class=\"font-bold text-foreground\">Suporte Premium</span> & Otimização para Mudança de Carreira"
         ],
-        "button": "Virar Power User"
+        "buttonText": "Virar Power User"
       }
-    }
+    ]
   },
-  "finalCta": {
+  "finalCTA": {
     "title": "Você já foi rejeitado o suficiente.",
     "subtitle": "Conserte seu currículo. Conserte sua sorte.",
-    "button": "Enviar Currículo & Ser Destruído",
-    "offer": "🚀 Oferta de lançamento acaba logo • Créditos bônus em todos os pacotes"
+    "buttonText": "Enviar Currículo & Ser Destruído",
+    "offerNote": "🚀 Oferta de lançamento acaba logo • Créditos bônus em todos os pacotes"
   },
   "navbar": {
     "languageSelector": "Idioma"
@@ -263,5 +270,195 @@
   "HomePage": {
     "title": "Análise Brutalmente Honesta de Currículo",
     "about": "Ir para a página sobre"
+  },
+  "analysisCards": {
+    "readyToFix": "🚀 Pronto para Consertar Tudo?",
+    "transformResume": "Deixe nossa IA transformar seu currículo em uma obra-prima otimizada para ATS",
+    "improveWithAI": "Melhorar com IA",
+    "overallScore": "Pontuação Geral",
+    "atsScore": "Pontuação ATS",
+    "robotApproval": "Aprovação do Robô",
+    "mainRoast": "Crítica Principal",
+    "sections": "Seções",
+    "sectionsFound": "{count} encontradas",
+    "detailedReview": "📋 Revisão Detalhada Seção por Seção",
+    "brutalTruth": "A verdade brutal sobre cada parte do seu currículo",
+    "exceptional": "🏆 Excepcional",
+    "goodThings": "Pontos Positivos",
+    "issuesFound": "Problemas Encontrados",
+    "quickFixes": "Correções Rápidas",
+    "missingSections": "🕳️ Seções Ausentes",
+    "criticalGaps": "Lacunas críticas no seu currículo",
+    "critical": "Crítico",
+    "important": "Importante",
+    "recommended": "Recomendado",
+    "advancedAnalysis": "🔍 Análise Avançada",
+    "advancedAnalysisDesc": "Obtenha análise detalhada de palavras-chave, dicas de formatação e conselhos de otimização ATS",
+    "actionPlan": "🚀 Plano de Ação",
+    "actionPlanDesc": "Receba um plano de melhoria passo a passo com ações prioritárias",
+    "industryInsights": "🎯 Insights da Indústria",
+    "industryInsightsDesc": "Obtenha conselhos específicos da indústria e padrões para sua área",
+    "readyForFull": "Pronto para a Análise Completa?",
+    "readyForFullDesc": "Faça login para desbloquear todas as seções, receber feedback detalhado e acessar nossas ferramentas de melhoria de currículo com IA.",
+    "signInUnlock": "Fazer Login e Desbloquear Tudo",
+    "freeForever": "Gratuito para sempre • Não é necessário cartão de crédito • Comece em segundos",
+    "transformYourResume": "🔧 Transforme Seu Currículo",
+    "getAIPowered": "Obtenha melhorias e sugestões de otimização com IA",
+    "startImproving": "Comece a Melhorar Agora",
+    "premium": "Premium",
+    "signInToUnlock": "Fazer Login para Desbloquear",
+    "processing": "Processando...",
+    "unknown": "Desconhecido"
+  },
+  "dashboard": {
+    "welcome": {
+      "title": "Pronto para ser criticado?",
+      "subtitle": "Envie seu currículo ou conecte o LinkedIn para receber feedback brutalmente honesto"
+    },
+    "trialCard": {
+      "claimTrial": "Reivindique Seu Teste de $1!",
+      "limitedTime": "TEMPO LIMITADO",
+      "oneStepAway": "Você está a um passo de desbloquear todos os recursos de IA por apenas $1",
+      "creditsIncluded": "7 Créditos Incluídos (valor de $5.81):",
+      "resumeImprovements": "3× Melhorias de Currículo",
+      "jobTailoredResumes": "2× Currículos Personalizados + Cartas de Apresentação",
+      "linkedinAnalysis": "1× Análise do LinkedIn",
+      "customEnhancement": "1× Melhoria Personalizada",
+      "price": "$1.00",
+      "oneTimePayment": "Pagamento único • Sem assinatura",
+      "claimTrialNow": "Reivindique o Teste de $1 Agora",
+      "choosePaymentMethod": "Escolha seu método de pagamento:",
+      "creditCard": "Cartão de Crédito",
+      "mobileMoney": "Mobile Money",
+      "backToOptions": "← Voltar às opções",
+      "processing": "Processando...",
+      "securePayment": "🔒 Pagamento seguro • Garantia de 30 dias"
+    },
+    "uploadCard": {
+      "title": "Enviar Currículo",
+      "description": "Obtenha sua pontuação ATS + feedback honesto",
+      "dragAndDrop": "Arraste e solte seu currículo aqui",
+      "supportedFormats": "PDF, DOC, DOCX (Máx 5MB)",
+      "browseFiles": "Procurar Arquivos",
+      "recentlyUploaded": "Enviado recentemente:",
+      "noFiles": "Nenhum arquivo enviado ainda"
+    },
+    "linkedinCard": {
+      "title": "Conectar LinkedIn",
+      "description": "Obtenha crítica do perfil LinkedIn + otimização",
+      "comingSoon": "Em Breve",
+      "stayTuned": "A análise do LinkedIn estará disponível em breve!"
+    },
+    "stats": {
+      "resumesUploaded": "Currículos Enviados",
+      "analysesCompleted": "Análises Concluídas",
+      "improvementsMade": "Melhorias Feitas",
+      "creditsAvailable": "Créditos Disponíveis",
+      "totalResumes": "Total de currículos na sua conta",
+      "resumeAnalysesDone": "Análises de currículos feitas",
+      "resumeImprovementsGenerated": "Melhorias de currículos geradas",
+      "creditsReadyToUse": "Créditos prontos para usar"
+    },
+    "recentActivity": {
+      "title": "Atividade Recente",
+      "recentAnalyses": "Análises Recentes",
+      "recentImprovements": "Melhorias Recentes",
+      "noActivity": "Nenhuma atividade ainda",
+      "startByUploading": "Comece enviando seu primeiro currículo!",
+      "overall": "Geral",
+      "ats": "ATS",
+      "viewAll": "Ver Tudo"
+    },
+    "footer": {
+      "requestFeature": "Solicitar recurso / Reportar bug",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram"
+    },
+    "errors": {
+      "invalidFileType": "Tipo de arquivo inválido",
+      "invalidFileTypeDesc": "Por favor, envie um arquivo PDF, DOC ou DOCX.",
+      "fileTooLarge": "Arquivo muito grande",
+      "fileTooLargeDesc": "Tamanho máximo do arquivo é 5MB.",
+      "failedToLoad": "Falha ao carregar dashboard",
+      "tryRefreshing": "Por favor, tente atualizar a página"
+    },
+    "header": {
+      "welcomeBack": "Bem-vindo de volta, {displayName}! 👋",
+      "makeBetter": "Vamos tornar seu currículo ainda melhor hoje",
+      "credits": "Créditos",
+      "premium": "Premium ✨",
+      "directAnalysis": "⚡ Análise Direta",
+      "standardAnalysis": "Análise Padrão"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "resumes": "Currículos",
+      "analyses": "Análises",
+      "improvements": "Melhorias",
+      "credits": "Créditos",
+      "upgrade": "Upgrade",
+      "settings": "Configurações",
+      "help": "Ajuda"
+    },
+    "analysis": {
+      "backToDashboard": "Voltar ao Dashboard",
+      "analyzed": "Analisado {timeAgo}",
+      "share": "Compartilhar",
+      "downloadReport": "Baixar Relatório",
+      "scoreBreakdown": "Detalhamento da Pontuação",
+      "overallAnalysis": "Análise Geral",
+      "sectionAnalysis": "Análise por Seção",
+      "recommendations": "Recomendações",
+      "improvementPlan": "Plano de Melhoria"
+    },
+    "resumes": {
+      "title": "Seus Currículos",
+      "uploadNew": "Enviar Novo Currículo",
+      "noResumes": "Nenhum currículo enviado ainda",
+      "uploadFirst": "Envie seu primeiro currículo para começar",
+      "lastAnalyzed": "Última análise {timeAgo}",
+      "notAnalyzed": "Ainda não analisado",
+      "analyze": "Analisar",
+      "improve": "Melhorar",
+      "view": "Ver",
+      "delete": "Excluir",
+      "uploadedOn": "Enviado {timeAgo}"
+    },
+    "analyses": {
+      "title": "Histórico de Análises",
+      "totalAnalyses": "{total} análises",
+      "noAnalyses": "Nenhuma análise ainda",
+      "startAnalyzing": "Comece analisando seu primeiro currículo",
+      "viewDetails": "Ver Detalhes",
+      "creditsUsed": "{credits} créditos",
+      "scoreImprovement": "Pontuação: {before} → {after}"
+    },
+    "improvements": {
+      "title": "Melhorias de Currículo",
+      "totalImprovements": "{total} melhorias",
+      "noImprovements": "Nenhuma melhoria ainda",
+      "createFirst": "Crie sua primeira melhoria de currículo",
+      "version": "Versão {version}",
+      "targetRole": "Objetivo: {role}",
+      "download": "Baixar",
+      "preview": "Visualizar",
+      "improvedScore": "Pontuação Melhorada: {score}"
+    },
+    "credits": {
+      "title": "Créditos e Uso",
+      "currentBalance": "Saldo Atual",
+      "totalUsed": "Total Usado",
+      "recentTransactions": "Transações Recentes",
+      "buyMore": "Comprar Mais Créditos",
+      "transactionHistory": "Histórico de Transações",
+      "noTransactions": "Nenhuma transação ainda",
+      "type": {
+        "ANALYSIS_USE": "Análise",
+        "IMPROVEMENT_USE": "Melhoria",
+        "PURCHASE": "Compra",
+        "REFUND": "Reembolso",
+        "BONUS": "Bônus"
+      }
+    }
   }
 }

@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
+import { getCurrentUserFromDB, getCurrentUserFromDBForAPI } from '@/lib/auth/user-sync';
 import { getCachedData, cacheKeys, cacheTTL, dashboardCache } from '@/lib/redis-cache';
 import { revalidatePath } from 'next/cache';
 
@@ -252,7 +252,7 @@ export async function getUserCredits(): Promise<number> {
  */
 export async function getCompleteDashboardData() {
   try {
-    const user = await getCurrentUserFromDB();
+    const user = await getCurrentUserFromDBForAPI();
     if (!user) {
       return null;
     }

@@ -15,6 +15,7 @@ import {
 import { useUser, SignInButton, UserButton, useClerk } from "@clerk/nextjs";
 import { EnhancedCreditsModal } from "@/components/enhanced-credits-modal";
 import { useUserCredits } from "@/hooks/use-user-credits";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import {
   Cat,
   Home,
@@ -69,6 +70,9 @@ export function UnifiedNavbar() {
 
           {/* Right side - Auth and user menu */}
           <div className="flex items-center gap-4">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {isSignedIn ? (
               <>
                 {/* Credits Display */}

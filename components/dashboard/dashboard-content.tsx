@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -103,6 +104,7 @@ interface DashboardContentProps {
 
 // Trial Claim Card Component
 function TrialClaimCard() {
+  const t = useTranslations("dashboard.trialCard");
   const [showTrialCard, setShowTrialCard] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
@@ -189,14 +191,14 @@ function TrialClaimCard() {
           <div className="min-w-0 flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
               <CardTitle className="text-lg sm:text-xl lg:text-2xl text-blue-900 break-words">
-                Claim Your $1 Trial!
+                {t("claimTrial")}
               </CardTitle>
               <Badge className="bg-red-500 text-white animate-pulse self-start sm:self-center text-xs">
-                LIMITED TIME
+                {t("limitedTime")}
               </Badge>
             </div>
             <CardDescription className="text-blue-700 text-sm sm:text-base">
-              You're one step away from unlocking all AI features for just $1
+              {t("oneStepAway")}
             </CardDescription>
           </div>
         </div>
@@ -207,31 +209,31 @@ function TrialClaimCard() {
           {/* What's included - Mobile first layout */}
           <div>
             <h3 className="font-bold text-blue-900 mb-4 text-base sm:text-lg">
-              7 Credits Included ($5.81 value):
+              {t("creditsIncluded")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
                 <span className="text-sm sm:text-base text-blue-800">
-                  3× Resume Improvements
+                  {t("resumeImprovements")}
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
                 <span className="text-sm sm:text-base text-blue-800">
-                  2× Job-Tailored Resumes + Cover Letters
+                  {t("jobTailoredResumes")}
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
                 <span className="text-sm sm:text-base text-blue-800">
-                  1× LinkedIn Analysis
+                  {t("linkedinAnalysis")}
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
                 <span className="text-sm sm:text-base text-blue-800">
-                  1× Custom Enhancement
+                  {t("customEnhancement")}
                 </span>
               </div>
             </div>
@@ -241,10 +243,10 @@ function TrialClaimCard() {
           <div className="text-center space-y-4">
             <div>
               <div className="text-3xl sm:text-4xl font-bold text-blue-900 mb-1">
-                $1.00
+                {t("price")}
               </div>
               <div className="text-sm sm:text-base text-blue-700">
-                One-time payment • No subscription
+                {t("oneTimePayment")}
               </div>
             </div>
             {!showPaymentMethods ? (
@@ -254,12 +256,12 @@ function TrialClaimCard() {
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 sm:py-6 text-base sm:text-lg font-bold rounded-xl"
               >
                 <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Claim $1 Trial Now
+                {t("claimTrialNow")}
               </Button>
             ) : (
               <div className="space-y-3">
                 <p className="text-center text-blue-800 font-medium text-sm sm:text-base">
-                  Choose your payment method:
+                  {t("choosePaymentMethod")}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Button
@@ -271,12 +273,12 @@ function TrialClaimCard() {
                     {isProcessing ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                        Processing...
+                        {t("processing")}
                       </>
                     ) : (
                       <>
                         <CreditCard className="w-4 h-4 mr-2" />
-                        Credit Card
+                        {t("creditCard")}
                       </>
                     )}
                   </Button>
@@ -289,12 +291,12 @@ function TrialClaimCard() {
                     {isProcessing ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                        Processing...
+                        {t("processing")}
                       </>
                     ) : (
                       <>
                         <Smartphone className="w-4 h-4 mr-2" />
-                        Mobile Money
+                        {t("mobileMoney")}
                       </>
                     )}
                   </Button>
@@ -304,12 +306,12 @@ function TrialClaimCard() {
                   variant="ghost"
                   className="w-full text-blue-600 hover:text-blue-800 text-sm"
                 >
-                  ← Back to options
+                  {t("backToOptions")}
                 </Button>
               </div>
             )}
             <p className="text-xs sm:text-sm text-blue-600 text-center">
-              🔒 Secure payment • 30-day money-back guarantee
+              {t("securePayment")}
             </p>
           </div>
         </div>
@@ -321,6 +323,8 @@ function TrialClaimCard() {
 export function DashboardContent({ user }: DashboardContentProps) {
   const router = useRouter();
   const [dragActive, setDragActive] = useState(false);
+  const t = useTranslations("dashboard");
+  const tErrors = useTranslations("dashboard.errors");
 
   const handleFileSelected = async (file: File) => {
     toast.info("Preparing your analysis...", {
@@ -379,15 +383,15 @@ export function DashboardContent({ user }: DashboardContentProps) {
     const maxFileSize = 5 * 1024 * 1024; // 5MB
 
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Invalid file type", {
-        description: "Please upload a PDF, DOC, or DOCX file.",
+      toast.error(tErrors("invalidFileType"), {
+        description: tErrors("invalidFileTypeDesc"),
       });
       return;
     }
 
     if (file.size > maxFileSize) {
-      toast.error("File is too large", {
-        description: "Maximum file size is 5MB.",
+      toast.error(tErrors("fileTooLarge"), {
+        description: tErrors("fileTooLargeDesc"),
       });
       return;
     }
@@ -430,11 +434,9 @@ export function DashboardContent({ user }: DashboardContentProps) {
       {/* Welcome Section */}
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-foreground">
-          Ready to get roasted?
+          {t("welcome.title")}
         </h2>
-        <p className="text-muted-foreground text-lg">
-          Upload your resume or connect LinkedIn to get brutally honest feedback
-        </p>
+        <p className="text-muted-foreground text-lg">{t("welcome.subtitle")}</p>
       </div>
 
       {/* Trial Claim Card */}
@@ -450,10 +452,8 @@ export function DashboardContent({ user }: DashboardContentProps) {
                 <FileText className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <CardTitle>Upload Resume</CardTitle>
-                <CardDescription>
-                  Get your ATS score + honest feedback
-                </CardDescription>
+                <CardTitle>{t("uploadCard.title")}</CardTitle>
+                <CardDescription>{t("uploadCard.description")}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -476,13 +476,13 @@ export function DashboardContent({ user }: DashboardContentProps) {
             >
               <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
               <h3 className="font-semibold text-foreground mb-2">
-                Drop your resume here
+                {t("uploadCard.dragAndDrop")}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                PDF, DOC, or DOCX • Max 5MB
+                {t("uploadCard.supportedFormats")}
               </p>
               <Button variant="outline" size="sm">
-                Choose File
+                {t("uploadCard.browseFiles")}
               </Button>
               <input
                 id="file-upload"
@@ -513,16 +513,16 @@ export function DashboardContent({ user }: DashboardContentProps) {
               </div>
               <div>
                 <CardTitle className="flex items-center">
-                  Connect LinkedIn
+                  {t("linkedinCard.title")}
                   <Badge
                     variant="outline"
                     className="ml-2 text-xs bg-yellow-100 text-yellow-700 border-yellow-300"
                   >
-                    Preview
+                    {t("linkedinCard.comingSoon")}
                   </Badge>
                 </CardTitle>
                 <CardDescription>
-                  Analyze & optimize your profile
+                  {t("linkedinCard.description")}
                 </CardDescription>
               </div>
             </div>
@@ -568,7 +568,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
           className="text-sm"
         >
           <MessageSquare className="w-4 h-4 mr-2" />
-          Request feature / Report bug
+          {t("footer.requestFeature")}
         </Button>
 
         <div className="flex items-center space-x-2">

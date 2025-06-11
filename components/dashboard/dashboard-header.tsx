@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { type UserEssentials } from "@/lib/actions/dashboard-actions";
 
 interface DashboardHeaderProps {
@@ -7,6 +8,8 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
+  const t = useTranslations("dashboard.header");
+
   const displayName =
     user.firstName && user.lastName
       ? `${user.firstName} ${user.lastName}`
@@ -18,33 +21,31 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {displayName}! 👋
+              {t("welcomeBack", { displayName })}
             </h1>
-            <p className="text-gray-600 mt-1">
-              Let's make your resume even better today
-            </p>
+            <p className="text-gray-600 mt-1">{t("makeBetter")}</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <div className="text-sm text-gray-500">Credits</div>
+              <div className="text-sm text-gray-500">{t("credits")}</div>
               <div className="text-xl font-semibold text-gray-900">
                 {user.credits}
               </div>
               {user.isPremium && (
                 <div className="text-xs text-purple-600 font-medium">
-                  Premium ✨
+                  {t("premium")}
                 </div>
               )}
             </div>
             <div className="flex items-center gap-2">
               <Link href="/analyze-direct">
                 <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
-                  ⚡ Direct Analysis
+                  {t("directAnalysis")}
                 </Button>
               </Link>
               <Link href="/analyze">
                 <Button className="bg-purple-600 hover:bg-purple-700">
-                  Standard Analysis
+                  {t("standardAnalysis")}
                 </Button>
               </Link>
             </div>

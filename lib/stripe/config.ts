@@ -8,9 +8,9 @@ export const STRIPE_CONFIG = {
   creditPackages: {
     starter: {
       credits: 5,
-      price: 4.99,
-      name: '🥉 Starter Pack',
-      description: 'Perfect for getting started',
+      price: 0.16, // ~10 MZN (0.16 USD * 63.25 MZN/USD ≈ 10.12 MZN) - TEST PRICE
+      name: '🥉 Starter Pack (TEST)',
+      description: 'Perfect for getting started - TEST MODE',
       priceId: process.env.STRIPE_STARTER_PRICE_ID!,
     },
     professional: {

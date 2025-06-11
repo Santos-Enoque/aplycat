@@ -1,35 +1,38 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { type DashboardStats } from "@/lib/actions/dashboard-actions";
+import { useTranslations } from "next-intl";
 
 interface DashboardStatsProps {
   stats: DashboardStats;
 }
 
 export function DashboardStats({ stats }: DashboardStatsProps) {
+  const t = useTranslations("dashboard.stats");
+
   const statCards = [
     {
-      title: "Resumes Uploaded",
+      title: t("resumesUploaded"),
       value: stats.totalResumes,
       icon: "📄",
-      description: "Total resumes in your account",
+      description: t("totalResumes"),
     },
     {
-      title: "Analyses Completed",
+      title: t("analysesCompleted"),
       value: stats.totalAnalyses,
       icon: "📊",
-      description: "Resume analyses done",
+      description: t("resumeAnalysesDone"),
     },
     {
-      title: "Improvements Made",
+      title: t("improvementsMade"),
       value: stats.totalImprovements,
       icon: "✨",
-      description: "Resume improvements generated",
+      description: t("resumeImprovementsGenerated"),
     },
     {
-      title: "Credits Available",
+      title: t("creditsAvailable"),
       value: stats.currentCredits,
       icon: "💎",
-      description: "Credits ready to use",
+      description: t("creditsReadyToUse"),
     },
   ];
 

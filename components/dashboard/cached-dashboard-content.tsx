@@ -5,9 +5,11 @@ import { DashboardContent } from "./dashboard-content";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function CachedDashboardContent() {
   const { data: userData, isLoading, error, isError } = useDashboardData();
+  const t = useTranslations("dashboard.errors");
 
   if (isLoading) {
     return (
@@ -31,10 +33,10 @@ export function CachedDashboardContent() {
                 <div className="text-center">
                   <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Failed to load dashboard
+                    {t("failedToLoad")}
                   </h3>
                   <p className="text-gray-600">
-                    {error?.message || "Please try refreshing the page"}
+                    {error?.message || t("tryRefreshing")}
                   </p>
                 </div>
               </CardContent>

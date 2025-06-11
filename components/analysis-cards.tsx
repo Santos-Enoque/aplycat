@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, SignInButton } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +90,7 @@ export function AnalysisCards({
 }: AnalysisCardsProps) {
   const router = useRouter();
   const { user, isSignedIn, isLoaded } = useUser();
+  const t = useTranslations("analysisCards");
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({});
@@ -136,7 +138,7 @@ export function AnalysisCards({
       return (
         <Badge className="bg-green-100 text-green-800 border-green-300 text-xs font-bold flex items-center gap-1">
           <span>🏆</span>
-          Exceptional
+          {t("exceptional")}
         </Badge>
       );
     }
@@ -171,7 +173,7 @@ export function AnalysisCards({
             {title}
           </CardTitle>
           <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-            Premium
+            {t("premium")}
           </Badge>
         </div>
       </CardHeader>
@@ -180,7 +182,7 @@ export function AnalysisCards({
         <SignInButton mode="modal">
           <Button variant="outline" className="w-full">
             <LogIn className="h-4 w-4 mr-2" />
-            Sign In to Unlock
+            {t("signInToUnlock")}
           </Button>
         </SignInButton>
       </CardContent>
@@ -210,10 +212,10 @@ export function AnalysisCards({
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
           <div className="text-center lg:text-left">
             <h3 className="text-xl sm:text-2xl font-bold mb-2">
-              🚀 Ready to Fix Everything?
+              {t("readyToFix")}
             </h3>
             <p className="text-purple-100 text-base sm:text-lg">
-              Let our AI transform your resume into an ATS-optimized masterpiece
+              {t("transformResume")}
             </p>
           </div>
           <Button
@@ -221,7 +223,7 @@ export function AnalysisCards({
             className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg transition-all duration-200 whitespace-nowrap w-full lg:w-auto"
           >
             <Zap className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-            Improve with AI
+            {t("improveWithAI")}
           </Button>
         </div>
       </div>
@@ -237,7 +239,7 @@ export function AnalysisCards({
             {analysis.overall_score}
           </div>
           <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-            Overall Score
+            {t("overallScore")}
           </h3>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
             {analysis.score_category}
@@ -253,17 +255,17 @@ export function AnalysisCards({
             {analysis.ats_score}
           </div>
           <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-            ATS Score
+            {t("atsScore")}
           </h3>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            Robot Approval
+            {t("robotApproval")}
           </p>
         </div>
 
         <div className="bg-red-50 p-4 sm:p-6 rounded-lg border border-red-200 text-center">
           <div className="text-2xl sm:text-3xl mb-3">🔥</div>
           <h3 className="font-semibold text-red-900 text-sm sm:text-base">
-            Main Roast
+            {t("mainRoast")}
           </h3>
           <p className="text-xs sm:text-sm text-red-700 mt-2 font-medium break-words">
             "{analysis.main_roast}"
@@ -273,10 +275,12 @@ export function AnalysisCards({
         <div className="bg-blue-50 p-4 sm:p-6 rounded-lg border border-blue-200 text-center">
           <div className="text-2xl sm:text-3xl mb-3">📋</div>
           <h3 className="font-semibold text-blue-900 text-sm sm:text-base">
-            Sections
+            {t("sections")}
           </h3>
           <p className="text-xs sm:text-sm text-blue-700 mt-2 font-medium">
-            {analysis.resume_sections?.length || 0} found
+            {t("sectionsFound", {
+              count: analysis.resume_sections?.length || 0,
+            })}
           </p>
         </div>
       </div>
@@ -284,9 +288,9 @@ export function AnalysisCards({
       {/* Section-by-Section Analysis - Simplified Format */}
       <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-6">
         <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2">
-          <span>📋 Detailed Section-by-Section Review</span>
+          <span>{t("detailedReview")}</span>
           <span className="text-xs sm:text-sm font-normal text-gray-500">
-            The brutal truth about each part of your resume
+            {t("brutalTruth")}
           </span>
         </h3>
 
@@ -351,7 +355,7 @@ export function AnalysisCards({
                       <div className="space-y-2">
                         <h5 className="font-medium text-green-800 flex items-center gap-2 text-sm sm:text-base">
                           <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Good Things
+                          {t("goodThings")}
                         </h5>
                         <ul className="space-y-1">
                           {(section.good_things || section.strengths || [])
@@ -377,7 +381,7 @@ export function AnalysisCards({
                       <div className="space-y-2">
                         <h5 className="font-medium text-red-800 flex items-center gap-2 text-sm sm:text-base">
                           <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Issues Found
+                          {t("issuesFound")}
                         </h5>
                         <ul className="space-y-1">
                           {(section.issues_found || section.issues || [])
@@ -403,7 +407,7 @@ export function AnalysisCards({
                       <div className="space-y-2">
                         <h5 className="font-medium text-blue-800 flex items-center gap-2 text-sm sm:text-base">
                           <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Quick Fixes
+                          {t("quickFixes")}
                         </h5>
                         <ul className="space-y-1">
                           {section.quick_fixes
@@ -466,10 +470,10 @@ export function AnalysisCards({
                         </div>
                         <Badge
                           className={`${getRatingColor(
-                            section.rating || "Unknown"
+                            section.rating || t("unknown")
                           )} border text-xs`}
                         >
-                          {section.rating || "Unknown"}
+                          {section.rating || t("unknown")}
                         </Badge>
                         {getSpecialBadge(section.score)}
                       </div>
@@ -501,7 +505,7 @@ export function AnalysisCards({
                         <div className="space-y-2">
                           <h5 className="font-medium text-green-800 flex items-center gap-2 text-sm sm:text-base">
                             <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                            Good Things
+                            {t("goodThings")}
                           </h5>
                           <ul className="space-y-1">
                             {(section.good_things || section.strengths || [])
@@ -527,7 +531,7 @@ export function AnalysisCards({
                         <div className="space-y-2">
                           <h5 className="font-medium text-red-800 flex items-center gap-2 text-sm sm:text-base">
                             <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
-                            Issues Found
+                            {t("issuesFound")}
                           </h5>
                           <ul className="space-y-1">
                             {(section.issues_found || section.issues || [])
@@ -553,7 +557,7 @@ export function AnalysisCards({
                         <div className="space-y-2">
                           <h5 className="font-medium text-blue-800 flex items-center gap-2 text-sm sm:text-base">
                             <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4" />
-                            Quick Fixes
+                            {t("quickFixes")}
                           </h5>
                           <ul className="space-y-1">
                             {section.quick_fixes
@@ -597,9 +601,9 @@ export function AnalysisCards({
         <Card className="border-red-200">
           <CardHeader>
             <CardTitle className="text-lg sm:text-xl text-red-700 flex flex-col sm:flex-row sm:items-center gap-2">
-              <span>🕳️ Missing Sections</span>
+              <span>{t("missingSections")}</span>
               <span className="text-xs sm:text-sm font-normal text-red-600">
-                Critical gaps in your resume
+                {t("criticalGaps")}
               </span>
             </CardTitle>
           </CardHeader>
@@ -623,7 +627,11 @@ export function AnalysisCards({
                           : "bg-yellow-100 text-yellow-800"
                       } border text-xs self-start sm:self-auto`}
                     >
-                      {section.importance}
+                      {section.importance === "Critical"
+                        ? t("critical")
+                        : section.importance === "Important"
+                        ? t("important")
+                        : t("recommended")}
                     </Badge>
                   </div>
                   <p className="text-red-700 italic text-sm sm:text-base break-words">
@@ -640,16 +648,13 @@ export function AnalysisCards({
       {!isSignedIn && (
         <div className="space-y-4 sm:space-y-6">
           {renderLockedSection(
-            "🔍 Advanced Analysis",
-            "Get detailed keyword analysis, formatting tips, and ATS optimization advice"
+            t("advancedAnalysis"),
+            t("advancedAnalysisDesc")
           )}
+          {renderLockedSection(t("actionPlan"), t("actionPlanDesc"))}
           {renderLockedSection(
-            "🚀 Action Plan",
-            "Receive a step-by-step improvement plan with priority actions"
-          )}
-          {renderLockedSection(
-            "🎯 Industry Insights",
-            "Get industry-specific advice and standards for your field"
+            t("industryInsights"),
+            t("industryInsightsDesc")
           )}
 
           {/* Final Sign In CTA */}
@@ -658,23 +663,21 @@ export function AnalysisCards({
               <div className="text-center">
                 <div className="text-3xl sm:text-4xl mb-4">🎯</div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                  Ready for the Full Analysis?
+                  {t("readyForFull")}
                 </h3>
                 <p className="text-gray-600 mb-6 max-w-2xl mx-auto text-sm sm:text-base">
-                  Sign in to unlock all sections, get detailed feedback, and
-                  access our AI-powered resume improvement tools.
+                  {t("readyForFullDesc")}
                 </p>
                 <SignInButton mode="modal">
                   <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-all duration-200 w-full sm:w-auto">
                     <span className="flex items-center gap-2 text-sm sm:text-base">
                       <LogIn className="h-4 w-4 sm:h-5 sm:w-5" />
-                      Sign In & Unlock Everything
+                      {t("signInUnlock")}
                     </span>
                   </Button>
                 </SignInButton>
                 <p className="text-xs sm:text-sm text-gray-500 mt-3">
-                  Free forever • No credit card required • Get started in
-                  seconds
+                  {t("freeForever")}
                 </p>
               </div>
             </CardContent>
@@ -686,17 +689,17 @@ export function AnalysisCards({
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200 p-4 sm:p-6">
         <div className="text-center">
           <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
-            🔧 Transform Your Resume
+            {t("transformYourResume")}
           </h4>
           <p className="text-gray-600 mb-4 text-sm sm:text-base">
-            Get AI-powered improvements and optimization suggestions
+            {t("getAIPowered")}
           </p>
           <Button
             onClick={handleImproveResume}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base w-full sm:w-auto"
           >
             <ArrowRight className="h-4 w-4 mr-2" />
-            Start Improving Now
+            {t("startImproving")}
           </Button>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,13 +31,30 @@ export function DashboardNav() {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useUser();
+  const t = useTranslations();
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "Resumes", href: "/dashboard/resumes", icon: FileText },
-    { name: "Analyses", href: "/dashboard/analyses", icon: Brain },
-    { name: "Improvements", href: "/dashboard/improvements", icon: Sparkles },
-    { name: "Credits", href: "/dashboard/credits", icon: CreditCard },
+    { name: t("dashboard.nav.dashboard"), href: "/dashboard", icon: Home },
+    {
+      name: t("dashboard.nav.resumes"),
+      href: "/dashboard/resumes",
+      icon: FileText,
+    },
+    {
+      name: t("dashboard.nav.analyses"),
+      href: "/dashboard/analyses",
+      icon: Brain,
+    },
+    {
+      name: t("dashboard.nav.improvements"),
+      href: "/dashboard/improvements",
+      icon: Sparkles,
+    },
+    {
+      name: t("dashboard.nav.credits"),
+      href: "/dashboard/credits",
+      icon: CreditCard,
+    },
   ];
 
   return (
@@ -77,7 +95,7 @@ export function DashboardNav() {
             {/* Credits Badge */}
             <Badge className="bg-purple-100 text-purple-800 px-3 py-1 hidden sm:flex">
               <CreditCard className="h-3 w-3 mr-1" />
-              Credits
+              {t("dashboard.nav.credits")}
             </Badge>
 
             {/* Upgrade Button */}
@@ -85,7 +103,7 @@ export function DashboardNav() {
               size="sm"
               className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white hidden sm:flex"
             >
-              Upgrade
+              {t("dashboard.nav.upgrade")}
             </Button>
 
             {/* Mobile menu */}
@@ -110,15 +128,15 @@ export function DashboardNav() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4" />
-                    Credits
+                    {t("dashboard.nav.credits")}
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
-                    Settings
+                    {t("dashboard.nav.settings")}
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex items-center gap-2">
                     <HelpCircle className="h-4 w-4" />
-                    Help
+                    {t("dashboard.nav.help")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

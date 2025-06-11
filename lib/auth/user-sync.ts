@@ -1,5 +1,5 @@
 // lib/auth/user-sync.ts
-import { currentUser } from '@clerk/nextjs/server';
+import { currentUser, auth } from '@clerk/nextjs/server';
 import { db, userHelpers } from '@/lib/db';
 
 /**
@@ -141,6 +141,88 @@ export async function decrementUserCredits(clerkId: string, amount: number, desc
  * Get user ID from Clerk for API routes
  */
 export async function getCurrentUserId(): Promise<string | null> {
-  const clerkUser = await currentUser();
-  return clerkUser?.id || null;
+  const { userId } = await auth();
+  return userId;
+}
+
+/**
+ * Get current user for API routes using auth()
+ */
+export async function getCurrentUserFromDBForAPI() {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    return null;
+  }
+
+  try {
+    // Try to find existing user first
+    let dbUser = await db.user.findUnique({
+      where: { clerkId: userId },
+      include: {
+        creditTransactions: {
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        },
+        subscriptions: {
+          where: { status: 'ACTIVE' },
+          take: 1,
+        },
+      },
+    });
+
+    // If user doesn't exist, get user data from Clerk and create them
+    if (!dbUser) {
+      const clerkUser = await currentUser();
+      if (!clerkUser) {
+        return null;
+      }
+
+      const newUser = await userHelpers.syncUserFromClerk({
+        id: clerkUser.id,
+        emailAddresses: clerkUser.emailAddresses.map(email => ({
+          emailAddress: email.emailAddress,
+        })),
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+        imageUrl: clerkUser.imageUrl,
+      });
+
+      // Fetch the created user with includes
+      dbUser = await db.user.findUnique({
+        where: { id: newUser.id },
+        include: {
+          creditTransactions: {
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+          },
+          subscriptions: {
+            where: { status: 'ACTIVE' },
+            take: 1,
+          },
+        },
+      });
+    } else {
+      // Update lastActiveAt for existing users
+      dbUser = await db.user.update({
+        where: { id: dbUser.id },
+        data: { lastActiveAt: new Date() },
+        include: {
+          creditTransactions: {
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+          },
+          subscriptions: {
+            where: { status: 'ACTIVE' },
+            take: 1,
+          },
+        },
+      });
+    }
+
+    return dbUser;
+  } catch (error) {
+    console.error('Error syncing user from Clerk in API route:', error);
+    throw error;
+  }
 }
