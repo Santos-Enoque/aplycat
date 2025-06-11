@@ -44,16 +44,22 @@ export function UnifiedNavbar() {
     refetch: refetchCredits,
   } = useUserCredits();
 
+  // Determine the correct home link
+  const getHomeLink = () => {
+    if (isSignedIn) {
+      return "/dashboard";
+    } else {
+      return "/";
+    }
+  };
+
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link
-              href={isSignedIn ? "/dashboard" : "/"}
-              className="flex items-center gap-2"
-            >
+            <Link href={getHomeLink()} className="flex items-center gap-2">
               <Cat className="h-8 w-8 text-purple-600" />
               <span className="hidden sm:inline-block text-xl font-bold text-gray-900">
                 Aplycat

@@ -1,6 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { checkRateLimit, getClientIP } from './lib/middleware/edge-security';
+import { locales } from './config';
+import createMiddleware from 'next-intl/middleware';
 
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',

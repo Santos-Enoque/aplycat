@@ -1,0 +1,161 @@
+{
+  "info": {
+    "name": "PaySuite API Test - Fixed",
+    "description": "Updated collection based on working parameters: method='mobile_money' only (no gateway)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "paysuite_base_url",
+      "value": "https://paysuite.tech/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "paysuite_token",
+      "value": "YOUR_PAYSUITE_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "return_url",
+      "value": "https://example.com/success",
+      "type": "string"
+    },
+    {
+      "key": "callback_url",
+      "value": "https://example.com/callback",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Mobile Money - 100 MZN (Working)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{paysuite_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": \"100\",\n  \"reference\": \"APLYCAT_TEST_{{$randomInt}}\",\n  \"description\": \"Test payment 100 MZN - Mobile Money (Emola)\",\n  \"return_url\": \"{{return_url}}\",\n  \"callback_url\": \"{{callback_url}}\",\n  \"method\": \"mobile_money\"\n}"
+        },
+        "url": {
+          "raw": "{{paysuite_base_url}}/payments",
+          "host": ["{{paysuite_base_url}}"],
+          "path": ["payments"]
+        },
+        "description": "Test mobile money payment with 100 MZN - This should work based on user's successful test"
+      }
+    },
+    {
+      "name": "Mobile Money - 222 MZN (Working format)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{paysuite_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": \"222\",\n  \"reference\": \"APLYCAT_TEST_{{$randomInt}}\",\n  \"description\": \"Test payment 222 MZN - Mobile Money (Emola)\",\n  \"return_url\": \"{{return_url}}\",\n  \"callback_url\": \"{{callback_url}}\",\n  \"method\": \"mobile_money\"\n}"
+        },
+        "url": {
+          "raw": "{{paysuite_base_url}}/payments",
+          "host": ["{{paysuite_base_url}}"],
+          "path": ["payments"]
+        },
+        "description": "Test mobile money payment with 222 MZN using the exact working format from user's example"
+      }
+    },
+    {
+      "name": "Mobile Money - 600 MZN (Test limit)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{paysuite_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": \"600\",\n  \"reference\": \"APLYCAT_TEST_{{$randomInt}}\",\n  \"description\": \"Test payment 600 MZN - Mobile Money (Emola)\",\n  \"return_url\": \"{{return_url}}\",\n  \"callback_url\": \"{{callback_url}}\",\n  \"method\": \"mobile_money\"\n}"
+        },
+        "url": {
+          "raw": "{{paysuite_base_url}}/payments",
+          "host": ["{{paysuite_base_url}}"],
+          "path": ["payments"]
+        },
+        "description": "Test mobile money payment with 600 MZN - Test if this amount works with Emola"
+      }
+    },
+    {
+      "name": "Mobile Money - 1200 MZN (May exceed limit)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{paysuite_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": \"1200\",\n  \"reference\": \"APLYCAT_TEST_{{$randomInt}}\",\n  \"description\": \"Test payment 1200 MZN - Mobile Money (Emola)\",\n  \"return_url\": \"{{return_url}}\",\n  \"callback_url\": \"{{callback_url}}\",\n  \"method\": \"mobile_money\"\n}"
+        },
+        "url": {
+          "raw": "{{paysuite_base_url}}/payments",
+          "host": ["{{paysuite_base_url}}"],
+          "path": ["payments"]
+        },
+        "description": "Test mobile money payment with 1200 MZN - This may exceed Emola limits"
+      }
+    },
+    {
+      "name": "Credit Card - 1200 MZN (For comparison)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{paysuite_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": \"1200\",\n  \"reference\": \"APLYCAT_TEST_{{$randomInt}}\",\n  \"description\": \"Test payment 1200 MZN - Credit Card\",\n  \"return_url\": \"{{return_url}}\",\n  \"callback_url\": \"{{callback_url}}\",\n  \"method\": \"credit_card\"\n}"
+        },
+        "url": {
+          "raw": "{{paysuite_base_url}}/payments",
+          "host": ["{{paysuite_base_url}}"],
+          "path": ["payments"]
+        },
+        "description": "Test credit card payment with 1200 MZN - Credit cards should have no limits"
+      }
+    }
+  ]
+}

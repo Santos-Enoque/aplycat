@@ -16,7 +16,7 @@ function SignUpContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full grid lg:grid-cols-2 gap-8 items-center">
+      <div className="max-w-4xl w-full grid lg:grid-cols-2 gap-6 lg:gap-8 items-start lg:items-center">
         {/* Left side - Benefits */}
         <div className="space-y-6">
           {isTrial && (
@@ -27,13 +27,13 @@ function SignUpContent() {
                   LIMITED TIME OFFER
                 </Badge>
               </div>
-              <h2 className="text-2xl font-bold mb-2">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">
                 $1 Trial - All AI Features
               </h2>
-              <p className="text-lg opacity-90 mb-4">
+              <p className="text-base sm:text-lg opacity-90 mb-4">
                 Get 7 credits worth $5.81 for just $1
               </p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
                   <span>3× Resume Improvements</span>

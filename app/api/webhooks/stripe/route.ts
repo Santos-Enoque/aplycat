@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { paymentService } from '@/lib/services/payment-service';
+import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify and parse the webhook
-    const event = paymentService.validateWebhookSignature(body, signature);
+    const event = paymentService.validateWebhookSignature(body, signature, 'stripe') as Stripe.Event;
 
     console.log('[STRIPE_WEBHOOK] Received event:', {
       type: event.type,

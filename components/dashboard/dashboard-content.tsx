@@ -20,6 +20,7 @@ import {
   CheckCircle,
   X,
   CreditCard,
+  Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -104,6 +105,7 @@ interface DashboardContentProps {
 function TrialClaimCard() {
   const [showTrialCard, setShowTrialCard] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaymentMethods, setShowPaymentMethods] = useState(false);
 
   useEffect(() => {
     // Check if user came from trial signup
@@ -113,7 +115,9 @@ function TrialClaimCard() {
     }
   }, []);
 
-  const handleClaimTrial = async () => {
+  const handleClaimTrial = async (
+    paymentMethod: "credit_card" | "mobile_money"
+  ) => {
     setIsProcessing(true);
     try {
       const response = await fetch("/api/payments/create-checkout", {
@@ -121,6 +125,7 @@ function TrialClaimCard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           packageType: "trial",
+          paymentMethod: paymentMethod,
           returnUrl: `${window.location.origin}/trial-success`,
         }),
       });
@@ -137,7 +142,13 @@ function TrialClaimCard() {
       if (data.success && data.checkoutUrl) {
         // Clear the trial intent since they're proceeding
         localStorage.removeItem("aplycat_trial_intent");
-        // Redirect to Stripe
+        // Show payment method specific message
+        if (paymentMethod === "credit_card") {
+          toast.info("Redirecting to secure card payment...");
+        } else {
+          toast.info("Redirecting to mobile money payment...");
+        }
+        // Redirect to payment provider
         window.location.href = data.checkoutUrl;
       } else {
         throw new Error("Could not retrieve checkout URL.");
@@ -164,88 +175,140 @@ function TrialClaimCard() {
     <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 relative overflow-hidden mb-8">
       <button
         onClick={handleDismiss}
-        className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/50 transition-colors"
+        className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1 rounded-full hover:bg-white/50 transition-colors z-10"
         disabled={isProcessing}
       >
         <X className="h-4 w-4 text-blue-600" />
       </button>
 
-      <CardHeader className="pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-white" />
+      <CardHeader className="pb-4 pr-12 sm:pr-16">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <CardTitle className="text-2xl text-blue-900">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+              <CardTitle className="text-lg sm:text-xl lg:text-2xl text-blue-900 break-words">
                 Claim Your $1 Trial!
               </CardTitle>
-              <Badge className="bg-red-500 text-white animate-pulse">
+              <Badge className="bg-red-500 text-white animate-pulse self-start sm:self-center text-xs">
                 LIMITED TIME
               </Badge>
             </div>
-            <CardDescription className="text-blue-700 text-base">
+            <CardDescription className="text-blue-700 text-sm sm:text-base">
               You're one step away from unlocking all AI features for just $1
             </CardDescription>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent>
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Left: What's included */}
+      <CardContent className="pt-0">
+        <div className="space-y-6">
+          {/* What's included - Mobile first layout */}
           <div>
-            <h3 className="font-bold text-blue-900 mb-4">
+            <h3 className="font-bold text-blue-900 mb-4 text-base sm:text-lg">
               7 Credits Included ($5.81 value):
             </h3>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-blue-800">3× Resume Improvements</span>
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                <span className="text-sm sm:text-base text-blue-800">
+                  3× Resume Improvements
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-blue-800">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                <span className="text-sm sm:text-base text-blue-800">
                   2× Job-Tailored Resumes + Cover Letters
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-blue-800">1× LinkedIn Analysis</span>
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                <span className="text-sm sm:text-base text-blue-800">
+                  1× LinkedIn Analysis
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-blue-800">1× Custom Enhancement</span>
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                <span className="text-sm sm:text-base text-blue-800">
+                  1× Custom Enhancement
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Right: Call to action */}
-          <div className="flex flex-col justify-center">
-            <div className="text-center mb-4">
-              <div className="text-4xl font-bold text-blue-900 mb-1">$1.00</div>
-              <div className="text-blue-700">
+          {/* Call to action - Mobile optimized */}
+          <div className="text-center space-y-4">
+            <div>
+              <div className="text-3xl sm:text-4xl font-bold text-blue-900 mb-1">
+                $1.00
+              </div>
+              <div className="text-sm sm:text-base text-blue-700">
                 One-time payment • No subscription
               </div>
             </div>
-            <Button
-              onClick={handleClaimTrial}
-              disabled={isProcessing}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg font-bold rounded-xl"
-            >
-              {isProcessing ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Claim $1 Trial Now
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-blue-600 text-center mt-3">
+            {!showPaymentMethods ? (
+              <Button
+                onClick={() => setShowPaymentMethods(true)}
+                disabled={isProcessing}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 sm:py-6 text-base sm:text-lg font-bold rounded-xl"
+              >
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                Claim $1 Trial Now
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-center text-blue-800 font-medium text-sm sm:text-base">
+                  Choose your payment method:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Button
+                    onClick={() => handleClaimTrial("credit_card")}
+                    disabled={isProcessing}
+                    variant="outline"
+                    className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50 py-3 sm:py-4 text-sm sm:text-base font-bold"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Credit Card
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => handleClaimTrial("mobile_money")}
+                    disabled={isProcessing}
+                    variant="outline"
+                    className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50 py-3 sm:py-4 text-sm sm:text-base font-bold"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Smartphone className="w-4 h-4 mr-2" />
+                        Mobile Money
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <Button
+                  onClick={() => setShowPaymentMethods(false)}
+                  variant="ghost"
+                  className="w-full text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  ← Back to options
+                </Button>
+              </div>
+            )}
+            <p className="text-xs sm:text-sm text-blue-600 text-center">
               🔒 Secure payment • 30-day money-back guarantee
             </p>
           </div>

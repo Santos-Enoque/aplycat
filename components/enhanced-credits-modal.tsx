@@ -13,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import {
   Check,
   Zap,
@@ -22,6 +24,8 @@ import {
   ExternalLink,
   Shield,
   RefreshCw,
+  Smartphone,
+  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,6 +45,15 @@ interface CreditsModalProps {
   requiredCredits?: number | null;
 }
 
+interface PaymentMethodOption {
+  id: "credit_card" | "mobile_money";
+  name: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  available: boolean;
+  processingTime?: string;
+}
+
 export function EnhancedCreditsModal({
   isOpen,
   onClose,
@@ -52,6 +65,31 @@ export function EnhancedCreditsModal({
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingPackages, setIsLoadingPackages] = useState(true);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    "credit_card" | "mobile_money"
+  >("credit_card");
+
+  // Get available payment methods (no limits)
+  const getAvailablePaymentMethods = () => {
+    return [
+      {
+        id: "credit_card",
+        name: "Credit/Debit Card",
+        description: "Visa, Mastercard, American Express",
+        icon: CreditCard,
+        available: true,
+        processingTime: "Instant",
+      },
+      {
+        id: "mobile_money",
+        name: "Mobile Money (Emola)",
+        description: "Digital wallet payment via Emola",
+        icon: Smartphone,
+        available: true,
+        processingTime: "Instant",
+      },
+    ];
+  };
 
   // Load credit packages on component mount
   useEffect(() => {
@@ -101,18 +139,36 @@ export function EnhancedCreditsModal({
     return total === 3 && index === 1; // Middle package
   };
 
-  // Handle purchase
-  const handlePurchase = async (packageId: string) => {
+  // No auto-switching needed since all methods are available
+
+  // Handle purchase with explicit payment method
+  const handlePurchase = async (
+    packageId: string,
+    paymentMethod?: "credit_card" | "mobile_money"
+  ) => {
     if (!user) {
       toast.error("Please sign in to purchase credits");
       return;
     }
 
+    // Use the passed payment method or fall back to selected one
+    const finalPaymentMethod = paymentMethod || selectedPaymentMethod;
+
     setIsLoading(true);
     setSelectedPackage(packageId);
 
+    // Update the selected payment method if provided
+    if (paymentMethod) {
+      setSelectedPaymentMethod(paymentMethod);
+    }
+
     try {
-      console.log("Creating checkout for package:", packageId);
+      console.log(
+        "Creating checkout for package:",
+        packageId,
+        "with payment method:",
+        finalPaymentMethod
+      );
 
       const response = await fetch("/api/payments/create-checkout", {
         method: "POST",
@@ -121,6 +177,7 @@ export function EnhancedCreditsModal({
         },
         body: JSON.stringify({
           packageType: packageId,
+          paymentMethod: finalPaymentMethod,
           returnUrl: window.location.href,
         }),
       });
@@ -143,12 +200,21 @@ export function EnhancedCreditsModal({
         "pendingPurchase",
         JSON.stringify({
           packageId,
+          paymentMethod: finalPaymentMethod,
+          provider: data.provider,
           checkoutId: data.checkoutId,
           timestamp: Date.now(),
         })
       );
 
-      // Redirect to Lemon Squeezy checkout
+      // Show different messages based on payment method
+      if (finalPaymentMethod === "credit_card") {
+        toast.info("Redirecting to secure payment...");
+      } else if (finalPaymentMethod === "mobile_money") {
+        toast.info("Redirecting to mobile money payment...");
+      }
+
+      // Redirect to checkout
       window.location.href = data.checkoutUrl;
     } catch (error) {
       console.error("Purchase failed:", error);
@@ -168,15 +234,17 @@ export function EnhancedCreditsModal({
     if (isOpen) {
       const urlParams = new URLSearchParams(window.location.search);
       const paymentStatus = urlParams.get("payment");
+      const provider = urlParams.get("provider");
 
       if (paymentStatus === "success") {
         // Clear the URL parameter
         const newUrl = window.location.pathname;
         window.history.replaceState({}, "", newUrl);
 
-        // Show success message
+        // Show success message with provider info
+        const providerName = provider === "paysuite" ? "MPesa/Emola" : "Stripe";
         toast.success(
-          "🎉 Purchase successful! Your credits have been added to your account."
+          `🎉 ${providerName} payment successful! Your credits have been added to your account.`
         );
 
         // Clear pending purchase
@@ -237,7 +305,31 @@ export function EnhancedCreditsModal({
         {/* Security Badge */}
         <div className="flex items-center justify-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mx-4">
           <Shield className="h-4 w-4 text-green-600" />
-          <span>Secure payment processing by Lemon Squeezy</span>
+          <span>Secure payment processing by Stripe & PaySuite</span>
+        </div>
+
+        {/* Payment Methods Info */}
+        <div className="mx-4 mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="text-sm font-medium text-blue-800 mb-2">
+            💳 Available Payment Methods
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-blue-700">
+            <div className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              <span>
+                <strong>Credit/Debit Cards:</strong> Visa, Mastercard, Amex
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4" />
+              <span>
+                <strong>Mobile Money:</strong> Emola (instant processing)
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-blue-600 mt-2">
+            ℹ️ Payment method selection happens after choosing your package
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
@@ -248,12 +340,23 @@ export function EnhancedCreditsModal({
             return (
               <Card
                 key={pkg.id}
-                className={`relative transition-all duration-200 hover:shadow-lg ${
-                  popular
+                className={`relative transition-all duration-200 hover:shadow-lg cursor-pointer ${
+                  selectedPackage === pkg.id
+                    ? "border-purple-500 shadow-lg ring-2 ring-purple-200"
+                    : popular
                     ? "border-purple-500 shadow-lg ring-2 ring-purple-200"
                     : "border-gray-200 hover:border-purple-300"
                 }`}
+                onClick={() => setSelectedPackage(pkg.id)}
               >
+                {selectedPackage === pkg.id && (
+                  <div className="absolute -top-3 left-4">
+                    <Badge className="bg-green-600 text-white px-2 py-1 text-xs">
+                      <Check className="h-3 w-3 mr-1" />
+                      Selected
+                    </Badge>
+                  </div>
+                )}
                 {popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-purple-600 text-white px-3 py-1">
@@ -296,28 +399,70 @@ export function EnhancedCreditsModal({
                     ))}
                   </ul>
 
-                  <Button
-                    onClick={() => handlePurchase(pkg.id)}
-                    disabled={isLoading}
-                    className={`w-full ${
-                      popular
-                        ? "bg-purple-600 hover:bg-purple-700"
-                        : "bg-gray-800 hover:bg-gray-900"
-                    }`}
-                  >
-                    {isLoading && selectedPackage === pkg.id ? (
-                      <div className="flex items-center">
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
-                      </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        Buy Now
-                        <ExternalLink className="h-3 w-3 ml-1" />
+                  <div className="space-y-3">
+                    {/* Package Selection */}
+                    <Button
+                      onClick={() => setSelectedPackage(pkg.id)}
+                      variant={
+                        selectedPackage === pkg.id ? "default" : "outline"
+                      }
+                      className={`w-full ${
+                        selectedPackage === pkg.id
+                          ? "bg-purple-600 hover:bg-purple-700 border-purple-600"
+                          : popular
+                          ? "border-purple-500 text-purple-700 hover:bg-purple-50"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {selectedPackage === pkg.id ? (
+                        <div className="flex items-center">
+                          <Check className="h-4 w-4 mr-2" />
+                          Package Selected
+                        </div>
+                      ) : (
+                        "Select This Package"
+                      )}
+                    </Button>
+
+                    {/* Payment Method Selection - Only show when package is selected */}
+                    {selectedPackage === pkg.id && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-700 text-center">
+                          Choose Payment Method:
+                        </p>
+                        <div className="grid grid-cols-1 gap-2">
+                          {getAvailablePaymentMethods().map((method) => (
+                            <Button
+                              key={method.id}
+                              onClick={() => {
+                                handlePurchase(
+                                  pkg.id,
+                                  method.id as "credit_card" | "mobile_money"
+                                );
+                              }}
+                              disabled={isLoading}
+                              variant="outline"
+                              className="w-full flex items-center justify-center py-3 hover:bg-green-50 hover:border-green-500 hover:text-green-700"
+                            >
+                              {isLoading &&
+                              selectedPaymentMethod === method.id ? (
+                                <div className="flex items-center">
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Processing...
+                                </div>
+                              ) : (
+                                <div className="flex items-center">
+                                  <method.icon className="h-4 w-4 mr-2" />
+                                  Pay with {method.name}
+                                  <ExternalLink className="h-3 w-3 ml-1" />
+                                </div>
+                              )}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
                     )}
-                  </Button>
+                  </div>
                 </CardContent>
               </Card>
             );

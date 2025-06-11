@@ -48,47 +48,53 @@ function TrialSuccessContent() {
           <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center animate-pulse">
             <CheckCircle className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 px-2">
             🎉 Welcome to Your Trial!
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-lg sm:text-xl text-gray-600 px-4">
             Payment successful! You now have 7 AI credits to use.
           </p>
         </div>
 
         {/* Payment Confirmation */}
-        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <Badge className="bg-white/20 text-white mb-2">
+        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <Badge className="bg-white/20 text-white mb-2 text-xs sm:text-sm">
                   PAYMENT CONFIRMED
                 </Badge>
-                <CardTitle className="text-2xl">Trial Activated!</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl break-words">
+                  Trial Activated!
+                </CardTitle>
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold">$1.00</div>
-                <div className="text-sm opacity-90">One-time payment</div>
+              <div className="text-center sm:text-right flex-shrink-0">
+                <div className="text-2xl sm:text-3xl font-bold">$1.00</div>
+                <div className="text-xs sm:text-sm opacity-90">
+                  One-time payment
+                </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
-                <Star className="h-5 w-5" />
-                <span>7 AI Credits Added</span>
+                <Star className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <span className="text-sm sm:text-base">7 AI Credits Added</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5" />
-                <span>All Features Unlocked</span>
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <span className="text-sm sm:text-base">
+                  All Features Unlocked
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                <Sparkles className="h-5 w-5" />
-                <span>No Monthly Fees</span>
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <span className="text-sm sm:text-base">No Monthly Fees</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5" />
-                <span>30-Day Guarantee</span>
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <span className="text-sm sm:text-base">30-Day Guarantee</span>
               </div>
             </div>
           </CardContent>
@@ -198,14 +204,18 @@ function TrialSuccessContent() {
               Our AI tools are designed to be intuitive, but we're here if you
               need assistance.
             </p>
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Button
                 variant="outline"
                 onClick={() => window.open("mailto:support@aplycat.com")}
+                className="w-full sm:w-auto"
               >
                 Contact Support
               </Button>
-              <Button onClick={() => router.push("/dashboard")}>
+              <Button
+                onClick={() => router.push("/dashboard")}
+                className="w-full sm:w-auto"
+              >
                 Go to Dashboard
               </Button>
             </div>

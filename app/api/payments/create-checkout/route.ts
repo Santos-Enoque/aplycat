@@ -1,42 +1,64 @@
 // app/api/payments/create-checkout/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
-import { paymentService } from '@/lib/services/payment-service';
-import { z } from 'zod';
-import type { CreditPackageType } from '@/lib/stripe/config';
+import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUserFromDB } from "@/lib/auth/user-sync";
+import { paymentService, PaymentMethod } from "@/lib/services/payment-service";
 
-const createCheckoutSchema = z.object({
-  packageType: z.enum(['trial', 'starter', 'professional', 'premium']),
-  returnUrl: z.string().url().optional(),
-});
+interface CreateCheckoutRequest {
+  packageType: string;
+  paymentMethod?: PaymentMethod; // 'credit_card' | 'mobile_money'
+  returnUrl: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const user = await currentUser();
+    const user = await getCurrentUserFromDB();
+    
     if (!user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: "User not authenticated" },
         { status: 401 }
       );
     }
 
-    // Parse and validate request body
-    const body = await request.json();
-    const { packageType, returnUrl } = createCheckoutSchema.parse(body);
+    const body: CreateCheckoutRequest = await request.json();
+    const { packageType, paymentMethod = 'credit_card', returnUrl } = body;
 
-    console.log('[CREATE_CHECKOUT] Creating checkout:', {
-      userId: user.id,
-      packageType,
-      email: user.emailAddresses[0]?.emailAddress,
-      returnUrl,
-    });
+    if (!packageType || !returnUrl) {
+      return NextResponse.json(
+        { error: "Package type and return URL are required" },
+        { status: 400 }
+      );
+    }
 
-    // Create checkout session
+    // Validate payment method
+    const validPaymentMethods: PaymentMethod[] = ['credit_card', 'mobile_money'];
+    if (!validPaymentMethods.includes(paymentMethod)) {
+      return NextResponse.json(
+        { error: `Invalid payment method. Must be one of: ${validPaymentMethods.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Check if payment method is supported
+    const availableMethods = paymentService.getAvailablePaymentMethods(packageType as any);
+    if (!availableMethods.includes(paymentMethod)) {
+      return NextResponse.json(
+        { 
+          error: `Payment method ${paymentMethod} is not supported for package ${packageType}`,
+          supportedMethods: availableMethods
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log(`[CHECKOUT] Creating ${paymentMethod} checkout for user ${user.id}, package: ${packageType}`);
+
+    // Create checkout session with the specified payment method
     const result = await paymentService.createCheckout({
-      userId: user.id,
-      packageType: packageType as CreditPackageType,
-      userEmail: user.emailAddresses[0]?.emailAddress || '',
+      userId: user.clerkId,
+      packageType: packageType as any,
+      userEmail: user.email,
+      paymentMethod,
       returnUrl,
     });
 
@@ -44,22 +66,61 @@ export async function POST(request: NextRequest) {
       success: true,
       checkoutUrl: result.checkoutUrl,
       checkoutId: result.checkoutId,
-      package: result.packageDetails,
+      provider: result.provider,
+      paymentMethod: result.paymentMethod,
+      package: {
+        id: packageType,
+        name: result.packageDetails.name,
+        credits: result.packageDetails.credits,
+        price: result.packageDetails.price,
+      }
     });
+
   } catch (error) {
-    console.error('[CREATE_CHECKOUT] Error:', error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      );
-    }
-
+    console.error("[CREATE_CHECKOUT] Error creating checkout session:", error);
     return NextResponse.json(
       { 
-        error: 'Failed to create checkout session',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        success: false, 
+        message: error instanceof Error ? error.message : "Internal server error" 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Add GET method to retrieve available packages and payment methods
+export async function GET() {
+  try {
+    const packages = paymentService.getCreditPackages();
+    
+    // Add payment method availability info
+    const packagesWithPaymentInfo = Object.entries(packages).map(([key, pkg]: [string, { name: string; credits: number; price: number; description?: string }]) => ({
+      id: key,
+      name: pkg.name,
+      credits: pkg.credits,
+      price: pkg.price,
+      description: pkg.description || `${pkg.credits} AI credits for your resume needs`,
+      pricePerCredit: `$${(pkg.price / pkg.credits).toFixed(2)}`,
+      supportedMethods: paymentService.getAvailablePaymentMethods(key as any),
+      paymentOptions: {
+        creditCard: true,
+        mobileMoney: true,
+      }
+    }));
+
+    return NextResponse.json({
+      success: true,
+      packages: packagesWithPaymentInfo,
+      availablePaymentMethods: ['credit_card', 'mobile_money'],
+      defaultPaymentMethod: 'credit_card'
+    });
+
+  } catch (error) {
+    console.error("[GET_PACKAGES] Error retrieving packages:", error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: "Failed to retrieve packages" 
       },
       { status: 500 }
     );

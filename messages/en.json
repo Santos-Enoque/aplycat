@@ -1,0 +1,263 @@
+{
+  "trialPopup": {
+    "limitedTimeOffer": "LIMITED TIME OFFER",
+    "title": "Try All AI Features for {price}",
+    "subtitle": "Unlock the complete Aplycat experience with 10 credits",
+    "creditsIncluded": "10 Credits Included:",
+    "creditsValue": "$8.30 Value",
+    "resumeImprovements": "5× Resume Improvements ($4.15 value)",
+    "jobTailoredResumes": "3× Job-Tailored Resumes + Cover Letters ($2.49 value)",
+    "linkedinAnalysis": "1× LinkedIn Analysis ($0.83 value)",
+    "customEnhancement": "1× Custom Enhancement ($0.83 value)",
+    "offerExpires": "Offer expires in {timeLeft}",
+    "startTrial": "🚀 Start $1 Trial (Pay with Card) →",
+    "signUpFirst": "Sign Up First (No Payment)",
+    "maybeLater": "Maybe later",
+    "disclaimer": "One-time payment • No subscription • 30-day money-back guarantee"
+  },
+  "hero": {
+    "badge": "🎁 FREE Resume Analysis • No Signup Required",
+    "title": "I'll Tell You What {recruiters} Never Would",
+    "recruiters": "Recruiters",
+    "subtitle": "Get the brutal truth recruiters think but never say. No fluff, no politeness—just honest AI feedback that'll finally get you hired.",
+    "socialProof": {
+      "analyzed": "1000+ analyzed",
+      "rating": "4.9/5 rating",
+      "interviews": "78% got more interviews"
+    }
+  },
+  "upload": {
+    "rateLimit": "{remaining} free analyses remaining this hour",
+    "dropTitle": "Drop Your Resume Here",
+    "dropSubtitle": "Get instant AI analysis • No signup required • Completely free",
+    "fileInfo": "PDF, DOC, or DOCX • Max 10MB",
+    "browseButton": "Or Click to Browse",
+    "analyzing": "AI is analyzing your resume...",
+    "connecting": "Connecting to AI...",
+    "waitMessage": "This will take just a few seconds",
+    "analysisFor": "Analysis for: {fileName}"
+  },
+  "rateLimitError": {
+    "title": "Rate Limit Reached",
+    "message": "You've reached the limit of 3 free analyses per hour.",
+    "resetTime": "Resets at {time}",
+    "upgradeButton": "Get Unlimited Access for $1 →",
+    "signupMessage": "Sign up now and get 7 credits to try all AI features"
+  },
+  "analysisResults": {
+    "overallScore": "Overall Score",
+    "atsScore": "ATS Score",
+    "brutailFeedback": "Brutal Honest Feedback",
+    "sectionAnalysis": "Section Analysis",
+    "limitedPreview": "Limited Preview",
+    "seeMoreSections": "Sign Up to See {count} More Sections",
+    "upgradeTitle": {
+      "limited": "Want the Complete Analysis?",
+      "full": "Want More AI Features?"
+    },
+    "upgradeSubtitle": {
+      "limited": "See all sections, get AI-rewritten resume, job tailoring & more",
+      "full": "Get AI-rewritten resume, job tailoring, cover letters & more"
+    },
+    "upgradeStats": {
+      "credits": "Credits",
+      "value": "Value",
+      "limitedTime": "Limited Time"
+    },
+    "upgradeButton": "Get Trial: All AI Features for $1 →",
+    "upgradeDisclaimer": "7 credits • No subscription • 30-day money-back guarantee"
+  },
+  "testimonials": {
+    "title": "Join 50,000+ Who Stopped Getting Rejected",
+    "stats": {
+      "roasted": "50,000+ resumes roasted",
+      "rating": "4.9/5 rating",
+      "interviews": "78% got more interviews"
+    },
+    "items": [
+      {
+        "name": "Sarah M.",
+        "role": "Marketing Manager",
+        "quote": "Finally, honest feedback!",
+        "story": "Went from 0 interviews to 5 offers in 3 weeks. The brutal honesty was exactly what I needed.",
+        "result": "Landed $95k role at tech startup"
+      },
+      {
+        "name": "Mike K.",
+        "role": "Software Engineer",
+        "quote": "ATS score: 23 → 89",
+        "story": "No more black hole applications. Now recruiters actually call me back.",
+        "result": "3x more interview requests"
+      },
+      {
+        "name": "Jessica R.",
+        "role": "Sales Director",
+        "quote": "Worth every penny",
+        "story": "The roast was harsh but the results speak for themselves.",
+        "result": "Landed dream job in 2 weeks"
+      },
+      {
+        "name": "David L.",
+        "role": "Product Manager",
+        "quote": "Game changer",
+        "story": "My resume was a disaster. Aplycat turned it into a masterpiece.",
+        "result": "Doubled my salary"
+      },
+      {
+        "name": "Amanda T.",
+        "role": "Data Scientist",
+        "quote": "Brutal but brilliant",
+        "story": "The AI found issues I never knew existed. Fixed everything perfectly.",
+        "result": "Got hired at Google"
+      },
+      {
+        "name": "Carlos M.",
+        "role": "UX Designer",
+        "quote": "Life changing",
+        "story": "From career stagnation to multiple offers. Thank you Aplycat!",
+        "result": "40% salary increase"
+      }
+    ]
+  },
+  "features": {
+    "title": "Stop Getting Rejected. Start Getting Hired.",
+    "subtitle": "No fluff. No subscriptions. Just brutal honesty and AI-powered fixes.",
+    "honestFeedback": {
+      "title": "Resume Honest Feedback",
+      "description": "Get brutally honest feedback that recruiters actually think. No sugar-coating, just the truth about why your resume isn't working.",
+      "features": [
+        "ATS Score 0-100 with detailed breakdown",
+        "Section-by-section analysis and fixes",
+        "Recruiter-level judgment calls"
+      ]
+    },
+    "aiGenerator": {
+      "title": "AI Resume Generator",
+      "description": "Brand new resumes tailored to your industry and role. Built from the ground up with recruiter best practices.",
+      "features": [
+        "Industry-specific templates and formats",
+        "ATS-optimized structure and keywords",
+        "Role-based content optimization"
+      ]
+    },
+    "jobTailoring": {
+      "title": "Job-Specific Tailoring",
+      "description": "Paste any job description, get a perfectly matched resume. Stop sending generic resumes and start getting interviews.",
+      "features": [
+        "Custom resume rewrites for each job",
+        "Tailored cover letters that actually work",
+        "Smart keyword optimization and matching"
+      ]
+    },
+    "linkedinOptimization": {
+      "title": "LinkedIn Roast & Rewrite",
+      "description": "Fix your LinkedIn so recruiters stop ignoring you. Get found, get contacted, get hired.",
+      "features": [
+        "Complete profile optimization audit",
+        "Headline & summary professional rewrite",
+        "SEO optimization for recruiter searches"
+      ]
+    }
+  },
+  "beforeAfter": {
+    "title": "From Trash to Treasure",
+    "subtitle": "See what happens when brutal honesty meets AI intelligence",
+    "before": {
+      "title": "Before (Terrible)",
+      "atsScore": "ATS Score: 23",
+      "filename": "RESUME.docx",
+      "issues": [
+        "Generic \"hard worker\" objectives",
+        "No quantified achievements",
+        "Skills section with \"Microsoft Office\"",
+        "2-page wall of text",
+        "Comic Sans font (yes, really)"
+      ],
+      "roast": "This resume screams 'I haven't updated this since 2015.' Your skills section is basically everyone's LinkedIn from 2008."
+    },
+    "after": {
+      "title": "After (Acceptable)",
+      "atsScore": "ATS Score: 89",
+      "filename": "Sarah_Johnson_Resume.pdf",
+      "improvements": [
+        "Results-driven professional summary",
+        "Quantified achievements (+32% growth)",
+        "Industry-specific keywords",
+        "Clean, ATS-friendly format",
+        "Tailored to target role"
+      ],
+      "result": "5 interview requests in first week. Landed $95k role at tech startup. Worth every credit."
+    }
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Three steps to stop embarrassing yourself",
+    "steps": [
+      {
+        "title": "Upload Your Resume",
+        "description": "Drop your current resume (PDF, DOC, whatever disaster you've been sending out). We'll scan it in seconds."
+      },
+      {
+        "title": "Get Roasted + See Your Score",
+        "description": "Receive brutal but honest feedback, your ATS score (0-100), and section-by-section improvements. No sugar-coating."
+      },
+      {
+        "title": "Fix It With AI",
+        "description": "Generate a brand new resume, tailor it to specific jobs, or get AI rewrites. Your choice, your career."
+      }
+    ]
+  },
+  "pricing": {
+    "badge": "🚀 LAUNCH OFFER: BONUS CREDITS ON ALL PACKS",
+    "title": "Simple Pricing. No Subscriptions.",
+    "subtitle": "Buy credits once. Use them whenever you need a career boost.",
+    "mostPopular": "Most Popular",
+    "packs": {
+      "starter": {
+        "title": "Starter Pack",
+        "price": "$4.99",
+        "credits": "5 Credits + 2 Bonus!",
+        "features": [
+          "1x LinkedIn Analysis (3 credits)",
+          "1x Resume Improvement (2 credits)",
+          "1x Job Tailoring (2 credits)"
+        ],
+        "button": "Get Started"
+      },
+      "professional": {
+        "title": "Professional Pack",
+        "price": "$12.49",
+        "credits": "30 Credits + 15 Bonus!",
+        "features": [
+          "15x Resume Improvements",
+          "10x Job-Tailored Resume + Cover Letter",
+          "Priority Support"
+        ],
+        "button": "Choose Professional"
+      },
+      "powerUser": {
+        "title": "Power User Pack",
+        "price": "$24.99",
+        "credits": "70 Credits + 30 Bonus!",
+        "features": [
+          "35x Resume Improvements",
+          "23x Job-Tailored Resume + Cover Letter",
+          "Premium Support & Career Change Optimization"
+        ],
+        "button": "Go Power User"
+      }
+    }
+  },
+  "finalCta": {
+    "title": "You've been rejected enough.",
+    "subtitle": "Fix your resume. Fix your luck.",
+    "button": "Upload Resume & Get Roasted",
+    "offer": "🚀 Launch offer ends soon • Bonus credits on all packs"
+  },
+  "navbar": {
+    "languageSelector": "Language"
+  },
+  "banner": {
+    "trial": "🚀 LIMITED TIME: Try ALL AI Features for Just $1 • 10 Credits Worth $8.30"
+  }
+}

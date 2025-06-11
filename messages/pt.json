@@ -1,0 +1,263 @@
+{
+  "trialPopup": {
+    "limitedTimeOffer": "OFERTA POR TEMPO LIMITADO",
+    "title": "Experimente todos os recursos de IA por {price}",
+    "subtitle": "Desbloqueie a experiência completa do Aplycat com 10 créditos",
+    "creditsIncluded": "10 créditos incluídos:",
+    "creditsValue": "Valor de $8.30",
+    "resumeImprovements": "5× Melhorias de Currículo (valor de $4.15)",
+    "jobTailoredResumes": "3× Currículos e Cartas de Apresentação Personalizados (valor de $2.49)",
+    "linkedinAnalysis": "1× Análise do LinkedIn (valor de $0.83)",
+    "customEnhancement": "1× Melhoria Personalizada (valor de $0.83)",
+    "offerExpires": "A oferta expira em {timeLeft}",
+    "startTrial": "🚀 Iniciar teste de $1 (pagar com cartão) →",
+    "signUpFirst": "Inscreva-se primeiro (sem pagamento)",
+    "maybeLater": "Talvez mais tarde",
+    "disclaimer": "Pagamento único • Sem assinatura • Garantia de devolução do dinheiro em 30 dias"
+  },
+  "hero": {
+    "badge": "🎁 Análise GRATUITA de Currículo • Sem Cadastro Necessário",
+    "title": "Vou te dizer o que {recruiters} nunca diriam",
+    "recruiters": "Recrutadores",
+    "subtitle": "Receba a verdade brutal que os recrutadores pensam mas nunca dizem. Sem enrolação, sem polidez—apenas feedback honesto de IA que finalmente te fará ser contratado.",
+    "socialProof": {
+      "analyzed": "1000+ analisados",
+      "rating": "4.9/5 avaliação",
+      "interviews": "78% conseguiram mais entrevistas"
+    }
+  },
+  "upload": {
+    "rateLimit": "{remaining} análises gratuitas restantes nesta hora",
+    "dropTitle": "Solte Seu Currículo Aqui",
+    "dropSubtitle": "Análise instantânea de IA • Sem cadastro necessário • Completamente gratuito",
+    "fileInfo": "PDF, DOC, ou DOCX • Máx 10MB",
+    "browseButton": "Ou Clique para Navegar",
+    "analyzing": "IA está analisando seu currículo...",
+    "connecting": "Conectando à IA...",
+    "waitMessage": "Isso levará apenas alguns segundos",
+    "analysisFor": "Análise para: {fileName}"
+  },
+  "rateLimitError": {
+    "title": "Limite de Taxa Atingido",
+    "message": "Você atingiu o limite de 3 análises gratuitas por hora.",
+    "resetTime": "Reinicia às {time}",
+    "upgradeButton": "Obter Acesso Ilimitado por $1 →",
+    "signupMessage": "Cadastre-se agora e ganhe 7 créditos para testar todos os recursos de IA"
+  },
+  "analysisResults": {
+    "overallScore": "Pontuação Geral",
+    "atsScore": "Pontuação ATS",
+    "brutailFeedback": "Feedback Brutalmente Honesto",
+    "sectionAnalysis": "Análise de Seções",
+    "limitedPreview": "Prévia Limitada",
+    "seeMoreSections": "Cadastre-se para Ver {count} Mais Seções",
+    "upgradeTitle": {
+      "limited": "Quer a Análise Completa?",
+      "full": "Quer Mais Recursos de IA?"
+    },
+    "upgradeSubtitle": {
+      "limited": "Veja todas as seções, currículo reescrito por IA, personalização para vagas e mais",
+      "full": "Currículo reescrito por IA, personalização para vagas, cartas de apresentação e mais"
+    },
+    "upgradeStats": {
+      "credits": "Créditos",
+      "value": "Valor",
+      "limitedTime": "Tempo Limitado"
+    },
+    "upgradeButton": "Obter Teste: Todos os Recursos de IA por $1 →",
+    "upgradeDisclaimer": "7 créditos • Sem assinatura • Garantia de 30 dias"
+  },
+  "testimonials": {
+    "title": "Junte-se aos 50.000+ que Pararam de Ser Rejeitados",
+    "stats": {
+      "roasted": "50.000+ currículos destruídos",
+      "rating": "4.9/5 avaliação",
+      "interviews": "78% conseguiram mais entrevistas"
+    },
+    "items": [
+      {
+        "name": "Sarah M.",
+        "role": "Gerente de Marketing",
+        "quote": "Finalmente, feedback honesto!",
+        "story": "Fui de 0 entrevistas para 5 ofertas em 3 semanas. A honestidade brutal era exatamente o que eu precisava.",
+        "result": "Conseguiu vaga de $95k em startup de tecnologia"
+      },
+      {
+        "name": "Mike K.",
+        "role": "Engenheiro de Software",
+        "quote": "Pontuação ATS: 23 → 89",
+        "story": "Chega de aplicações em buraco negro. Agora os recrutadores realmente me ligam de volta.",
+        "result": "3x mais solicitações de entrevista"
+      },
+      {
+        "name": "Jessica R.",
+        "role": "Diretora de Vendas",
+        "quote": "Vale cada centavo",
+        "story": "A crítica foi dura, mas os resultados falam por si.",
+        "result": "Conseguiu emprego dos sonhos em 2 semanas"
+      },
+      {
+        "name": "David L.",
+        "role": "Gerente de Produto",
+        "quote": "Mudou tudo",
+        "story": "Meu currículo era um desastre. Aplycat transformou em uma obra-prima.",
+        "result": "Dobrou meu salário"
+      },
+      {
+        "name": "Amanda T.",
+        "role": "Cientista de Dados",
+        "quote": "Brutal mas brilhante",
+        "story": "A IA encontrou problemas que eu nunca soube que existiam. Corrigiu tudo perfeitamente.",
+        "result": "Foi contratada no Google"
+      },
+      {
+        "name": "Carlos M.",
+        "role": "Designer UX",
+        "quote": "Mudou minha vida",
+        "story": "De estagnação na carreira para múltiplas ofertas. Obrigado Aplycat!",
+        "result": "40% de aumento salarial"
+      }
+    ]
+  },
+  "features": {
+    "title": "Pare de Ser Rejeitado. Comece a Ser Contratado.",
+    "subtitle": "Sem enrolação. Sem assinaturas. Apenas honestidade brutal e correções com IA.",
+    "honestFeedback": {
+      "title": "Feedback Honesto do Currículo",
+      "description": "Receba feedback brutalmente honesto que os recrutadores realmente pensam. Sem açúcar, apenas a verdade sobre por que seu currículo não está funcionando.",
+      "features": [
+        "Pontuação ATS 0-100 com análise detalhada",
+        "Análise e correções seção por seção",
+        "Julgamentos de nível de recrutador"
+      ]
+    },
+    "aiGenerator": {
+      "title": "Gerador de Currículo IA",
+      "description": "Currículos totalmente novos adaptados à sua indústria e função. Construídos do zero com as melhores práticas dos recrutadores.",
+      "features": [
+        "Modelos e formatos específicos da indústria",
+        "Estrutura e palavras-chave otimizadas para ATS",
+        "Otimização de conteúdo baseada na função"
+      ]
+    },
+    "jobTailoring": {
+      "title": "Personalização Específica para Vaga",
+      "description": "Cole qualquer descrição de vaga, receba um currículo perfeitamente adaptado. Pare de enviar currículos genéricos e comece a conseguir entrevistas.",
+      "features": [
+        "Reescritas personalizadas de currículo para cada vaga",
+        "Cartas de apresentação adaptadas que realmente funcionam",
+        "Otimização inteligente de palavras-chave e correspondência"
+      ]
+    },
+    "linkedinOptimization": {
+      "title": "Destruição e Reescrita do LinkedIn",
+      "description": "Conserte seu LinkedIn para que os recrutadores parem de te ignorar. Seja encontrado, seja contatado, seja contratado.",
+      "features": [
+        "Auditoria completa de otimização de perfil",
+        "Reescrita profissional de título e resumo",
+        "Otimização SEO para buscas de recrutadores"
+      ]
+    }
+  },
+  "beforeAfter": {
+    "title": "Do Lixo ao Tesouro",
+    "subtitle": "Veja o que acontece quando honestidade brutal encontra inteligência artificial",
+    "before": {
+      "title": "Antes (Terrível)",
+      "atsScore": "Pontuação ATS: 23",
+      "filename": "CURRICULO.docx",
+      "issues": [
+        "Objetivos genéricos de \"trabalhador esforçado\"",
+        "Nenhuma conquista quantificada",
+        "Seção de habilidades com \"Microsoft Office\"",
+        "2 páginas de parede de texto",
+        "Fonte Comic Sans (sim, sério)"
+      ],
+      "roast": "Este currículo grita 'Não atualizei isso desde 2015.' Sua seção de habilidades é basicamente o LinkedIn de todo mundo de 2008."
+    },
+    "after": {
+      "title": "Depois (Aceitável)",
+      "atsScore": "Pontuação ATS: 89",
+      "filename": "Sarah_Johnson_Curriculo.pdf",
+      "improvements": [
+        "Resumo profissional orientado por resultados",
+        "Conquistas quantificadas (+32% crescimento)",
+        "Palavras-chave específicas da indústria",
+        "Formato limpo e amigável ao ATS",
+        "Adaptado à função desejada"
+      ],
+      "result": "5 solicitações de entrevista na primeira semana. Conseguiu vaga de $95k em startup de tecnologia. Valeu cada crédito."
+    }
+  },
+  "howItWorks": {
+    "title": "Como Funciona",
+    "subtitle": "Três passos para parar de se envergonhar",
+    "steps": [
+      {
+        "title": "Envie Seu Currículo",
+        "description": "Solte seu currículo atual (PDF, DOC, qualquer desastre que você tem enviado). Vamos escaneá-lo em segundos."
+      },
+      {
+        "title": "Seja Destruído + Veja Sua Pontuação",
+        "description": "Receba feedback brutal mas honesto, sua pontuação ATS (0-100), e melhorias seção por seção. Sem açúcar."
+      },
+      {
+        "title": "Conserte com IA",
+        "description": "Gere um currículo totalmente novo, adapte-o para vagas específicas, ou receba reescritas de IA. Sua escolha, sua carreira."
+      }
+    ]
+  },
+  "pricing": {
+    "badge": "🚀 OFERTA DE LANÇAMENTO: CRÉDITOS BÔNUS EM TODOS OS PACOTES",
+    "title": "Preços Simples. Sem Assinaturas.",
+    "subtitle": "Compre créditos uma vez. Use quando precisar de um impulso na carreira.",
+    "mostPopular": "Mais Popular",
+    "packs": {
+      "starter": {
+        "title": "Pacote Iniciante",
+        "price": "$4.99",
+        "credits": "5 Créditos + 2 Bônus!",
+        "features": [
+          "1x Análise do LinkedIn (3 créditos)",
+          "1x Melhoria de Currículo (2 créditos)",
+          "1x Personalização para Vaga (2 créditos)"
+        ],
+        "button": "Começar"
+      },
+      "professional": {
+        "title": "Pacote Profissional",
+        "price": "$12.49",
+        "credits": "30 Créditos + 15 Bônus!",
+        "features": [
+          "15x Melhorias de Currículo",
+          "10x Currículo Personalizado + Carta de Apresentação",
+          "Suporte Prioritário"
+        ],
+        "button": "Escolher Profissional"
+      },
+      "powerUser": {
+        "title": "Pacote Power User",
+        "price": "$24.99",
+        "credits": "70 Créditos + 30 Bônus!",
+        "features": [
+          "35x Melhorias de Currículo",
+          "23x Currículo Personalizado + Carta de Apresentação",
+          "Suporte Premium & Otimização para Mudança de Carreira"
+        ],
+        "button": "Virar Power User"
+      }
+    }
+  },
+  "finalCta": {
+    "title": "Você já foi rejeitado o suficiente.",
+    "subtitle": "Conserte seu currículo. Conserte sua sorte.",
+    "button": "Enviar Currículo & Ser Destruído",
+    "offer": "🚀 Oferta de lançamento acaba logo • Créditos bônus em todos os pacotes"
+  },
+  "navbar": {
+    "languageSelector": "Idioma"
+  },
+  "banner": {
+    "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas $1 • 10 Créditos no Valor de $8.30"
+  }
+}

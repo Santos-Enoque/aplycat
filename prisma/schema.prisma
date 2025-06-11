@@ -42,12 +42,54 @@ model User {
     subscriptions      Subscription[]
     usageEvents        UsageEvent[]
     feedback           Feedback[]
+    paysuitePayments PaysuitePayment[]
 
     // Add indexes for dashboard performance
     @@index([clerkId])
     @@index([email])
     @@index([lastActiveAt])
     @@map("users")
+}
+
+
+
+model PaysuitePayment {
+  id             String    @id // PaySuite payment ID
+  userId         String    // Internal database user ID
+  clerkUserId    String    // Clerk user ID for reference
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Package and payment details
+  packageType    String
+  credits        Int
+  amount         Float     // Amount in MZN
+  currency       String    @default("MZN")
+  status         String    @default("pending") // pending, completed, failed
+  
+  // Payment method and reference
+  paymentMethod  String    // mpesa, emola
+  reference      String    // PaySuite reference
+  
+  // Metadata and timestamps
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+  
+  @@map("paysuite_payments")
+}
+
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  provider    String   // 'stripe' | 'paysuite'
+  eventId     String   // Webhook event ID for idempotency
+  eventType   String   // Event type (payment.success, checkout.session.completed, etc.)
+  processed   Boolean  @default(false)
+  data        Json     // Full webhook payload
+  receivedAt  DateTime @default(now())
+  processedAt DateTime?
+  
+  @@unique([provider, eventId], name: "provider_eventId")
+  @@map("webhook_events")
 }
 
 // ===== CREDIT SYSTEM =====

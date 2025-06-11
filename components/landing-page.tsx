@@ -39,9 +39,10 @@ const TrialPopup = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onAccept: () => void;
+  onAccept: (paymentMethod?: "credit_card" | "mobile_money") => void;
 }) => {
   const [timeLeft, setTimeLeft] = useState("23:59:42");
+  const [showPaymentMethods, setShowPaymentMethods] = useState(false);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -121,31 +122,63 @@ const TrialPopup = ({
 
         {/* CTA Buttons */}
         <div className="space-y-3">
-          <Button
-            onClick={onAccept}
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
-          >
-            🚀 Start $1 Trial (Pay with Card) →
-          </Button>
-          <Button
-            onClick={() => {
-              onClose();
-              // Store trial intent for after signup
-              localStorage.setItem("aplycat_trial_intent", "true");
-              window.location.href = "/signup?trial=true&intent=payment";
-            }}
-            variant="outline"
-            className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
-          >
-            Sign Up First (No Payment)
-          </Button>
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            className="w-full text-gray-600 hover:text-gray-800"
-          >
-            Maybe later
-          </Button>
+          {!showPaymentMethods ? (
+            <>
+              <Button
+                onClick={() => setShowPaymentMethods(true)}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+              >
+                🚀 Start $1 Trial →
+              </Button>
+              <Button
+                onClick={() => {
+                  onClose();
+                  // Store trial intent for after signup
+                  localStorage.setItem("aplycat_trial_intent", "true");
+                  window.location.href = "/signup?trial=true&intent=payment";
+                }}
+                variant="outline"
+                className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
+              >
+                Sign Up First (No Payment)
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                className="w-full text-gray-600 hover:text-gray-800"
+              >
+                Maybe later
+              </Button>
+            </>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-center text-gray-700 font-medium">
+                Choose your payment method:
+              </p>
+              <div className="grid grid-cols-1 gap-3">
+                <Button
+                  onClick={() => onAccept("credit_card")}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                >
+                  💳 Pay with Credit Card
+                </Button>
+                <Button
+                  onClick={() => onAccept("mobile_money")}
+                  variant="outline"
+                  className="w-full border-blue-300 text-blue-700 hover:bg-blue-50 py-4 text-lg font-bold rounded-xl"
+                >
+                  📱 Pay with Mobile Money (Emola)
+                </Button>
+              </div>
+              <Button
+                onClick={() => setShowPaymentMethods(false)}
+                variant="ghost"
+                className="w-full text-gray-600 hover:text-gray-800"
+              >
+                ← Back to options
+              </Button>
+            </div>
+          )}
         </div>
 
         <p className="text-xs text-gray-500 text-center mt-4">
@@ -721,7 +754,9 @@ export function LandingPage() {
     setCurrentView("rate-limit");
   };
 
-  const handleTrialAccept = async () => {
+  const handleTrialAccept = async (
+    paymentMethod?: "credit_card" | "mobile_money"
+  ) => {
     setShowTrialPopup(false);
 
     // Clear any previous trial decline flag since user is actively choosing trial
@@ -736,6 +771,7 @@ export function LandingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           packageType: "trial",
+          paymentMethod: paymentMethod || "credit_card", // Default to credit card
           returnUrl: window.location.origin + "/trial-success",
         }),
       });
@@ -754,7 +790,13 @@ export function LandingPage() {
       const data = await response.json();
 
       if (data.success && data.checkoutUrl) {
-        // Redirect to Stripe checkout
+        // Show payment method specific message
+        if (paymentMethod === "mobile_money") {
+          console.log("Redirecting to mobile money payment...");
+        } else {
+          console.log("Redirecting to secure card payment...");
+        }
+        // Redirect to payment provider
         window.location.href = data.checkoutUrl;
       } else {
         throw new Error("Invalid checkout response");
