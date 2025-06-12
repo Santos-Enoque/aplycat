@@ -378,7 +378,10 @@ export function EnhancedCreditsModal({
                     </CardTitle>
                     <div className="text-center">
                       <div className="text-3xl font-bold text-purple-600">
-                        {(pkg as any).formattedPrice || `$${pkg.price}`}
+                        {(pkg as any).formattedPrice ||
+                          (pkg.price
+                            ? `$${pkg.price.toFixed(2)}`
+                            : "Loading...")}
                       </div>
                       <div className="text-sm text-gray-500">
                         {pkg.credits} credits
@@ -386,7 +389,7 @@ export function EnhancedCreditsModal({
                       <div className="text-xs text-green-600 font-medium mt-1">
                         {(pkg as any).currency === "MZN"
                           ? `${(pkg.price / pkg.credits).toFixed(0)} MZN`
-                          : `$${pkg.pricePerCredit}`}{" "}
+                          : `$${(pkg.price / pkg.credits).toFixed(2)}`}{" "}
                         {t("perCredit")}
                       </div>
                     </div>

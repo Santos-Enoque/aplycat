@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DashboardUser {
   id: string;
@@ -108,6 +109,7 @@ function TrialClaimCard() {
   const [showTrialCard, setShowTrialCard] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
+  const [trialPrice, setTrialPrice] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user came from trial signup
@@ -116,6 +118,32 @@ function TrialClaimCard() {
       setShowTrialCard(true);
     }
   }, []);
+
+  useEffect(() => {
+    const fetchTrialPrice = async () => {
+      try {
+        const response = await fetch("/api/payments/packages");
+        const data = await response.json();
+        const trialPackage = data.packages.find((p: any) => p.id === "trial");
+        if (trialPackage) {
+          if (data.pricing.currency === "MZN") {
+            setTrialPrice(`${trialPackage.price} MZN`);
+          } else {
+            setTrialPrice(`$${trialPackage.price.toFixed(2)}`);
+          }
+        } else {
+          setTrialPrice("$1"); // Fallback
+        }
+      } catch (error) {
+        console.error("Failed to fetch trial price:", error);
+        setTrialPrice("$1"); // Fallback
+      }
+    };
+
+    if (showTrialCard) {
+      fetchTrialPrice();
+    }
+  }, [showTrialCard]);
 
   const handleClaimTrial = async (
     paymentMethod: "credit_card" | "mobile_money"
@@ -243,7 +271,7 @@ function TrialClaimCard() {
           <div className="text-center space-y-4">
             <div>
               <div className="text-3xl sm:text-4xl font-bold text-blue-900 mb-1">
-                {t("price")}
+                {trialPrice || <Skeleton className="h-10 w-24 mx-auto" />}
               </div>
               <div className="text-sm sm:text-base text-blue-700">
                 {t("oneTimePayment")}
@@ -325,6 +353,18 @@ export function DashboardContent({ user }: DashboardContentProps) {
   const [dragActive, setDragActive] = useState(false);
   const t = useTranslations("dashboard");
   const tErrors = useTranslations("dashboard.errors");
+
+  // Clear previous analysis data when returning to dashboard
+  useEffect(() => {
+    // Clear any previous analysis data to ensure fresh start
+    sessionStorage.removeItem("streamingAnalysisFile");
+
+    // Optional: Clear any other analysis-related session storage keys
+    sessionStorage.removeItem("analysisResults");
+    sessionStorage.removeItem("streamResults");
+
+    console.log("Dashboard mounted - cleared previous analysis session data");
+  }, []);
 
   const handleFileSelected = async (file: File) => {
     toast.info("Preparing your analysis...", {

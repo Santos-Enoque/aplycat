@@ -24,6 +24,7 @@ export interface UseStreamingAnalysisReturn {
   startAnalysis: (file: File) => Promise<void>;
   stopAnalysis: () => void;
   retryAnalysis: () => void;
+  resetAnalysis: () => void;
 }
 
 export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
@@ -62,6 +63,20 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     sessionStorage.setItem('streamingAnalysisStatus', status);
     sessionStorage.setItem('streamingAnalysisProgress', progress.toString());
   }, [analysis, status, progress]);
+
+  const resetAnalysis = useCallback(() => {
+    setAnalysis(null);
+    setStatus('idle');
+    setError(null);
+    setProgress(0);
+    sessionStorage.removeItem('streamingAnalysis');
+    sessionStorage.removeItem('streamingAnalysisStatus');
+    sessionStorage.removeItem('streamingAnalysisProgress');
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  }, []);
 
   const startAnalysis = useCallback(async (file: File) => {
     lastFile.current = file;
@@ -193,6 +208,7 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     startAnalysis,
     stopAnalysis,
     retryAnalysis,
+    resetAnalysis,
   };
 }
 

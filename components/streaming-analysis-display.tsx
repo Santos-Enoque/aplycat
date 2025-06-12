@@ -25,7 +25,7 @@ import { ResumeAnalysis, ResumeSection } from "@/types/analysis";
 import { useUserCredits } from "@/hooks/use-user-credits";
 import { useCreditsModal } from "@/hooks/use-credits-modal";
 import { AccordionSection } from "@/components/ui/accordion-section";
-import { useState } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
@@ -75,6 +75,33 @@ export function StreamingAnalysisDisplay({
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const t = useTranslations("analysisDisplay");
 
+  const [displayedAnalysis, setDisplayedAnalysis] =
+    useState<Partial<ResumeAnalysis> | null>(analysis);
+  const analysisRef = useRef(analysis);
+  const throttleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    analysisRef.current = analysis;
+
+    if (status === "streaming" && !throttleTimeoutRef.current) {
+      throttleTimeoutRef.current = setTimeout(() => {
+        setDisplayedAnalysis(analysisRef.current);
+        throttleTimeoutRef.current = null;
+      }, 500); // Update display every 500ms
+    } else if (status === "completed") {
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current);
+      }
+      setDisplayedAnalysis(analysis);
+    }
+
+    return () => {
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current);
+      }
+    };
+  }, [analysis, status]);
+
   const handleStartImprovementClick = () => {
     if (isAnonymous) {
       onStartImprovement();
@@ -93,7 +120,7 @@ export function StreamingAnalysisDisplay({
     }
   };
 
-  if (status === "idle" || status === "connecting" || !analysis) {
+  if (status === "idle" || status === "connecting" || !displayedAnalysis) {
     return (
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -128,14 +155,14 @@ export function StreamingAnalysisDisplay({
   }
 
   const analysisData = {
-    overallScore: analysis.overall_score || 0,
-    atsScore: analysis.ats_score || 0,
-    category: analysis.score_category || "Needs Improvement",
-    improvementPotential: analysis.improvement_potential,
+    overallScore: displayedAnalysis.overall_score || 0,
+    atsScore: displayedAnalysis.ats_score || 0,
+    category: displayedAnalysis.score_category || "Needs Improvement",
+    improvementPotential: displayedAnalysis.improvement_potential,
     keyInsight:
-      analysis.main_roast ||
+      displayedAnalysis.main_roast ||
       "The analysis is still in progress, but key insights will appear here soon.",
-    sections: (analysis.resume_sections || []).map(
+    sections: (analysis?.resume_sections || []).map(
       (section: ResumeSection) => ({
         name: section.section_name,
         rating: section.rating || "Fair",
@@ -212,7 +239,7 @@ export function StreamingAnalysisDisplay({
                 <span className="text-xl text-muted-foreground">/100</span>
               </div>
             </div>
-            {analysis.overall_score !== undefined && (
+            {displayedAnalysis.overall_score !== undefined && (
               <Badge
                 className={`mt-2 ${getCategoryColor(
                   analysisData.category
@@ -344,8 +371,8 @@ export function StreamingAnalysisDisplay({
           ))}
 
           {/* Show blurred sections for anonymous users with limited data */}
-          {(analysis as any)?.is_limited &&
-            (analysis as any)?.hidden_sections_count > 0 && (
+          {(displayedAnalysis as any)?.is_limited &&
+            (displayedAnalysis as any)?.hidden_sections_count > 0 && (
               <div className="relative">
                 {/* Blur overlay with upgrade prompt */}
                 <div className="h-40 bg-gradient-to-b from-transparent to-white absolute inset-0 z-10 flex items-end justify-center pb-4">
@@ -355,7 +382,7 @@ export function StreamingAnalysisDisplay({
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg font-semibold rounded-xl mb-2"
                     >
                       {t("limitedAccess.signUpButton", {
-                        count: (analysis as any).hidden_sections_count,
+                        count: (displayedAnalysis as any).hidden_sections_count,
                       })}
                     </Button>
                     <p className="text-sm text-gray-600">
@@ -368,7 +395,7 @@ export function StreamingAnalysisDisplay({
                 <div className="blur-sm opacity-50 space-y-4">
                   {Array.from({
                     length: Math.min(
-                      (analysis as any).hidden_sections_count,
+                      (displayedAnalysis as any).hidden_sections_count,
                       3
                     ),
                   }).map((_, i) => (
@@ -394,7 +421,7 @@ export function StreamingAnalysisDisplay({
                       </div>
                     </div>
                   ))}
-                  {(analysis as any).hidden_sections_count > 3 && (
+                  {(displayedAnalysis as any).hidden_sections_count > 3 && (
                     <div className="text-center py-4">
                       <div className="h-4 bg-gray-300 rounded w-48 mx-auto"></div>
                       <div className="h-3 bg-gray-200 rounded w-32 mx-auto mt-2"></div>

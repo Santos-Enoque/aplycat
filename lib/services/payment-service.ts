@@ -360,10 +360,10 @@ class PaymentService {
     try {
       const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
       const data = await response.json();
-      return data.rates.MZN || 63.25; // Fallback rate
+      return data.rates.MZN || 64; // Fallback rate
     } catch (error) {
       console.warn('Failed to fetch exchange rate, using fallback');
-      return 63.25; // Fallback MZN rate
+      return 64; // Fallback MZN rate
     }
   }
 

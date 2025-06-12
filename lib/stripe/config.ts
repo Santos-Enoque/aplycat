@@ -8,7 +8,7 @@ export const STRIPE_CONFIG = {
   creditPackages: {
     pro: {
       credits: 44,
-      price: 4.99,
+      price: 200, // Price in MZN
       name: '🥇 Pro Pack',
       description: 'Best value for serious job seekers',
       priceId: process.env.STRIPE_PRO_PRICE_ID || '', // Optional for dynamic pricing
@@ -18,7 +18,7 @@ export const STRIPE_CONFIG = {
   // Special trial configuration for first-time users only
   trialConfig: {
     credits: 22,
-    price: 1.00,
+    price: 100, // Price in MZN
     name: '🎁 Trial Pack',
     description: 'Perfect way to try all features - one-time only',
     priceId: process.env.STRIPE_TRIAL_PRICE_ID || '', // Optional for dynamic pricing

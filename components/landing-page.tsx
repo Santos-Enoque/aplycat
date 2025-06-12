@@ -46,6 +46,33 @@ const TrialPopup = ({
   const t = useTranslations("trialPopup");
   const [timeLeft, setTimeLeft] = useState("23:59:42");
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
+  const [trialPrice, setTrialPrice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTrialPrice = async () => {
+      try {
+        const response = await fetch("/api/payments/packages");
+        const data = await response.json();
+        const trialPackage = data.packages.find((p: any) => p.id === "trial");
+        if (trialPackage) {
+          if (data.pricing.currency === "MZN") {
+            setTrialPrice(`${trialPackage.price} MZN`);
+          } else {
+            setTrialPrice(`$${trialPackage.price.toFixed(2)}`);
+          }
+        } else {
+          setTrialPrice("$1"); // Fallback
+        }
+      } catch (error) {
+        console.error("Failed to fetch trial price:", error);
+        setTrialPrice("$1"); // Fallback
+      }
+    };
+
+    if (isOpen) {
+      fetchTrialPrice();
+    }
+  }, [isOpen]);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -80,7 +107,9 @@ const TrialPopup = ({
             {t("limitedTimeOffer")}
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            {t("title", { price: "$1" })}
+            {trialPrice
+              ? t("title", { price: trialPrice })
+              : "Loading price..."}
           </h2>
           <p className="text-gray-600">{t("subtitle")}</p>
         </div>
@@ -942,6 +971,59 @@ const HowItWorksSection = () => {
 // Pricing Section
 const PricingSection = () => {
   const t = useTranslations("pricing");
+  const [packages, setPackages] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currency, setCurrency] = useState("USD");
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const response = await fetch("/api/payments/packages");
+        const data = await response.json();
+        const regularPackages = data.packages.filter(
+          (p: any) => p.id !== "trial"
+        );
+
+        setCurrency(data.pricing.currency);
+
+        const formattedPackages = regularPackages.map((pkg: any) => {
+          const features =
+            t.raw("packages").find((p: any) => p.name === pkg.name)?.features ||
+            [];
+          return {
+            ...pkg,
+            formattedPrice:
+              data.pricing.currency === "MZN"
+                ? `${pkg.price} MZN`
+                : `$${pkg.price.toFixed(2)}`,
+            features,
+            buttonText:
+              t.raw("packages").find((p: any) => p.name === pkg.name)
+                ?.buttonText || "Get Started",
+          };
+        });
+
+        setPackages(formattedPackages);
+      } catch (error) {
+        console.error("Failed to load packages:", error);
+        // Fallback for UI display
+        setPackages([
+          {
+            name: "Pro Pack",
+            price: 4.99,
+            credits: 44,
+            formattedPrice: "$4.99",
+            features: t.raw("packages.0.features"),
+            buttonText: t.raw("packages.0.buttonText"),
+            isPopular: true,
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPackages();
+  }, [t]);
 
   return (
     <section className="py-20 bg-white" id="pricing">
@@ -956,50 +1038,58 @@ const PricingSection = () => {
           <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex justify-center max-w-2xl mx-auto">
-          {t.raw("packages").map((pkg: any, index: number) => (
-            <Card
-              key={index}
-              className={`hover:shadow-lg transition-shadow ${
-                pkg.isPopular ? "border-blue-500 relative" : "border-blue-200"
-              } flex flex-col w-full max-w-md`}
-            >
-              {pkg.isPopular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-blue-500 text-white px-4 py-1 text-sm">
-                    {t("mostPopular")}
-                  </Badge>
-                </div>
-              )}
-              <CardHeader
-                className={`text-center ${pkg.isPopular ? "pt-8" : ""}`}
+          {isLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <div className="w-8 h-8 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            packages.map((pkg: any, index: number) => (
+              <Card
+                key={index}
+                className={`hover:shadow-lg transition-shadow ${
+                  pkg.isPopular ? "border-blue-500 relative" : "border-blue-200"
+                } flex flex-col w-full max-w-md`}
               >
-                <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                <div className="space-y-2">
-                  <div className="text-4xl font-bold text-blue-500">
-                    {pkg.price}
+                {pkg.isPopular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-blue-500 text-white px-4 py-1 text-sm">
+                      {t("mostPopular")}
+                    </Badge>
                   </div>
-                  <Badge className="bg-blue-500">{pkg.credits}</Badge>
+                )}
+                <CardHeader
+                  className={`text-center ${pkg.isPopular ? "pt-8" : ""}`}
+                >
+                  <CardTitle className="text-2xl">{pkg.name}</CardTitle>
+                  <div className="space-y-2">
+                    <div className="text-4xl font-bold text-blue-500">
+                      {pkg.formattedPrice}
+                    </div>
+                    <Badge className="bg-blue-500">{pkg.credits} Credits</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 flex-grow">
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {pkg.features.map(
+                      (feature: string, featureIndex: number) => (
+                        <li key={featureIndex} className="flex items-start">
+                          <CheckCircle className="h-4 w-4 text-blue-500 mr-2 mt-1 flex-shrink-0" />
+                          <span dangerouslySetInnerHTML={{ __html: feature }} />
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </CardContent>
+                <div className="p-6 pt-0">
+                  <SignInButton mode="modal">
+                    <Button className="w-full bg-blue-500 hover:bg-blue-600">
+                      {pkg.buttonText}
+                    </Button>
+                  </SignInButton>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4 flex-grow">
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  {pkg.features.map((feature: string, featureIndex: number) => (
-                    <li key={featureIndex} className="flex items-start">
-                      <CheckCircle className="h-4 w-4 text-blue-500 mr-2 mt-1 flex-shrink-0" />
-                      <span dangerouslySetInnerHTML={{ __html: feature }} />
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <div className="p-6 pt-0">
-                <SignInButton mode="modal">
-                  <Button className="w-full bg-blue-500 hover:bg-blue-600">
-                    {pkg.buttonText}
-                  </Button>
-                </SignInButton>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </section>
@@ -1111,7 +1201,9 @@ export function LandingPage() {
       {/* Trial Banner */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3">
         <div className="container mx-auto px-4 text-center">
-          <p className="font-semibold">{t("banner.trial")}</p>
+          <p className="font-semibold">
+            {t("banner.trial", { price: "100Mzn" })}
+          </p>
         </div>
       </div>
 
