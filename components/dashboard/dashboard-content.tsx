@@ -470,7 +470,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
   const currentATSScore = latestAnalysis ? latestAnalysis.atsScore : "-";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-8">
       {/* Welcome Section */}
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-foreground">
@@ -483,7 +483,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
       <TrialClaimCard />
 
       {/* Action Cards */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-1 gap-6 max-w-lg mx-auto">
         {/* CV Upload Card */}
         <Card className="relative overflow-hidden">
           <CardHeader className="pb-4">
@@ -540,62 +540,6 @@ export function DashboardContent({ user }: DashboardContentProps) {
                 </span>
                 <span className="text-primary font-medium">
                   ~2 min analysis
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* LinkedIn Connection Card */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600/10 rounded-lg flex items-center justify-center">
-                <Linkedin className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <CardTitle className="flex items-center">
-                  {t("linkedinCard.title")}
-                  <Badge
-                    variant="outline"
-                    className="ml-2 text-xs bg-yellow-100 text-yellow-700 border-yellow-300"
-                  >
-                    {t("linkedinCard.comingSoon")}
-                  </Badge>
-                </CardTitle>
-                <CardDescription>
-                  {t("linkedinCard.description")}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            <div className="space-y-4">
-              <div className="bg-muted/30 rounded-lg p-6 text-center">
-                <Linkedin className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                <h3 className="font-semibold text-foreground mb-2">
-                  Connect Your Profile
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  We'll analyze your profile and suggest improvements to get you
-                  noticed by recruiters
-                </p>
-                <Button
-                  onClick={connectLinkedIn}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Linkedin className="w-4 h-4 mr-2" />
-                  Connect LinkedIn
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between text-sm pt-2 border-t">
-                <span className="text-green-600 font-medium">
-                  {t("linkedinCard.free")}
-                </span>
-                <span className="text-primary font-medium">
-                  ~5 min analysis
                 </span>
               </div>
             </div>
