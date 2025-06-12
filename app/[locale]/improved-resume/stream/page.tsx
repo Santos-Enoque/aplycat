@@ -263,53 +263,53 @@ function ResumePreview({
   }
 
   return (
-    <div className="bg-white shadow-xl w-full mx-auto min-h-[297mm] relative border border-gray-200 max-w-3xl sm:max-w-2xl md:max-w-3xl lg:max-w-3xl p-2 sm:p-4 md:p-8">
+    <div className="bg-white shadow-xl w-full mx-auto min-h-[297mm] relative border border-gray-200 max-w-3xl p-4 sm:p-6 md:p-8 overflow-hidden">
       {/* Resume Header */}
-      <div className="p-2 sm:p-4 md:p-8 border-b border-gray-200">
+      <div className="p-4 sm:p-6 md:p-8 border-b border-gray-200">
         <div className="text-center">
           <EditableText
             field="personalInfo.name"
             value={resumeData.personalInfo.name}
-            className="text-2xl sm:text-3xl font-bold text-gray-900 text-center"
-            style={{ minHeight: "40px" }}
+            className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 text-center break-words"
+            style={{ minHeight: "40px", wordWrap: "break-word" }}
           />
           <div className="mt-2 sm:mt-4 text-xs sm:text-sm text-gray-600 space-y-2">
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-6">
+            <div className="flex flex-wrap justify-center gap-1 sm:gap-2 md:gap-6">
               <EditableText
                 field="personalInfo.email"
                 value={resumeData.personalInfo.email}
-                className="text-xs sm:text-sm text-center"
+                className="text-xs sm:text-sm text-center break-all"
               />
-              <span className="text-gray-400">•</span>
+              <span className="text-gray-400 hidden sm:inline">•</span>
               <EditableText
                 field="personalInfo.phone"
                 value={resumeData.personalInfo.phone}
                 className="text-xs sm:text-sm text-center"
               />
             </div>
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-6">
+            <div className="flex flex-wrap justify-center gap-1 sm:gap-2 md:gap-6">
               <EditableText
                 field="personalInfo.location"
                 value={resumeData.personalInfo.location}
-                className="text-xs sm:text-sm text-center"
+                className="text-xs sm:text-sm text-center break-words"
               />
               {resumeData.personalInfo.linkedin && (
                 <>
-                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-400 hidden sm:inline">•</span>
                   <EditableText
                     field="personalInfo.linkedin"
                     value={resumeData.personalInfo.linkedin}
-                    className="text-xs sm:text-sm text-center text-blue-600"
+                    className="text-xs sm:text-sm text-center text-blue-600 break-all"
                   />
                 </>
               )}
               {resumeData.personalInfo.website && (
                 <>
-                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-400 hidden sm:inline">•</span>
                   <EditableText
                     field="personalInfo.website"
                     value={resumeData.personalInfo.website}
-                    className="text-xs sm:text-sm text-center text-blue-600"
+                    className="text-xs sm:text-sm text-center text-blue-600 break-all"
                   />
                 </>
               )}
@@ -320,54 +320,58 @@ function ResumePreview({
 
       {/* Professional Summary */}
       {resumeData.professionalSummary && (
-        <div className="p-8 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 uppercase tracking-wide">
+        <div className="p-4 sm:p-6 md:p-8 border-b border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 uppercase tracking-wide">
             {t("resume.sections.professionalSummary")}
           </h3>
           <EditableText
             field="professionalSummary"
             value={resumeData.professionalSummary}
-            className="text-sm text-gray-700 leading-relaxed"
+            className="text-sm text-gray-700 leading-relaxed break-words"
             multiline
-            style={{ minHeight: "60px" }}
+            style={{
+              minHeight: "60px",
+              wordWrap: "break-word",
+              whiteSpace: "pre-wrap",
+            }}
           />
         </div>
       )}
 
       {/* Experience */}
       {resumeData.experience && resumeData.experience.length > 0 && (
-        <div className="p-8 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6 uppercase tracking-wide">
+        <div className="p-4 sm:p-6 md:p-8 border-b border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-6 uppercase tracking-wide">
             {t("resume.sections.experience")}
           </h3>
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {resumeData.experience.map((exp, index) => (
               <div
                 key={`exp-${index}-${exp.company}-${exp.title}`}
                 className="relative"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
+                  <div className="flex-1 min-w-0">
                     <EditableText
                       field={`experience.${index}.title`}
                       value={exp.title}
-                      className="text-base font-semibold text-gray-900"
+                      className="text-sm sm:text-base font-semibold text-gray-900 break-words"
                     />
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
                       <EditableText
                         field={`experience.${index}.company`}
                         value={exp.company}
-                        className="text-sm font-medium text-gray-700"
+                        className="text-sm font-medium text-gray-700 break-words"
                       />
-                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-400 hidden sm:inline">•</span>
                       <EditableText
                         field={`experience.${index}.location`}
                         value={exp.location}
-                        className="text-sm text-gray-600"
+                        className="text-sm text-gray-600 break-words"
                       />
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600 flex-shrink-0">
+                  <div className="text-sm text-gray-600 flex-shrink-0 self-start">
                     <EditableText
                       field={`experience.${index}.startDate`}
                       value={exp.startDate}
@@ -387,13 +391,19 @@ function ResumePreview({
                       key={achIndex}
                       className="text-sm text-gray-700 flex items-start"
                     >
-                      <span className="text-gray-400 mr-3 mt-0.5">•</span>
+                      <span className="text-gray-400 mr-3 mt-0.5 flex-shrink-0">
+                        •
+                      </span>
                       <EditableText
                         field={`experience.${index}.achievements.${achIndex}`}
                         value={achievement}
-                        className="flex-1 text-sm leading-relaxed"
+                        className="flex-1 text-sm leading-relaxed break-words"
                         multiline
-                        style={{ minHeight: "20px" }}
+                        style={{
+                          minHeight: "20px",
+                          wordWrap: "break-word",
+                          whiteSpace: "pre-wrap",
+                        }}
                       />
                     </li>
                   ))}

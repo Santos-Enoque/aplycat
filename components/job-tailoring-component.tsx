@@ -352,31 +352,6 @@ export function JobTailoringComponent({
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t("jobTitle")}</Label>
-                <Input
-                  placeholder={t("jobTitlePlaceholder")}
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  className="text-sm"
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("companyName")}
-                </Label>
-                <Input
-                  placeholder={t("companyPlaceholder")}
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  className="text-sm"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
               <Label className="text-sm font-medium">
                 {t("jobDescription")}{" "}
@@ -386,11 +361,42 @@ export function JobTailoringComponent({
                 placeholder={t("jobDescriptionPlaceholder")}
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
-                rows={5}
-                className="resize-none text-sm"
+                rows={4}
+                className="resize-none text-sm leading-relaxed break-words"
+                disabled={isLoading}
+                style={{ wordWrap: "break-word", whiteSpace: "pre-wrap" }}
+              />
+              <p className="text-xs text-gray-500 break-words">
+                {t("jobDescriptionHelp")}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                {t("jobTitle")}{" "}
+                <span className="text-gray-500">{t("optional")}</span>
+              </Label>
+              <Input
+                placeholder={t("jobTitlePlaceholder")}
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                className="text-sm break-words"
                 disabled={isLoading}
               />
-              <p className="text-xs text-gray-500">{t("jobDescriptionHelp")}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                {t("companyName")}{" "}
+                <span className="text-gray-500">{t("optional")}</span>
+              </Label>
+              <Input
+                placeholder={t("companyPlaceholder")}
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                className="text-sm break-words"
+                disabled={isLoading}
+              />
             </div>
           </div>
         )}

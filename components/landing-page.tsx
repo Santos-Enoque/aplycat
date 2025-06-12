@@ -582,10 +582,10 @@ const TestimonialsSection = () => {
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             {t("title")}
           </h2>
-          <div className="flex justify-center items-center space-x-8 text-sm text-gray-600 mb-8">
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 text-sm text-gray-600 mb-8">
             <div className="flex items-center">
               <span className="text-2xl mr-2">🔥</span>
               <span className="font-semibold">{t("stats.roasted")}</span>
@@ -601,39 +601,42 @@ const TestimonialsSection = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial: any, index: number) => (
             <Card
               key={index}
               className="hover:shadow-lg transition-shadow border-gray-200"
             >
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-3 sm:mr-4 flex-shrink-0">
                     {(testimonial.name || "")
                       .split(" ")
                       .map((n: string) => n[0])
                       .join("")}
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="flex text-yellow-400 mb-1">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-current" />
+                        <Star
+                          key={i}
+                          className="h-3 w-3 sm:h-4 sm:w-4 fill-current"
+                        />
                       ))}
                     </div>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">
                       {testimonial.name && `${testimonial.name}, `}
                       {testimonial.role}
                     </p>
                   </div>
                 </div>
-                <p className="text-gray-900 font-semibold mb-2">
+                <p className="text-sm sm:text-base text-gray-900 font-semibold mb-2 line-clamp-2">
                   "{testimonial.quote}"
                 </p>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-3">
                   {testimonial.story}
                 </p>
-                <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold inline-block">
+                <div className="bg-blue-100 text-blue-800 px-2 sm:px-3 py-1 rounded-full text-xs font-semibold inline-block">
                   {testimonial.result}
                 </div>
               </CardContent>
@@ -693,120 +696,122 @@ const FeaturesSection = () => {
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t("title")}
           </h2>
-          <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
+          <p className="text-lg md:text-xl text-muted-foreground">
+            {t("subtitle")}
+          </p>
         </div>
 
         {/* Feature 1: Resume Honest Feedback */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-16 lg:mb-20">
+          <div className="order-2 lg:order-1">
             <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
               <Zap className="h-8 w-8 text-blue-500" />
             </div>
-            <h3 className="text-3xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               {t("honestFeedback.title")}
             </h3>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-base md:text-lg text-muted-foreground mb-6">
               {t("honestFeedback.description")}
             </p>
             <ul className="space-y-3 mb-6">
               {t
                 .raw("honestFeedback.features")
                 .map((feature: string, index: number) => (
-                  <li key={index} className="flex items-center text-foreground">
-                    <CheckCircle className="h-5 w-5 text-blue-500 mr-3" />
-                    {feature}
+                  <li key={index} className="flex items-start text-foreground">
+                    <CheckCircle className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base">{feature}</span>
                   </li>
                 ))}
             </ul>
           </div>
-          <div>
+          <div className="order-1 lg:order-2">
             <HonestFeedbackPreview />
           </div>
         </div>
 
         {/* Feature 2: AI Resume Generator */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-          <div className="lg:order-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-16 lg:mb-20">
+          <div className="order-2">
             <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
               <TrendingUp className="h-8 w-8 text-blue-500" />
             </div>
-            <h3 className="text-3xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               {t("aiGenerator.title")}
             </h3>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-base md:text-lg text-muted-foreground mb-6">
               {t("aiGenerator.description")}
             </p>
             <ul className="space-y-3 mb-6">
               {t
                 .raw("aiGenerator.features")
                 .map((feature: string, index: number) => (
-                  <li key={index} className="flex items-center text-foreground">
-                    <CheckCircle className="h-5 w-5 text-blue-500 mr-3" />
-                    {feature}
+                  <li key={index} className="flex items-start text-foreground">
+                    <CheckCircle className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base">{feature}</span>
                   </li>
                 ))}
             </ul>
           </div>
-          <div className="lg:order-1">
+          <div className="order-1">
             <AiResumeGeneratorPreview />
           </div>
         </div>
 
         {/* Feature 3: Job-Specific Tailoring */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-16 lg:mb-20">
+          <div className="order-2 lg:order-1">
             <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
               <Target className="h-8 w-8 text-blue-500" />
             </div>
-            <h3 className="text-3xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               {t("jobTailoring.title")}
             </h3>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-base md:text-lg text-muted-foreground mb-6">
               {t("jobTailoring.description")}
             </p>
             <ul className="space-y-3 mb-6">
               {t
                 .raw("jobTailoring.features")
                 .map((feature: string, index: number) => (
-                  <li key={index} className="flex items-center text-foreground">
-                    <CheckCircle className="h-5 w-5 text-blue-500 mr-3" />
-                    {feature}
+                  <li key={index} className="flex items-start text-foreground">
+                    <CheckCircle className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base">{feature}</span>
                   </li>
                 ))}
             </ul>
           </div>
-          <div>
+          <div className="order-1 lg:order-2">
             <JobTailoringPreview />
           </div>
         </div>
 
         {/* Feature 4: LinkedIn Optimization */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="lg:order-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="order-2">
             <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
               <Award className="h-8 w-8 text-blue-500" />
             </div>
-            <h3 className="text-3xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               {t("linkedinOptimization.title")}
             </h3>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-base md:text-lg text-muted-foreground mb-6">
               {t("linkedinOptimization.description")}
             </p>
             <ul className="space-y-3 mb-6">
               {t
                 .raw("linkedinOptimization.features")
                 .map((feature: string, index: number) => (
-                  <li key={index} className="flex items-center text-foreground">
-                    <CheckCircle className="h-5 w-5 text-blue-500 mr-3" />
-                    {feature}
+                  <li key={index} className="flex items-start text-foreground">
+                    <CheckCircle className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base">{feature}</span>
                   </li>
                 ))}
             </ul>
           </div>
-          <div className="lg:order-1">
+          <div className="order-1">
             <LinkedInPreview />
           </div>
         </div>
@@ -823,64 +828,79 @@ const BeforeAfterSection = () => {
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t("title")}
           </h2>
-          <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
+          <p className="text-lg md:text-xl text-muted-foreground">
+            {t("subtitle")}
+          </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
           <Card className="border-red-200 bg-red-50">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-red-600">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <CardTitle className="text-red-600 text-lg md:text-xl">
                   {t("before.title")}
                 </CardTitle>
-                <Badge variant="destructive">{t("before.atsScore")}</Badge>
+                <Badge
+                  variant="destructive"
+                  className="text-xs self-start sm:self-auto"
+                >
+                  {t("before.atsScore")}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-white p-4 rounded border-2 border-dashed border-red-300">
-                <h3 className="font-semibold text-sm mb-2">
+              <div className="bg-white p-3 sm:p-4 rounded border-2 border-dashed border-red-300">
+                <h3 className="font-semibold text-xs sm:text-sm mb-2 break-words">
                   {t("before.filename")}
                 </h3>
                 <div className="space-y-1 text-xs text-muted-foreground">
                   {t
                     .raw("before.issues")
                     .map((issue: string, index: number) => (
-                      <p key={index}>• {issue}</p>
+                      <p key={index} className="break-words">
+                        • {issue}
+                      </p>
                     ))}
                 </div>
               </div>
-              <div className="text-sm text-red-600 bg-red-100 p-3 rounded">
-                <strong>Roast Result:</strong> {t("before.roast")}
+              <div className="text-xs sm:text-sm text-red-600 bg-red-100 p-3 rounded">
+                <strong>Roast Result:</strong>{" "}
+                <span className="break-words">{t("before.roast")}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-green-200 bg-green-50">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-green-600">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <CardTitle className="text-green-600 text-lg md:text-xl">
                   {t("after.title")}
                 </CardTitle>
-                <Badge className="bg-green-500">{t("after.atsScore")}</Badge>
+                <Badge className="bg-green-500 text-xs self-start sm:self-auto">
+                  {t("after.atsScore")}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-white p-4 rounded border-2 border-dashed border-green-300">
-                <h3 className="font-semibold text-sm mb-2">
+              <div className="bg-white p-3 sm:p-4 rounded border-2 border-dashed border-green-300">
+                <h3 className="font-semibold text-xs sm:text-sm mb-2 break-words">
                   {t("after.filename")}
                 </h3>
                 <div className="space-y-1 text-xs text-muted-foreground">
                   {t
                     .raw("after.improvements")
                     .map((improvement: string, index: number) => (
-                      <p key={index}>• {improvement}</p>
+                      <p key={index} className="break-words">
+                        • {improvement}
+                      </p>
                     ))}
                 </div>
               </div>
-              <div className="text-sm text-green-600 bg-green-100 p-3 rounded">
-                <strong>Result:</strong> {t("after.result")}
+              <div className="text-xs sm:text-sm text-green-600 bg-green-100 p-3 rounded">
+                <strong>Result:</strong>{" "}
+                <span className="break-words">{t("after.result")}</span>
               </div>
             </CardContent>
           </Card>
@@ -1096,16 +1116,16 @@ export function LandingPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="py-16 bg-gradient-to-br from-blue-50 to-blue-50">
+      <section className="py-16 bg-gradient-to-br from-blue-50 to-blue-50 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold mb-6">
               {t("hero.badge")}
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight break-words">
               {t("hero.title", { recruiters: t("hero.recruiters") })}
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto">
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto break-words">
               {t("hero.subtitle")}
             </p>
           </div>
@@ -1124,7 +1144,7 @@ export function LandingPage() {
           )}
 
           {/* Social Proof */}
-          <div className="flex items-center justify-center space-x-8 text-sm text-gray-600 mt-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-sm text-gray-600 mt-12">
             <div className="flex items-center">
               <Users className="h-5 w-5 mr-2 text-blue-500" />
               <span className="font-semibold">
