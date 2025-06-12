@@ -79,8 +79,8 @@ export function UnifiedNavbar() {
 
           {/* Right side - Auth and user menu */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Language Switcher - Only on desktop */}
-            <div className="hidden md:block">
+            {/* Language Switcher - Always visible */}
+            <div className="block">
               <LanguageSwitcher />
             </div>
 
@@ -149,35 +149,12 @@ export function UnifiedNavbar() {
                       </div>
                     </div>
 
-                    {/* Language Switcher - Mobile only */}
-                    <div className="md:hidden px-3 py-2 border-b">
-                      <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-600 flex-1">
-                          {t("languageSelector")}
-                        </span>
-                        <LanguageSwitcher />
-                      </div>
-                    </div>
-
                     <DropdownMenuSeparator />
 
                     {/* Dashboard Link */}
                     <DropdownMenuItem onClick={() => router.push("/dashboard")}>
                       <Home className="h-4 w-4 mr-2" />
                       {t("dashboard")}
-                    </DropdownMenuItem>
-
-                    {/* Settings */}
-                    <DropdownMenuItem onClick={() => router.push("/settings")}>
-                      <Settings className="h-4 w-4 mr-2" />
-                      {t("settings")}
-                    </DropdownMenuItem>
-
-                    {/* Help */}
-                    <DropdownMenuItem onClick={() => router.push("/help")}>
-                      <HelpCircle className="h-4 w-4 mr-2" />
-                      {t("help")}
                     </DropdownMenuItem>
 
                     <DropdownMenuSeparator />
