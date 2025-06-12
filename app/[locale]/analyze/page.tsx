@@ -36,29 +36,31 @@ function AnalyzePageContent() {
 
     const storedFile = sessionStorage.getItem("streamingAnalysisFile");
     if (storedFile) {
-      setHasInitiated(true);
       const { fileName, fileData } = JSON.parse(storedFile);
       setFileName(fileName);
       originalFileRef.current = { filename: fileName, fileData: fileData };
 
-      const fetchRes = fetch(fileData);
-      fetchRes
-        .then((res) => res.blob())
-        .then((blob) => {
-          const file = new File([blob], fileName, { type: blob.type });
-          startAnalysis(file);
-        })
-        .catch((err) => {
-          console.error("Error converting base64 to file:", err);
-          // Handle error state in UI
-        });
-
-      // Clean up sessionStorage after use
-      sessionStorage.removeItem("streamingAnalysisFile");
-    } else {
-      setHasInitiated(true);
+      // Only start analysis if it hasn't been completed or isn't running
+      if (
+        status !== "completed" &&
+        status !== "streaming" &&
+        status !== "connecting"
+      ) {
+        const fetchRes = fetch(fileData);
+        fetchRes
+          .then((res) => res.blob())
+          .then((blob) => {
+            const file = new File([blob], fileName, { type: blob.type });
+            startAnalysis(file);
+          })
+          .catch((err) => {
+            console.error("Error converting base64 to file:", err);
+            // Handle error state in UI
+          });
+      }
     }
-  }, [startAnalysis, hasInitiated]);
+    setHasInitiated(true);
+  }, [startAnalysis, hasInitiated, status]);
 
   const handleStartImprovement = (
     targetRole: string,

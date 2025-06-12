@@ -250,6 +250,40 @@
   "banner": {
     "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas $1 • 22 Créditos no Valor de $11"
   },
+  "signup": {
+    "trial": {
+      "limitedTimeOffer": "OFERTA POR TEMPO LIMITADO",
+      "title": "Teste $1 - Todos os Recursos de IA",
+      "subtitle": "Obtenha 22 créditos no valor de $11 por apenas $1",
+      "resumeImprovements": "11× Melhorias de Currículo",
+      "jobTailoring": "7× Personalização + Carta de Apresentação",
+      "linkedinAnalysis": "GRÁTIS Análise do LinkedIn",
+      "customEnhancement": "22× Melhorias Personalizadas"
+    },
+    "benefits": {
+      "title": "O que você obtém com o Aplycat",
+      "brutalFeedback": {
+        "title": "Feedback Brutalmente Honesto",
+        "description": "Feedback real que os recrutadores realmente pensam"
+      },
+      "aiImprovements": {
+        "title": "Melhorias com IA",
+        "description": "Reescritas completas de currículo otimizadas para ATS"
+      },
+      "jobTailoring": {
+        "title": "Personalização Específica para Vagas",
+        "description": "Currículos personalizados + cartas de apresentação para cada candidatura"
+      }
+    },
+    "form": {
+      "titleTrial": "Inicie Seu Teste de $1",
+      "titleRegular": "Crie Sua Conta",
+      "subtitleTrial": "Obtenha acesso instantâneo a todos os recursos de IA",
+      "subtitleRegular": "Junte-se a milhares melhorando suas carreiras"
+    },
+    "freeAnalysis": "🎁 Análise de currículo agora é GRÁTIS - sem cartão de crédito necessário",
+    "loading": "Carregando..."
+  },
   "HomePage": {
     "title": "Análise Brutalmente Honesta de Currículo",
     "about": "Ir para a página sobre"
@@ -324,13 +358,15 @@
       "supportedFormats": "PDF, DOC, DOCX (Máx 5MB)",
       "browseFiles": "Procurar Arquivos",
       "recentlyUploaded": "Enviado recentemente:",
-      "noFiles": "Nenhum arquivo enviado ainda"
+      "noFiles": "Nenhum arquivo enviado ainda",
+      "free": "Gratis"
     },
     "linkedinCard": {
       "title": "Conectar LinkedIn",
       "description": "Obtenha crítica do perfil LinkedIn + otimização",
       "comingSoon": "Em Breve",
-      "stayTuned": "A análise do LinkedIn estará disponível em breve!"
+      "stayTuned": "A análise do LinkedIn estará disponível em breve!",
+      "free": "Gratis"
     },
     "stats": {
       "resumesUploaded": "Currículos Enviados",
@@ -351,11 +387,6 @@
       "overall": "Geral",
       "ats": "ATS",
       "viewAll": "Ver Tudo"
-    },
-    "footer": {
-      "requestFeature": "Solicitar recurso / Reportar bug",
-      "linkedin": "LinkedIn",
-      "instagram": "Instagram"
     },
     "errors": {
       "invalidFileType": "Tipo de arquivo inválido",
@@ -388,11 +419,7 @@
       "analyzed": "Analisado {timeAgo}",
       "share": "Compartilhar",
       "downloadReport": "Baixar Relatório",
-      "scoreBreakdown": "Divisão da Pontuação",
-      "overallAnalysis": "Análise Geral",
-      "sectionAnalysis": "Análise de Seções",
-      "recommendations": "Recomendações",
-      "improvementPlan": "Plano de Melhoria"
+      "scoreBreakdown": "Divisão da Pontuação"
     },
     "resumes": {
       "title": "Seus Currículos",
@@ -443,6 +470,34 @@
         "BONUS": "Bônus"
       }
     }
+  },
+  "footer": {
+    "tagline": "Obtenha feedback brutalmente honesto e com IA sobre seu currículo. Transforme sua carreira com insights que realmente importam.",
+    "stayUpdated": "Mantenha-se Atualizado",
+    "emailPlaceholder": "Digite seu email",
+    "subscribe": "Inscrever-se",
+    "product": "Produto",
+    "company": "Empresa",
+    "support": "Suporte",
+    "copyright": "© 2024 Aplycat. Todos os direitos reservados. Feito com 🔥 e honestidade brutal.",
+    "links": {
+      "features": "Recursos",
+      "howItWorks": "Como Funciona",
+      "pricing": "Preços",
+      "examples": "Exemplos",
+      "about": "Sobre Nós",
+      "blog": "Blog",
+      "careers": "Carreiras",
+      "contact": "Contato",
+      "helpCenter": "Central de Ajuda",
+      "privacy": "Política de Privacidade",
+      "terms": "Termos de Serviço",
+      "status": "Status"
+    },
+    "overallAnalysis": "Análise Geral",
+    "sectionAnalysis": "Análise de Seções",
+    "recommendations": "Recomendações",
+    "improvementPlan": "Plano de Melhoria"
   },
   "creditsModal": {
     "title": "Comprar Créditos",

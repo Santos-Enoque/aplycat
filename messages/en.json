@@ -250,6 +250,40 @@
   "banner": {
     "trial": "🚀 LIMITED TIME: Try ALL AI Features for Just $1 • 22 Credits Worth $11"
   },
+  "signup": {
+    "trial": {
+      "limitedTimeOffer": "LIMITED TIME OFFER",
+      "title": "$1 Trial - All AI Features",
+      "subtitle": "Get 22 credits worth $11 for just $1",
+      "resumeImprovements": "11× Resume Improvements",
+      "jobTailoring": "7× Job Tailoring + Cover Letter",
+      "linkedinAnalysis": "FREE LinkedIn Analysis",
+      "customEnhancement": "22× Custom Enhancements"
+    },
+    "benefits": {
+      "title": "What you get with Aplycat",
+      "brutalFeedback": {
+        "title": "Brutal Honest Feedback",
+        "description": "Real feedback that recruiters actually think"
+      },
+      "aiImprovements": {
+        "title": "AI-Powered Improvements",
+        "description": "Complete resume rewrites optimized for ATS"
+      },
+      "jobTailoring": {
+        "title": "Job-Specific Tailoring",
+        "description": "Custom resumes + cover letters for every application"
+      }
+    },
+    "form": {
+      "titleTrial": "Start Your $1 Trial",
+      "titleRegular": "Create Your Account",
+      "subtitleTrial": "Get instant access to all AI features",
+      "subtitleRegular": "Join thousands improving their careers"
+    },
+    "freeAnalysis": "🎁 Resume analysis is now FREE - no credit card required",
+    "loading": "Loading..."
+  },
   "HomePage": {
     "title": "Brutally Honest Resume Analysis",
     "about": "Go to the about page"
@@ -324,13 +358,15 @@
       "supportedFormats": "PDF, DOC, DOCX (Max 5MB)",
       "browseFiles": "Browse Files",
       "recentlyUploaded": "Recently uploaded:",
-      "noFiles": "No files uploaded yet"
+      "noFiles": "No files uploaded yet",
+      "free": "Free"
     },
     "linkedinCard": {
       "title": "Connect LinkedIn",
       "description": "Get LinkedIn profile roast + optimization",
       "comingSoon": "Coming Soon",
-      "stayTuned": "LinkedIn analysis will be available soon!"
+      "stayTuned": "LinkedIn analysis will be available soon!",
+      "free": "Free"
     },
     "stats": {
       "resumesUploaded": "Resumes Uploaded",
@@ -388,60 +424,84 @@
       "analyzed": "Analyzed {timeAgo}",
       "share": "Share",
       "downloadReport": "Download Report",
-      "scoreBreakdown": "Score Breakdown",
-      "overallAnalysis": "Overall Analysis",
-      "sectionAnalysis": "Section Analysis",
-      "recommendations": "Recommendations",
-      "improvementPlan": "Improvement Plan"
+      "scoreBreakdown": "Score Breakdown"
+    }
+  },
+  "footer": {
+    "tagline": "Get brutally honest, AI-powered feedback on your resume. Transform your career with insights that actually matter.",
+    "stayUpdated": "Stay Updated",
+    "emailPlaceholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "product": "Product",
+    "company": "Company",
+    "support": "Support",
+    "copyright": "© 2024 Aplycat. All rights reserved. Made with 🔥 and brutal honesty.",
+    "links": {
+      "features": "Features",
+      "howItWorks": "How it Works",
+      "pricing": "Pricing",
+      "examples": "Examples",
+      "about": "About Us",
+      "blog": "Blog",
+      "careers": "Careers",
+      "contact": "Contact",
+      "helpCenter": "Help Center",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "status": "Status"
     },
-    "resumes": {
-      "title": "Your Resumes",
-      "uploadNew": "Upload New Resume",
-      "noResumes": "No resumes uploaded yet",
-      "uploadFirst": "Upload your first resume to get started",
-      "lastAnalyzed": "Last analyzed {timeAgo}",
-      "notAnalyzed": "Not analyzed yet",
-      "analyze": "Analyze",
-      "improve": "Improve",
-      "view": "View",
-      "delete": "Delete",
-      "uploadedOn": "Uploaded {timeAgo}"
-    },
-    "analyses": {
-      "title": "Analysis History",
-      "totalAnalyses": "{total} analyses",
-      "noAnalyses": "No analyses yet",
-      "startAnalyzing": "Start by analyzing your first resume",
-      "viewDetails": "View Details",
-      "creditsUsed": "{credits} credits",
-      "scoreImprovement": "Score: {before} → {after}"
-    },
-    "improvements": {
-      "title": "Resume Improvements",
-      "totalImprovements": "{total} improvements",
-      "noImprovements": "No improvements yet",
-      "createFirst": "Create your first improved resume",
-      "version": "Version {version}",
-      "targetRole": "Target: {role}",
-      "download": "Download",
-      "preview": "Preview",
-      "improvedScore": "Improved Score: {score}"
-    },
-    "credits": {
-      "title": "Credits & Usage",
-      "currentBalance": "Current Balance",
-      "totalUsed": "Total Used",
-      "recentTransactions": "Recent Transactions",
-      "buyMore": "Buy More Credits",
-      "transactionHistory": "Transaction History",
-      "noTransactions": "No transactions yet",
-      "type": {
-        "ANALYSIS_USE": "Analysis",
-        "IMPROVEMENT_USE": "Improvement",
-        "PURCHASE": "Purchase",
-        "REFUND": "Refund",
-        "BONUS": "Bonus"
-      }
+    "overallAnalysis": "Overall Analysis",
+    "sectionAnalysis": "Section Analysis",
+    "recommendations": "Recommendations",
+    "improvementPlan": "Improvement Plan"
+  },
+  "resumes": {
+    "title": "Your Resumes",
+    "uploadNew": "Upload New Resume",
+    "noResumes": "No resumes uploaded yet",
+    "uploadFirst": "Upload your first resume to get started",
+    "lastAnalyzed": "Last analyzed {timeAgo}",
+    "notAnalyzed": "Not analyzed yet",
+    "analyze": "Analyze",
+    "improve": "Improve",
+    "view": "View",
+    "delete": "Delete",
+    "uploadedOn": "Uploaded {timeAgo}"
+  },
+  "analyses": {
+    "title": "Analysis History",
+    "totalAnalyses": "{total} analyses",
+    "noAnalyses": "No analyses yet",
+    "startAnalyzing": "Start by analyzing your first resume",
+    "viewDetails": "View Details",
+    "creditsUsed": "{credits} credits",
+    "scoreImprovement": "Score: {before} → {after}"
+  },
+  "improvements": {
+    "title": "Resume Improvements",
+    "totalImprovements": "{total} improvements",
+    "noImprovements": "No improvements yet",
+    "createFirst": "Create your first improved resume",
+    "version": "Version {version}",
+    "targetRole": "Target: {role}",
+    "download": "Download",
+    "preview": "Preview",
+    "improvedScore": "Improved Score: {score}"
+  },
+  "credits": {
+    "title": "Credits & Usage",
+    "currentBalance": "Current Balance",
+    "totalUsed": "Total Used",
+    "recentTransactions": "Recent Transactions",
+    "buyMore": "Buy More Credits",
+    "transactionHistory": "Transaction History",
+    "noTransactions": "No transactions yet",
+    "type": {
+      "ANALYSIS_USE": "Analysis",
+      "IMPROVEMENT_USE": "Improvement",
+      "PURCHASE": "Purchase",
+      "REFUND": "Refund",
+      "BONUS": "Bonus"
     }
   },
   "creditsModal": {

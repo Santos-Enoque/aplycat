@@ -495,7 +495,9 @@ export function DashboardContent({ user }: DashboardContentProps) {
 
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Cost: 1 credit</span>
+                <span className="text-green-600 font-medium">
+                  {t("uploadCard.free")}
+                </span>
                 <span className="text-primary font-medium">
                   ~2 min analysis
                 </span>
@@ -549,7 +551,9 @@ export function DashboardContent({ user }: DashboardContentProps) {
               </div>
 
               <div className="flex items-center justify-between text-sm pt-2 border-t">
-                <span className="text-muted-foreground">Cost: 3 credits</span>
+                <span className="text-green-600 font-medium">
+                  {t("linkedinCard.free")}
+                </span>
                 <span className="text-primary font-medium">
                   ~5 min analysis
                 </span>

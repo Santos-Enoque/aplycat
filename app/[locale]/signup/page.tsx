@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Sparkles, Star, Target, Zap } from "lucide-react";
 import { Suspense } from "react";
+import { useTranslations } from "next-intl";
 
 function SignUpContent() {
   const searchParams = useSearchParams();
   const isTrial = searchParams.get("trial") === "true";
+  const t = useTranslations("signup");
 
   // Set up the unsafe metadata for trial signups
   const unsafeMetadata = isTrial ? { trial: "true" } : undefined;
@@ -24,31 +26,31 @@ function SignUpContent() {
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="h-6 w-6" />
                 <Badge className="bg-white/20 text-white">
-                  LIMITED TIME OFFER
+                  {t("trial.limitedTimeOffer")}
                 </Badge>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold mb-2">
-                $1 Trial - All AI Features
+                {t("trial.title")}
               </h2>
               <p className="text-base sm:text-lg opacity-90 mb-4">
-                Get 7 credits worth $5.81 for just $1
+                {t("trial.subtitle")}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
-                  <span>3× Resume Improvements</span>
+                  <span>{t("trial.resumeImprovements")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
-                  <span>2× Job Tailoring</span>
+                  <span>{t("trial.jobTailoring")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
-                  <span>1× LinkedIn Analysis</span>
+                  <span>{t("trial.linkedinAnalysis")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
-                  <span>1× Custom Enhancement</span>
+                  <span>{t("trial.customEnhancement")}</span>
                 </div>
               </div>
             </div>
@@ -58,34 +60,40 @@ function SignUpContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-6 w-6 text-blue-500" />
-                What you get with Aplycat
+                {t("benefits.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-3">
                 <Zap className="h-5 w-5 text-blue-500 mt-1" />
                 <div>
-                  <h3 className="font-semibold">Brutal Honest Feedback</h3>
+                  <h3 className="font-semibold">
+                    {t("benefits.brutalFeedback.title")}
+                  </h3>
                   <p className="text-sm text-gray-600">
-                    Real feedback that recruiters actually think
+                    {t("benefits.brutalFeedback.description")}
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Star className="h-5 w-5 text-blue-500 mt-1" />
                 <div>
-                  <h3 className="font-semibold">AI-Powered Improvements</h3>
+                  <h3 className="font-semibold">
+                    {t("benefits.aiImprovements.title")}
+                  </h3>
                   <p className="text-sm text-gray-600">
-                    Complete resume rewrites optimized for ATS
+                    {t("benefits.aiImprovements.description")}
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Target className="h-5 w-5 text-blue-500 mt-1" />
                 <div>
-                  <h3 className="font-semibold">Job-Specific Tailoring</h3>
+                  <h3 className="font-semibold">
+                    {t("benefits.jobTailoring.title")}
+                  </h3>
                   <p className="text-sm text-gray-600">
-                    Custom resumes + cover letters for every application
+                    {t("benefits.jobTailoring.description")}
                   </p>
                 </div>
               </div>
@@ -95,7 +103,7 @@ function SignUpContent() {
           {!isTrial && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-blue-800 font-semibold text-center">
-                🎁 Resume analysis is now FREE - no credit card required
+                {t("freeAnalysis")}
               </p>
             </div>
           )}
@@ -106,12 +114,10 @@ function SignUpContent() {
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
               <CardTitle>
-                {isTrial ? "Start Your $1 Trial" : "Create Your Account"}
+                {isTrial ? t("form.titleTrial") : t("form.titleRegular")}
               </CardTitle>
               <p className="text-gray-600">
-                {isTrial
-                  ? "Get instant access to all AI features"
-                  : "Join thousands improving their careers"}
+                {isTrial ? t("form.subtitleTrial") : t("form.subtitleRegular")}
               </p>
             </CardHeader>
             <CardContent>
@@ -137,13 +143,15 @@ function SignUpContent() {
 }
 
 export default function SignUpPage() {
+  const t = useTranslations("signup");
+
   return (
     <Suspense
       fallback={
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
+            <p className="text-gray-600">{t("loading")}</p>
           </div>
         </div>
       }
