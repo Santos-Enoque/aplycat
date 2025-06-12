@@ -38,7 +38,7 @@ function getClientIP(request: NextRequest): string {
 function checkRateLimit(ip: string): { allowed: boolean; remaining: number; resetTime: number } {
   const now = Date.now();
   const windowMs = 60 * 60 * 1000; // 1 hour
-  const limit = 3; // 3 requests per hour
+  const limit = 5; // 5 requests per hour
   
   const key = `rate_limit:${ip}`;
   const current = rateLimitStore.get(key);
@@ -89,16 +89,16 @@ export async function POST(request: NextRequest) {
   if (!rateLimit.allowed) {
     const resetDate = new Date(rateLimit.resetTime).toISOString();
     return NextResponse.json(
-      { 
-        error: 'Rate limit exceeded',
-        message: 'You have reached the limit of 3 free analyses per hour. Please sign up for unlimited access.',
-        resetTime: resetDate,
-        upgradeUrl: '/signup?trial=true'
-      },
-      { 
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': '3',
+              { 
+          error: 'Rate limit exceeded',
+          message: 'You have reached the limit of 5 free analyses per hour. Please sign up for unlimited access.',
+          resetTime: resetDate,
+          upgradeUrl: '/signup?trial=true'
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '5',
           'X-RateLimit-Remaining': '0',
           'X-RateLimit-Reset': resetDate,
         }

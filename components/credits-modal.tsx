@@ -21,7 +21,7 @@ const creditPacks = Object.entries(STRIPE_CONFIG.creditPackages).map(
   ([id, pack]) => ({
     id,
     ...pack,
-    popular: id === "professional", // Example: mark professional as popular
+    popular: id === "pro", // Mark pro pack as popular
     features: getFeaturesForPackage(
       id as keyof typeof STRIPE_CONFIG.creditPackages
     ),
@@ -33,26 +33,13 @@ function getFeaturesForPackage(
   packId: keyof typeof STRIPE_CONFIG.creditPackages
 ) {
   switch (packId) {
-    case "starter":
+    case "pro":
       return [
-        "2 Resume Analyses",
-        "1 Resume Improvement",
-        "1 Job-Tailored Resume",
-      ];
-    case "professional":
-      return [
-        "10 Resume Analyses",
-        "8 Resume Improvements",
-        "7 Job-Tailored Resumes + Cover Letters",
-        "Priority Support",
-      ];
-    case "premium":
-      return [
-        "25 Resume Analyses",
-        "20 Resume Improvements",
-        "15 Job-Tailored Resumes + Cover Letters",
-        "Premium Support",
-        "Career change optimization",
+        "22 Resume Improvements",
+        "14 Job-Tailored Resume + Cover Letter combos",
+        "44 Custom Improvements",
+        "Unlimited free analysis",
+        "Email Support",
       ];
     default:
       return [];

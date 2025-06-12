@@ -2,7 +2,7 @@
 
 ## Overview
 
-Aplycat uses a credit-based system to provide fair access to AI-powered resume services. Credits are consumed when you use premium features like resume analysis, improvements, and job-specific tailoring.
+Aplycat uses a simplified credit-based system to provide fair access to AI-powered resume services. Credits are consumed when you use premium features like resume improvements and job-specific tailoring.
 
 ## 🎯 How It Works
 
@@ -14,74 +14,73 @@ Credits are virtual currency units that power Aplycat's AI features. Think of th
 - **Transparent Pricing** - Know exactly what each feature costs
 - **Fair Usage** - Pay only for what you use
 
+### Free Features (No Credits Required)
+
+- **Resume Analysis** - Free unlimited use (rate limited to 5 per hour for users with 0 credits)
+- **LinkedIn Analysis** - Free unlimited use (rate limited to 5 per hour for users with 0 credits)
+
+_Rate limiting only applies when you have 0 credits. Users with credits get unlimited free analysis._
+
 ## 💰 Credit Costs
 
 | Feature                          | Credits Required | What You Get                                                                                               |
 | -------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Resume Analysis**              | 1 credit         | Comprehensive AI analysis with brutal honest feedback, ATS score, and improvement suggestions              |
+| **Resume Analysis**              | FREE             | Comprehensive AI analysis with brutal honest feedback, ATS score, and improvement suggestions              |
+| **LinkedIn Analysis**            | FREE             | Detailed LinkedIn profile analysis and optimization suggestions                                            |
 | **Resume Improvement**           | 2 credits        | Complete resume transformation with AI-optimized content, keyword integration, and professional formatting |
 | **Job-Tailored Resume**          | 2 credits        | Resume specifically optimized for a job posting                                                            |
 | **Cover Letter Generation**      | 2 credits        | AI-generated cover letter tailored to job requirements                                                     |
 | **Job Tailoring + Cover Letter** | 3 credits        | Combined package: tailored resume + personalized cover letter                                              |
-| **Linked in Analysis**           | 3 credits        | Detailed linked in analysis                                                                                |
 | **Custom Improvements**          | 1 credit         | AI improvements based on your specific instructions                                                        |
 
-## 🎁 Free Credits for New Users
+## 💳 Credit Packages
 
-### Welcome Bonus: 7 Free Credits
+### 🎁 Trial Pack (One-Time Signup Bonus)
 
-Every new user receives **7 free credits** upon signup, which provides a complete experience:
+**Only available to new users who haven't purchased anything before**
 
-- ✅ **1× Resume Analysis** (1 credit) - Get brutal honest feedback
-- ✅ **1× Resume Improvement** (2 credits) - Complete transformation
-- ✅ **1× Job-Tailored Resume + Cover Letter** (3 credits) - Target-specific optimization
-- ✅ **1 bonus credit** for flexibility - Try any feature
+- **22 credits** included
+- **Country-based pricing:**
+  - **Mozambique:** 100 MZN
+  - **Rest of world:** $1 USD
+- Perfect way to try all features
 
-This gives you the complete Aplycat journey without spending a penny!
+**What you can do with 22 credits:**
 
-## 💳 Credit Packages 🚀 EARLY ADOPTER BONUS
+- 11 Resume Improvements
+- 7 Job-Tailored Resume + Cover Letter combos
+- 22 Custom Improvements
+- Or any combination of features
 
-### 🥉 Starter Pack - $4.99
+### 🥇 Pro Pack
 
-- **5 credits** included ⚡ **(+2 bonus credits!)**
-- Perfect for getting started
-- **$1.00 per credit** (Amazing value!)
-- ⚡ **67% MORE CREDITS** for early adopters
+**Available for multiple purchases**
 
-**What you can do:**
+- **44 credits** included
+- **Country-based pricing:**
+  - **Mozambique:** 200 MZN
+  - **Rest of world:** $4.99 USD
+- Best value for serious job seekers
 
-- 1 Resume Analysis + 2 Resume Improvements
-- OR 1 Job-Tailored Resume + Cover Letter combo + 2 extra credits
-- OR 5 Resume Analyses
+**What you can do with 44 credits:**
 
-### 🥈 Professional Pack - $12.49 ⭐ MOST POPULAR
+- 22 Resume Improvements
+- 14 Job-Tailored Resume + Cover Letter combos
+- 44 Custom Improvements
+- Or any combination of features
 
-- **30 credits** included ⚡ **(+15 bonus credits!)**
-- Best value for job seekers
-- **$0.42 per credit** (Incredible value!)
-- ⚡ **100% MORE CREDITS** for early adopters
+## 🌍 Country-Based Pricing
 
-**What you can do:**
+### Automatic Detection
 
-- 15 Resume Analyses
-- 15 Resume Improvements
-- 10 Job-Tailored Resume + Cover Letter combos
-- Priority Support
+- Your location is automatically detected via IP address
+- Pricing and currency display adjust automatically
 
-### 🥇 Power User Pack - $24.99
+### Currency Display
 
-- **70 credits** included ⚡ **(+30 bonus credits!)**
-- Best for career changers & professionals
-- **$0.36 per credit** (Best value ever!)
-- ⚡ **75% MORE CREDITS** for early adopters
-
-**What you can do:**
-
-- 35 Resume Analyses
-- 35 Resume Improvements
-- 23 Job-Tailored Resume + Cover Letter combos
-- Premium Support
-- Career change optimization
+- **Mozambique users:** All prices shown in MZN (Meticais)
+- **International users:** All prices shown in USD (US Dollars)
+- **Exchange rate:** 63 MZN = 1 USD (approximately)
 
 ## 🔄 How Credits Are Used
 
@@ -89,10 +88,15 @@ This gives you the complete Aplycat journey without spending a penny!
 
 Credits are automatically deducted when you:
 
-1. Start a resume analysis
-2. Generate an improved resume
-3. Create job-tailored content
-4. Request cover letter generation
+1. Generate an improved resume
+2. Create job-tailored content
+3. Request cover letter generation
+4. Use custom improvements
+
+### No Credits Needed For
+
+1. Resume analysis (always free)
+2. LinkedIn analysis (always free)
 
 ### Credit Transaction History
 
@@ -100,7 +104,6 @@ Every credit transaction is tracked:
 
 - **Purchases** - When you buy credit packages
 - **Usage** - When credits are used for features
-- **Bonuses** - Free credits from promotions
 - **Refunds** - Credits returned for issues
 
 ## 📊 Credit Management
@@ -125,23 +128,16 @@ Every credit transaction is tracked:
 
 ## 🚀 Pro Tips for Managing Credits
 
-### Maximize Your Free Credits
-
-1. **Start with Analysis** (1 credit) - Understand your current resume's weaknesses
-2. **Use Improvement** (2 credits) - Get the AI transformation
-3. **Target Specific Jobs** (3 credits) - Tailor + Cover letter for dream role
-4. **Save 1 credit** for custom tweaks or additional analysis
-
 ### Smart Usage Strategies
 
-- **Batch your work** - Upload multiple resumes during one session
-- **Use job tailoring** for high-priority applications
-- **Start with analysis** before improvement to understand needs
-- **Combine features** for maximum impact
+- **Free analysis first** - Always start with free analysis to understand needs
+- **Job tailoring combo** - Best value for applications (3 credits vs 4 credits separately)
+- **Custom improvements** - Perfect for final tweaks (1 credit)
+- **Multiple purchases** - Buy Pro Packs as needed
 
 ### Credit Efficiency
 
-- **Job tailoring** often gives better ROI than separate improvements
+- **Job tailoring combo** gives better ROI than separate features
 - **Cover letters** significantly boost application success
 - **Custom improvements** perfect for specific role requirements
 
@@ -149,8 +145,8 @@ Every credit transaction is tracked:
 
 ### Rate Limits
 
-- Maximum 10 analyses per hour
-- Maximum 5 improvements per hour
+- **Users with 0 credits:** 5 free analyses per hour per IP
+- **Users with credits:** Unlimited free analysis and LinkedIn analysis
 - Prevents system abuse while allowing normal usage
 
 ### Quality Assurance
@@ -159,27 +155,28 @@ Every credit transaction is tracked:
 - Credits refunded for subpar results
 - Continuous improvement based on user feedback
 
-## 💡 Coming Soon
+## 💡 System Benefits
 
-### Subscription Plans
+### Simplified Approach
 
-- Monthly credit allowances
-- Discounted credit rates
-- Premium features included
+- Only two packages to choose from
+- Clear country-based pricing
+- No complex credit calculations
+- Free features clearly separated
 
-### Enterprise Features
+### Flexibility
 
-- Bulk credit purchasing
-- Team management
-- Custom integrations
+- Buy as many Pro Packs as you need
+- Credits never expire
+- Use credits for any combination of features
 
 ## 📞 Support
 
 ### Need Help?
 
-- **Starter Pack** users: Email support
-- **Professional Pack** users: Priority email support
-- **Power User Pack** users: Premium support with faster response
+- Email support for all users
+- Faster response times for paying customers
+- Technical issues resolved promptly
 
 ### Common Issues
 
@@ -191,7 +188,7 @@ Every credit transaction is tracked:
 
 ### Payment Security
 
-- Secure payment processing via Stripe
+- Secure payment processing via Stripe & PaySuite
 - No credit card information stored
 - PCI compliant infrastructure
 
@@ -205,17 +202,18 @@ Every credit transaction is tracked:
 
 ## Quick Reference
 
-| Question                                | Answer                                |
-| --------------------------------------- | ------------------------------------- |
-| How many free credits do I get?         | 7 credits (worth $5.83)               |
-| Do credits expire?                      | No, credits never expire              |
-| Can I share credits?                    | No, credits are tied to your account  |
-| What's the cheapest way to get started? | Use your 7 free credits first         |
-| Best value package?                     | Power User Pack ($0.36/credit)        |
-| Can I get refunds?                      | Yes, 30-day money-back guarantee      |
-| How do I check my balance?              | Dashboard shows real-time balance     |
-| Can I buy more credits anytime?         | Yes, instant credit top-ups available |
+| Question                                | Answer                                 |
+| --------------------------------------- | -------------------------------------- |
+| How many free credits do I get?         | 0 credits (analysis is free instead)   |
+| Do credits expire?                      | No, credits never expire               |
+| Can I share credits?                    | No, credits are tied to your account   |
+| What's the cheapest way to get started? | Use free analysis, then try Trial Pack |
+| Best value package?                     | Pro Pack (44 credits)                  |
+| Can I get refunds?                      | Yes, 30-day money-back guarantee       |
+| How do I check my balance?              | Dashboard shows real-time balance      |
+| Can I buy more credits anytime?         | Yes, buy multiple Pro Packs as needed  |
+| Rate limits?                            | Only when you have 0 credits           |
 
 ---
 
-_The Aplycat credit system is designed to be fair, transparent, and provide excellent value for AI-powered career services. Start with your free credits and see the difference professional resume optimization can make!_
+_The Aplycat credit system is designed to be fair, transparent, and provide excellent value for AI-powered career services. Start with free analysis and experience the power of honest AI feedback!_

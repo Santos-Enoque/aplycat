@@ -95,7 +95,7 @@ function SignUpContent() {
           {!isTrial && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-blue-800 font-semibold text-center">
-                🎁 New users get 2 free credits to get started
+                🎁 Resume analysis is now FREE - no credit card required
               </p>
             </div>
           )}

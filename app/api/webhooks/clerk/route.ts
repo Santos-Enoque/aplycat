@@ -103,23 +103,9 @@ async function handleUserCreated(data: ClerkEvent['data']) {
       },
     });
 
-    // Check if this is a trial signup
-    const isTrialSignup = (data as any).unsafe_metadata?.trial === 'true' || 
-                         (data as any).public_metadata?.trial === 'true';
-
-    if (isTrialSignup) {
-      // For trial users, do NOT give credits yet - they must pay first
-      console.log(`[WEBHOOK] Trial user created: ${user.id} - no credits given yet (payment required)`);
-    } else {
-      // Give regular signup bonus to non-trial users
-      await creditHelpers.addCredits(
-        user.id,
-        2,
-        'BONUS_CREDIT',
-        'Welcome bonus - 2 free credits for new users'
-      );
-      console.log(`[WEBHOOK] Regular user created: ${user.id} with 2 welcome credits`);
-    }
+    // No more free credits for new users - analysis is now free
+    // Users start with 0 credits and can purchase Trial Pack or Pro Pack as needed
+    console.log(`[WEBHOOK] User created: ${user.id} - starting with 0 credits (analysis is free)`);
   } catch (error) {
     console.error('Error creating user:', error);
     throw error;

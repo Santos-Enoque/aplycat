@@ -58,6 +58,11 @@ export interface CreateCheckoutParams {
   userEmail: string;
   paymentMethod?: PaymentMethod;
   returnUrl?: string;
+  pricing?: {
+    amount: number;
+    currency: string;
+    country: any;
+  };
 }
 
 export interface ProcessPaymentParams {
@@ -192,7 +197,7 @@ class PaymentService {
    * Create Stripe checkout (existing functionality)
    */
   private async createStripeCheckout(params: CreateCheckoutParams, user: any, packageDetails: any) {
-    const { userId, packageType, userEmail, returnUrl } = params;
+    const { userId, packageType, userEmail, returnUrl, pricing } = params;
 
     const checkout = await stripeClient.createCheckout(
       packageType,
@@ -205,7 +210,8 @@ class PaymentService {
           ? `${user.firstName} ${user.lastName}` 
           : user.firstName || user.email,
       },
-      returnUrl
+      returnUrl,
+      pricing ? { amount: pricing.amount, currency: pricing.currency } : undefined
     );
 
     return {
@@ -232,7 +238,7 @@ class PaymentService {
     packageDetails: any, 
     paymentMethod: PaymentMethod
   ) {
-    const { userId, packageType, returnUrl } = params;
+    const { userId, packageType, returnUrl, pricing } = params;
 
     console.log('[PAYMENT_SERVICE] PaySuite token configured:', !!this.paysuiteToken);
     console.log('[PAYMENT_SERVICE] Payment method received:', paymentMethod);
@@ -242,9 +248,16 @@ class PaymentService {
       throw new Error('PaySuite API token not configured');
     }
 
-    // Convert USD to MZN (you may want to use a real-time rate)
-    const exchangeRate = await this.getUsdToMznRate();
-    const amountMzn = Math.round(packageDetails.price * exchangeRate * 100) / 100;
+    // Use regional pricing if provided, otherwise convert USD to MZN
+    let amountMzn: number;
+    if (pricing && pricing.currency === 'MZN') {
+      amountMzn = pricing.amount;
+    } else {
+      // Convert USD to MZN (fallback for legacy)
+      const exchangeRate = await this.getUsdToMznRate();
+      const usdAmount = pricing ? pricing.amount : packageDetails.price;
+      amountMzn = Math.round(usdAmount * exchangeRate * 100) / 100;
+    }
 
     // Check PaySuite transaction limits for mobile money
     this.validateTransactionLimits(amountMzn, paymentMethod);

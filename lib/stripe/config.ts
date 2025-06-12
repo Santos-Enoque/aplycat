@@ -4,38 +4,24 @@ export const STRIPE_CONFIG = {
   publishableKey: process.env.STRIPE_PUBLISHABLE_KEY!,
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
   
-  // Credit packages (same as LemonSqueezy but for Stripe)
+  // Credit packages - simplified system with only Pro Pack for regular purchases
   creditPackages: {
-    starter: {
-      credits: 5,
-      price: 0.16, // ~10 MZN (0.16 USD * 63.25 MZN/USD ≈ 10.12 MZN) - TEST PRICE
-      name: '🥉 Starter Pack (TEST)',
-      description: 'Perfect for getting started - TEST MODE',
-      priceId: process.env.STRIPE_STARTER_PRICE_ID!,
-    },
-    professional: {
-      credits: 30,
-      price: 12.49,
-      name: '🥈 Professional Pack',
-      description: 'Most popular choice',
-      priceId: process.env.STRIPE_PROFESSIONAL_PRICE_ID!,
-    },
-    premium: {
-      credits: 70,
-      price: 24.99,
-      name: '🥇 Premium Pack',
-      description: 'Best value for power users',
-      priceId: process.env.STRIPE_PREMIUM_PRICE_ID!,
+    pro: {
+      credits: 44,
+      price: 4.99,
+      name: '🥇 Pro Pack',
+      description: 'Best value for serious job seekers',
+      priceId: process.env.STRIPE_PRO_PRICE_ID || '', // Optional for dynamic pricing
     },
   } as const,
 
-  // Special trial configuration (separate from main packages)
+  // Special trial configuration for first-time users only
   trialConfig: {
-    credits: 7,
+    credits: 22,
     price: 1.00,
-    name: '🚀 Trial Pack',
-    description: 'Try all AI features for $1',
-    priceId: process.env.STRIPE_TRIAL_PRICE_ID!,
+    name: '🎁 Trial Pack',
+    description: 'Perfect way to try all features - one-time only',
+    priceId: process.env.STRIPE_TRIAL_PRICE_ID || '', // Optional for dynamic pricing
   },
 };
 

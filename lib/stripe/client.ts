@@ -21,17 +21,17 @@ class StripeClient {
   }
 
   /**
-   * Get Stripe Price ID for a package type
+   * Get Stripe Price ID for a package type (optional)
    */
-  getPriceId(packageType: CreditPackageType): string {
+  getPriceId(packageType: CreditPackageType): string | null {
     if (packageType === 'trial') {
-      return STRIPE_CONFIG.trialConfig.priceId;
+      return STRIPE_CONFIG.trialConfig.priceId || null;
     }
-    return STRIPE_CONFIG.creditPackages[packageType].priceId;
+    return STRIPE_CONFIG.creditPackages[packageType].priceId || null;
   }
 
   /**
-   * Create a Stripe checkout session
+   * Create a Stripe checkout session with dynamic pricing
    */
   async createCheckout(
     packageType: CreditPackageType,
@@ -42,11 +42,11 @@ class StripeClient {
       credits: number;
       userName: string;
     },
-    returnUrl?: string
+    returnUrl?: string,
+    priceOverride?: { amount: number; currency: string }
   ) {
     try {
       const packageDetails = this.getCreditPackage(packageType);
-      const priceId = this.getPriceId(packageType);
 
       // Prepare metadata (Stripe requires string values)
       const metadata: StripeCheckoutMetadata = {
@@ -56,15 +56,51 @@ class StripeClient {
         userName: customData.userName,
       };
 
+      // Use dynamic pricing if override provided, otherwise fall back to fixed price ID
+      const priceId = this.getPriceId(packageType);
+      const lineItems = priceOverride ? [
+        {
+          price_data: {
+            currency: priceOverride.currency.toLowerCase(),
+            product_data: {
+              name: packageDetails.name,
+              description: packageDetails.description,
+              metadata: {
+                credits: customData.credits.toString(),
+                packageType: customData.packageType,
+              },
+            },
+            unit_amount: Math.round(priceOverride.amount * 100), // Convert to cents
+          },
+          quantity: 1,
+        },
+      ] : priceId ? [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ] : [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: packageDetails.name,
+              description: packageDetails.description,
+              metadata: {
+                credits: customData.credits.toString(),
+                packageType: customData.packageType,
+              },
+            },
+            unit_amount: Math.round(packageDetails.price * 100), // Convert to cents
+          },
+          quantity: 1,
+        },
+      ];
+
       // Create checkout session
       const session = await this.stripe.checkout.sessions.create({
         payment_method_types: ['card'],
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
+        line_items: lineItems,
         mode: 'payment',
         success_url: returnUrl ? `${returnUrl}?payment=success&session_id={CHECKOUT_SESSION_ID}` : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: returnUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=cancelled`,

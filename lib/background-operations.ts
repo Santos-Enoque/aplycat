@@ -285,23 +285,15 @@ export class BackgroundOperations {
           scoreCategory: analysisData.score_category || 'Unknown',
           mainRoast: analysisData.main_roast || 'Analysis completed',
           analysisData,
-          creditsUsed: 1,
+          creditsUsed: 0, // Analysis is now free
           isCompleted: true,
         },
       });
 
       console.log(`[BACKGROUND_OPS] Analysis saved: ${savedAnalysis.id}`);
 
-      // Record credit transaction
-      await db.creditTransaction.create({
-        data: {
-          userId: dbUser.id,
-          type: 'ANALYSIS_USE',
-          amount: -1,
-          description: `Streaming resume analysis: ${fileName}`,
-          relatedAnalysisId: savedAnalysis.id,
-        },
-      });
+      // No credit transaction needed - analysis is now free
+      console.log(`[BACKGROUND_OPS] Analysis saved without credit deduction: ${savedAnalysis.id}`);
 
       // Update user credits
       await db.user.update({

@@ -1,8 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { streamingModelService } from '@/lib/models-consolidated';
-import { getCurrentUserFromDB, decrementUserCredits } from '@/lib/auth/user-sync';
+import { getCurrentUserFromDB } from '@/lib/auth/user-sync';
 // import { db } from '@/lib/db'; // Temporarily disabled
+
+// Rate limiting storage for users with 0 credits (in production, use Redis)
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Clean up old entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitStore.entries()) {
+    if (now > value.resetTime) {
+      rateLimitStore.delete(key);
+    }
+  }
+}, 5 * 60 * 1000); // Clean every 5 minutes
+
+function getClientIP(request: NextRequest): string {
+  // Try various headers to get the real IP
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIP = request.headers.get('x-real-ip');
+  const cfConnectingIP = request.headers.get('cf-connecting-ip');
+  
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  if (realIP) {
+    return realIP;
+  }
+  if (cfConnectingIP) {
+    return cfConnectingIP;
+  }
+  
+  // Fallback to a default (this shouldn't happen in production)
+  return 'unknown';
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; remaining: number; resetTime: number } {
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000; // 1 hour
+  const limit = 5; // 5 requests per hour for users with 0 credits
+  
+  const key = `rate_limit_auth:${ip}`;
+  const current = rateLimitStore.get(key);
+  
+  if (!current || now > current.resetTime) {
+    // First request or window expired
+    const resetTime = now + windowMs;
+    rateLimitStore.set(key, { count: 1, resetTime });
+    return { allowed: true, remaining: limit - 1, resetTime };
+  }
+  
+  if (current.count >= limit) {
+    // Rate limit exceeded
+    return { allowed: false, remaining: 0, resetTime: current.resetTime };
+  }
+  
+  // Increment count
+  current.count++;
+  rateLimitStore.set(key, current);
+  return { allowed: true, remaining: limit - current.count, resetTime: current.resetTime };
+}
 
 export const revalidate = 0;
 
@@ -52,9 +111,36 @@ export async function POST(request: NextRequest) {
     }
 
     const clerkUser = await getCurrentUserFromDB();
-    if (!clerkUser || clerkUser.credits < 1) {
-      return NextResponse.json({ error: 'Insufficient credits' }, { status: 402 });
+    if (!clerkUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
+    // Resume analysis is now free, but rate limited for users with 0 credits
+    if (clerkUser.credits === 0) {
+      // Check rate limit for users with 0 credits (5 per hour per IP)
+      const ip = getClientIP(request);
+      const rateLimit = checkRateLimit(ip);
+      
+      if (!rateLimit.allowed) {
+        const resetDate = new Date(rateLimit.resetTime).toISOString();
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded',
+            message: 'You have reached the limit of 5 free analyses per hour. Purchase credits for unlimited access.',
+            resetTime: resetDate,
+          },
+          { 
+            status: 429,
+            headers: {
+              'X-RateLimit-Limit': '5',
+              'X-RateLimit-Remaining': '0',
+              'X-RateLimit-Reset': resetDate,
+            }
+          }
+        );
+      }
+    }
+    // Users with 1+ credits get unlimited analysis
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -119,13 +205,7 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ error: userFriendlyMessage })}\n\n`));
         } finally {
           if (streamSuccessful) {
-            try {
-              await decrementUserCredits(user.id, 1);
-              console.log(`[STREAM_API] Deducted 1 credit from user ${user.id}`);
-            } catch (deductionError) {
-              console.error(`[STREAM_API] Failed to deduct credits for user ${user.id}:`, deductionError);
-              // Optionally, you could try to signal this to the client, but it's tricky
-            }
+            console.log(`[STREAM_API] Analysis completed successfully for user ${user.id} - no credits deducted (analysis is now free)`);
           }
           controller.close();
         }

@@ -105,7 +105,24 @@ export function EnhancedCreditsModal({
         }
 
         const data = await response.json();
-        setPackages(data.packages);
+
+        // Set packages with country-based pricing
+        const packagesWithCountryPricing = data.packages.map((pkg: any) => ({
+          ...pkg,
+          // Format price with proper currency symbol
+          formattedPrice:
+            data.pricing.currency === "MZN"
+              ? `${pkg.price} MZN`
+              : `$${pkg.price.toFixed(2)}`,
+          currency: data.pricing.currency,
+          countryInfo: data.country,
+        }));
+
+        setPackages(packagesWithCountryPricing);
+
+        // Log country detection for debugging
+        console.log("[CREDITS_MODAL] Country detected:", data.country);
+        console.log("[CREDITS_MODAL] Pricing:", data.pricing);
       } catch (error) {
         console.error("Failed to load credit packages:", error);
         toast.error("Failed to load credit packages. Please try again.");
@@ -375,13 +392,16 @@ export function EnhancedCreditsModal({
                   </CardTitle>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-purple-600">
-                      ${pkg.price}
+                      {(pkg as any).formattedPrice || `$${pkg.price}`}
                     </div>
                     <div className="text-sm text-gray-500">
                       {pkg.credits} credits
                     </div>
                     <div className="text-xs text-green-600 font-medium mt-1">
-                      ${pkg.pricePerCredit} {t("perCredit")}
+                      {(pkg as any).currency === "MZN"
+                        ? `${(pkg.price / pkg.credits).toFixed(0)} MZN`
+                        : `$${pkg.pricePerCredit}`}{" "}
+                      {t("perCredit")}
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 text-center">

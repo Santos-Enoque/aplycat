@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserFromDB } from "@/lib/auth/user-sync";
 import { paymentService, PaymentMethod } from "@/lib/services/payment-service";
+import { getCountryPricing } from "@/lib/utils/geolocation";
 
 interface CreateCheckoutRequest {
   packageType: string;
@@ -53,13 +54,24 @@ export async function POST(request: NextRequest) {
 
     console.log(`[CHECKOUT] Creating ${paymentMethod} checkout for user ${user.id}, package: ${packageType}`);
 
-    // Create checkout session with the specified payment method
+    // Get regional pricing
+    const { country, pricing } = await getCountryPricing(request);
+    
+    // Determine the price based on package type and region
+    const packagePrice = packageType === 'trial' ? pricing.trialPrice : pricing.proPrice;
+
+    // Create checkout session with the specified payment method and regional pricing
     const result = await paymentService.createCheckout({
       userId: user.clerkId,
       packageType: packageType as any,
       userEmail: user.email,
       paymentMethod,
       returnUrl,
+      pricing: {
+        amount: packagePrice,
+        currency: pricing.currency,
+        country: country,
+      },
     });
 
     return NextResponse.json({

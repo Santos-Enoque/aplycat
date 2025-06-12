@@ -2,13 +2,13 @@
   "trialPopup": {
     "limitedTimeOffer": "LIMITED TIME OFFER",
     "title": "Try All AI Features for {price}",
-    "subtitle": "Unlock the complete Aplycat experience with 10 credits",
-    "creditsIncluded": "10 Credits Included:",
-    "creditsValue": "$8.30 Value",
-    "resumeImprovements": "5× Resume Improvements ($4.15 value)",
-    "jobTailoredResumes": "3× Job-Tailored Resumes + Cover Letters ($2.49 value)",
-    "linkedinAnalysis": "1× LinkedIn Analysis ($0.83 value)",
-    "customEnhancement": "1× Custom Enhancement ($0.83 value)",
+    "subtitle": "Unlock the complete Aplycat experience with 22 credits",
+    "creditsIncluded": "22 Credits Included:",
+    "creditsValue": "🎁 FREE Analysis + Premium Features",
+    "resumeImprovements": "11× Resume Improvements (2 credits each)",
+    "jobTailoredResumes": "7× Job-Tailored Resumes + Cover Letters (3 credits each)",
+    "linkedinAnalysis": "Unlimited Resume & LinkedIn Analysis (FREE)",
+    "customEnhancement": "22× Custom Improvements (1 credit each)",
     "offerExpires": "Offer expires in {timeLeft}",
     "startTrial": "🚀 Start $1 Trial (Pay with Card) →",
     "signUpFirst": "Sign Up First (No Payment)",
@@ -212,46 +212,24 @@
     ]
   },
   "pricing": {
-    "launchOffer": "🚀 LAUNCH OFFER: BONUS CREDITS ON ALL PACKS",
+    "launchOffer": "🚀 SIMPLIFIED PRICING: ONE PACK, MAXIMUM VALUE",
     "title": "Simple Pricing. No Subscriptions.",
-    "subtitle": "Buy credits once. Use them whenever you need a career boost.",
-    "mostPopular": "Most Popular",
+    "subtitle": "Buy credits once. Use them whenever you need a career boost. Analysis is always free!",
+    "mostPopular": "Best Value",
     "packages": [
       {
-        "name": "Starter Pack (TEST)",
-        "price": "$0.16",
-        "credits": "5 Credits (TEST MODE)",
-        "isPopular": false,
-        "features": [
-          "<span class=\"font-bold text-foreground\">2x</span> Resume Analysis (1 credit each)",
-          "<span class=\"font-bold text-foreground\">1x</span> Resume Improvement (2 credits)",
-          "<span class=\"font-bold text-foreground\">1x</span> Job Tailoring (2 credits)"
-        ],
-        "buttonText": "Test for ~10 MZN"
-      },
-      {
-        "name": "Professional Pack",
-        "price": "$12.49",
-        "credits": "30 Credits + 15 Bonus!",
+        "name": "🥇 Pro Pack",
+        "price": "$4.99",
+        "credits": "44 Credits",
         "isPopular": true,
         "features": [
-          "<span class=\"font-bold text-foreground\">15x</span> Resume Improvements",
-          "<span class=\"font-bold text-foreground\">10x</span> Job-Tailored Resume + Cover Letter",
-          "<span class=\"font-bold text-foreground\">Priority</span> Support"
+          "<span class=\"font-bold text-foreground\">22x</span> Resume Improvements (2 credits each)",
+          "<span class=\"font-bold text-foreground\">14x</span> Job-Tailored Resume + Cover Letter (3 credits each)",
+          "<span class=\"font-bold text-foreground\">44x</span> Custom Improvements (1 credit each)",
+          "<span class=\"font-bold text-foreground\">FREE</span> Unlimited Resume & LinkedIn Analysis",
+          "<span class=\"font-bold text-foreground\">Email</span> Support"
         ],
-        "buttonText": "Choose Professional"
-      },
-      {
-        "name": "Power User Pack",
-        "price": "$24.99",
-        "credits": "70 Credits + 30 Bonus!",
-        "isPopular": false,
-        "features": [
-          "<span class=\"font-bold text-foreground\">35x</span> Resume Improvements",
-          "<span class=\"font-bold text-foreground\">23x</span> Job-Tailored Resume + Cover Letter",
-          "<span class=\"font-bold text-foreground\">Premium</span> Support & Career Change Optimization"
-        ],
-        "buttonText": "Go Power User"
+        "buttonText": "Get Pro Pack"
       }
     ]
   },
@@ -259,7 +237,7 @@
     "title": "You've been rejected enough.",
     "subtitle": "Fix your resume. Fix your luck.",
     "buttonText": "Upload Resume & Get Roasted",
-    "offerNote": "🚀 Launch offer ends soon • Bonus credits on all packs"
+    "offerNote": "🚀 Free analysis forever • Pro features available with credits"
   },
   "navbar": {
     "languageSelector": "Language",
@@ -270,7 +248,7 @@
     "dashboard": "Dashboard"
   },
   "banner": {
-    "trial": "🚀 LIMITED TIME: Try ALL AI Features for Just $1 • 10 Credits Worth $8.30"
+    "trial": "🚀 LIMITED TIME: Try ALL AI Features for Just $1 • 22 Credits Worth $11"
   },
   "HomePage": {
     "title": "Brutally Honest Resume Analysis",

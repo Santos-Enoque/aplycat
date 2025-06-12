@@ -46,14 +46,13 @@ export default function SignUpPage() {
 
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-sm font-semibold text-blue-900 mb-2">
-            🎁 Welcome Bonus - Experience the Full Journey:
+            🎁 Free Features - Get Started Immediately:
           </h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• 7 free credits to get started</li>
-            <li>• 1× Resume Analysis (1 credit)</li>
-            <li>• 1× Resume Improvement (2 credits)</li>
-            <li>• 1× Job-Tailored Resume + Cover Letter (3 credits)</li>
-            <li>• 1 bonus credit for flexibility</li>
+            <li>• Unlimited resume analysis (FREE)</li>
+            <li>• Unlimited LinkedIn analysis (FREE)</li>
+            <li>• Purchase credits only for improvements</li>
+            <li>• Try our Trial Pack (22 credits) for just $1</li>
           </ul>
         </div>
       </div>

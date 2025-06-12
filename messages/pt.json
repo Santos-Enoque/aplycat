@@ -2,13 +2,13 @@
   "trialPopup": {
     "limitedTimeOffer": "OFERTA POR TEMPO LIMITADO",
     "title": "Experimente Todos os Recursos de IA por {price}",
-    "subtitle": "Desbloqueie a experiência completa Aplycat com 10 créditos",
-    "creditsIncluded": "10 Créditos Incluídos:",
-    "creditsValue": "Valor de $8.30",
-    "resumeImprovements": "5× Melhorias de Currículo (valor $4.15)",
-    "jobTailoredResumes": "3× Currículos Personalizados + Cartas de Apresentação (valor $2.49)",
-    "linkedinAnalysis": "1× Análise do LinkedIn (valor $0.83)",
-    "customEnhancement": "1× Melhoria Personalizada (valor $0.83)",
+    "subtitle": "Desbloqueie a experiência completa Aplycat com 22 créditos",
+    "creditsIncluded": "22 Créditos Incluídos:",
+    "creditsValue": "🎁 Análise GRATUITA + Recursos Premium",
+    "resumeImprovements": "11× Melhorias de Currículo (2 créditos cada)",
+    "jobTailoredResumes": "7× Currículos Personalizados + Cartas de Apresentação (3 créditos cada)",
+    "linkedinAnalysis": "Análise Ilimitada de Currículo & LinkedIn (GRATUITA)",
+    "customEnhancement": "22× Melhorias Personalizadas (1 crédito cada)",
     "offerExpires": "Oferta expira em {timeLeft}",
     "startTrial": "🚀 Iniciar Teste de $1 (Pagar com Cartão) →",
     "signUpFirst": "Cadastre-se Primeiro (Sem Pagamento)",
@@ -212,46 +212,24 @@
     ]
   },
   "pricing": {
-    "launchOffer": "🚀 OFERTA DE LANÇAMENTO: CRÉDITOS BÔNUS EM TODOS OS PACOTES",
+    "launchOffer": "🚀 PREÇOS SIMPLIFICADOS: UM PACOTE, MÁXIMO VALOR",
     "title": "Preços Simples. Sem Assinaturas.",
-    "subtitle": "Compre créditos uma vez. Use quando precisar de um impulso na carreira.",
-    "mostPopular": "Mais Popular",
+    "subtitle": "Compre créditos uma vez. Use quando precisar de um impulso na carreira. Análise é sempre grátis!",
+    "mostPopular": "Melhor Valor",
     "packages": [
       {
-        "name": "Pacote Iniciante (TESTE)",
-        "price": "$0.16",
-        "credits": "5 Créditos (MODO TESTE)",
-        "isPopular": false,
-        "features": [
-          "<span class=\"font-bold text-foreground\">2x</span> Análise de Currículo (1 crédito cada)",
-          "<span class=\"font-bold text-foreground\">1x</span> Melhoria de Currículo (2 créditos)",
-          "<span class=\"font-bold text-foreground\">1x</span> Personalização para Vaga (2 créditos)"
-        ],
-        "buttonText": "Testar por ~10 MZN"
-      },
-      {
-        "name": "Pacote Profissional",
-        "price": "$12.49",
-        "credits": "30 Créditos + 15 Bônus!",
+        "name": "🥇 Pacote Pro",
+        "price": "$4.99",
+        "credits": "44 Créditos",
         "isPopular": true,
         "features": [
-          "<span class=\"font-bold text-foreground\">15x</span> Melhorias de Currículo",
-          "<span class=\"font-bold text-foreground\">10x</span> Currículo Personalizado + Carta de Apresentação",
-          "<span class=\"font-bold text-foreground\">Suporte</span> Prioritário"
+          "<span class=\"font-bold text-foreground\">22x</span> Melhorias de Currículo (2 créditos cada)",
+          "<span class=\"font-bold text-foreground\">14x</span> Currículo Personalizado + Carta de Apresentação (3 créditos cada)",
+          "<span class=\"font-bold text-foreground\">44x</span> Melhorias Personalizadas (1 crédito cada)",
+          "<span class=\"font-bold text-foreground\">GRÁTIS</span> Análise Ilimitada de Currículo & LinkedIn",
+          "<span class=\"font-bold text-foreground\">Suporte</span> por Email"
         ],
-        "buttonText": "Escolher Profissional"
-      },
-      {
-        "name": "Pacote Power User",
-        "price": "$24.99",
-        "credits": "70 Créditos + 30 Bônus!",
-        "isPopular": false,
-        "features": [
-          "<span class=\"font-bold text-foreground\">35x</span> Melhorias de Currículo",
-          "<span class=\"font-bold text-foreground\">23x</span> Currículo Personalizado + Carta de Apresentação",
-          "<span class=\"font-bold text-foreground\">Suporte Premium</span> & Otimização para Mudança de Carreira"
-        ],
-        "buttonText": "Virar Power User"
+        "buttonText": "Obter Pacote Pro"
       }
     ]
   },
@@ -259,7 +237,7 @@
     "title": "Você já foi rejeitado o suficiente.",
     "subtitle": "Conserte seu currículo. Conserte sua sorte.",
     "buttonText": "Enviar Currículo & Ser Destruído",
-    "offerNote": "🚀 Oferta de lançamento acaba logo • Créditos bônus em todos os pacotes"
+    "offerNote": "🚀 Análise grátis para sempre • Recursos Pro disponíveis com créditos"
   },
   "navbar": {
     "languageSelector": "Idioma",
@@ -270,7 +248,7 @@
     "dashboard": "Painel"
   },
   "banner": {
-    "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas $1 • 10 Créditos no Valor de $8.30"
+    "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas $1 • 22 Créditos no Valor de $11"
   },
   "HomePage": {
     "title": "Análise Brutalmente Honesta de Currículo",

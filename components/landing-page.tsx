@@ -31,6 +31,7 @@ import {
   LinkedInPreview,
 } from "./feature-previews";
 import { useTranslations } from "next-intl";
+import { PricingTestPanel } from "@/components/pricing-test-panel";
 
 // Trial Popup Component
 const TrialPopup = ({
@@ -934,13 +935,13 @@ const PricingSection = () => {
           </h2>
           <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="flex justify-center max-w-2xl mx-auto">
           {t.raw("packages").map((pkg: any, index: number) => (
             <Card
               key={index}
               className={`hover:shadow-lg transition-shadow ${
                 pkg.isPopular ? "border-blue-500 relative" : "border-blue-200"
-              } flex flex-col`}
+              } flex flex-col w-full max-w-md`}
             >
               {pkg.isPopular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -1170,6 +1171,9 @@ export function LandingPage() {
         onClose={handleTrialDecline}
         onAccept={handleTrialAccept}
       />
+
+      {/* Pricing Test Panel (Development Only) */}
+      <PricingTestPanel />
     </>
   );
 }
