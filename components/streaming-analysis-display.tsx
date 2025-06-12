@@ -27,6 +27,7 @@ import { useCreditsModal } from "@/hooks/use-credits-modal";
 import { AccordionSection } from "@/components/ui/accordion-section";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 interface StreamingAnalysisDisplayProps {
   analysis: Partial<ResumeAnalysis> | null;
@@ -72,6 +73,7 @@ export function StreamingAnalysisDisplay({
   const { openModal } = useCreditsModal();
   const { credits, isLoading: isLoadingCredits } = useUserCredits();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const t = useTranslations("analysisDisplay");
 
   const handleStartImprovementClick = () => {
     if (isAnonymous) {
@@ -81,7 +83,7 @@ export function StreamingAnalysisDisplay({
 
     if (isLoadingCredits || credits === null || credits === undefined) {
       // Credits are still loading or not available for a logged-in user
-      toast.info("Verifying your credit balance...");
+      toast.info(t("loading.creditsMessage"));
       return;
     }
     if (credits <= 0) {
@@ -158,6 +160,26 @@ export function StreamingAnalysisDisplay({
     }
   };
 
+  const getCategoryTranslation = (category: string) => {
+    const normalizedCategory = category.toLowerCase().replace(/\s+/g, "");
+    switch (normalizedCategory) {
+      case "excellent":
+        return t("categories.excellent");
+      case "good":
+        return t("categories.good");
+      case "needswork":
+        return t("categories.needsWork");
+      case "needsimprovement":
+        return t("categories.needsImprovement");
+      case "critical":
+        return t("categories.critical");
+      case "poor":
+        return t("categories.poor");
+      default:
+        return category; // fallback to original if no translation found
+    }
+  };
+
   const getRatingColor = (rating: string) => {
     switch (rating.toLowerCase()) {
       case "strong":
@@ -180,7 +202,7 @@ export function StreamingAnalysisDisplay({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Overall Score
+              {t("scores.overallScore")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -196,7 +218,7 @@ export function StreamingAnalysisDisplay({
                   analysisData.category
                 )} text-primary-foreground`}
               >
-                {analysisData.category}
+                {getCategoryTranslation(analysisData.category)}
               </Badge>
             )}
           </CardContent>
@@ -205,7 +227,7 @@ export function StreamingAnalysisDisplay({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              ATS Score
+              {t("scores.atsScore")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -216,7 +238,7 @@ export function StreamingAnalysisDisplay({
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              ATS-friendly format
+              {t("scores.atsFormat")}
             </p>
           </CardContent>
         </Card>
@@ -224,7 +246,7 @@ export function StreamingAnalysisDisplay({
         <Card className="border-primary bg-primary/5">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-primary">
-              Improvement Potential
+              {t("scores.improvementPotential")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -236,7 +258,7 @@ export function StreamingAnalysisDisplay({
                     +{analysisData.improvementPotential.points_possible}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    points possible
+                    {t("scores.pointsPossible")}
                   </p>
                 </div>
               ) : (
@@ -255,7 +277,7 @@ export function StreamingAnalysisDisplay({
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Target className="w-5 h-5 text-primary" />
-            <CardTitle>Key Insight</CardTitle>
+            <CardTitle>{t("keyInsight")}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -270,11 +292,10 @@ export function StreamingAnalysisDisplay({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-1">
-                  Ready to improve your resume?
+                  {t("improvement.readyTitle")}
                 </h3>
                 <p className="text-muted-foreground text-sm">
-                  Get AI-powered improvements, rewritten sections, and a
-                  professionally optimized resume.
+                  {t("improvement.readyDescription")}
                 </p>
               </div>
               <Button
@@ -283,7 +304,7 @@ export function StreamingAnalysisDisplay({
                 disabled={isLoadingCredits}
               >
                 <Zap className="w-4 h-4 mr-2" />
-                Improve with AI
+                {t("improvement.improveButton")}
               </Button>
             </div>
           </CardContent>
@@ -293,7 +314,7 @@ export function StreamingAnalysisDisplay({
       {/* Section Analysis */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-foreground">
-          Section-by-Section Analysis
+          {t("sectionAnalysis.title")}
         </h2>
 
         {status !== "completed" &&
@@ -333,11 +354,12 @@ export function StreamingAnalysisDisplay({
                       onClick={handleStartImprovementClick}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg font-semibold rounded-xl mb-2"
                     >
-                      Sign Up to See {(analysis as any).hidden_sections_count}{" "}
-                      More Sections
+                      {t("limitedAccess.signUpButton", {
+                        count: (analysis as any).hidden_sections_count,
+                      })}
                     </Button>
                     <p className="text-sm text-gray-600">
-                      Get complete analysis + $1 trial for all AI features
+                      {t("limitedAccess.trialMessage")}
                     </p>
                   </div>
                 </div>
@@ -389,11 +411,10 @@ export function StreamingAnalysisDisplay({
         <Card className="border-primary bg-primary text-primary-foreground">
           <CardContent className="p-8 text-center">
             <h3 className="text-2xl font-bold mb-4">
-              Ready to fix your resume?
+              {t("improvement.fixTitle")}
             </h3>
             <p className="text-primary-foreground/80 mb-6">
-              Let our AI rewrite your resume sections, optimize for ATS, and
-              create multiple versions for different roles.
+              {t("improvement.fixDescription")}
             </p>
             <Button
               size="lg"
@@ -402,7 +423,7 @@ export function StreamingAnalysisDisplay({
               disabled={isLoadingCredits}
             >
               <Zap className="w-5 h-5 mr-2" />
-              Improve with AI - 2 Credits
+              {t("improvement.improveCredits")}
             </Button>
           </CardContent>
         </Card>

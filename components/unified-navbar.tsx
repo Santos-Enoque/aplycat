@@ -16,6 +16,7 @@ import { useUser, SignInButton, UserButton, useClerk } from "@clerk/nextjs";
 import { EnhancedCreditsModal } from "@/components/enhanced-credits-modal";
 import { useUserCredits } from "@/hooks/use-user-credits";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { useTranslations } from "next-intl";
 import {
   Cat,
   Home,
@@ -44,6 +45,7 @@ export function UnifiedNavbar() {
     isLoading: creditsLoading,
     refetch: refetchCredits,
   } = useUserCredits();
+  const t = useTranslations("navbar");
 
   // Determine the correct home link
   const getHomeLink = () => {
@@ -82,7 +84,7 @@ export function UnifiedNavbar() {
                   ) : (
                     <Badge className="bg-purple-100 text-purple-800 px-3 py-1 font-medium">
                       <CreditCard className="h-3 w-3 mr-1" />
-                      {userCredits} Credits
+                      {userCredits} {t("credits")}
                     </Badge>
                   )}
                 </div>
@@ -94,7 +96,7 @@ export function UnifiedNavbar() {
                   className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white flex"
                 >
                   <Zap className="h-4 w-4 mr-2" />
-                  Buy Credits
+                  {t("buyCredits")}
                 </Button>
 
                 {/* Clerk UserButton */}
@@ -108,13 +110,13 @@ export function UnifiedNavbar() {
                     variant="ghost"
                     className="text-gray-600 hover:text-gray-900"
                   >
-                    Sign In
+                    {t("signIn")}
                   </Button>
                 </SignInButton>
                 <SignInButton mode="modal">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                     <Zap className="h-4 w-4 mr-2" />
-                    Try Free
+                    {t("tryFree")}
                   </Button>
                 </SignInButton>
               </div>

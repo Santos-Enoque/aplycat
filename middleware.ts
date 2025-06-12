@@ -4,7 +4,7 @@ import { checkRateLimit, getClientIP } from './lib/middleware/edge-security';
 import createMiddleware from 'next-intl/middleware';
 import {routing} from './i18n/routing';
 
-// Create the next-intl middleware
+// Create the next-intl middleware with custom locale detection
 const intlMiddleware = createMiddleware(routing);
 
 const isProtectedRoute = createRouteMatcher([
@@ -44,7 +44,28 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // Handle internationalization first
+  // Check for locale preference from cookie before intl middleware
+  const pathname = req.nextUrl.pathname;
+  const isRootPath = pathname === '/';
+  const hasLocaleInPath = routing.locales.some(locale => pathname.startsWith(`/${locale}`));
+  
+  // If accessing root path or path without locale, check for preferred locale in cookie
+  if (isRootPath || !hasLocaleInPath) {
+    const preferredLocale = req.cookies.get('preferred-locale')?.value;
+    
+    if (preferredLocale && routing.locales.includes(preferredLocale as any)) {
+      // Redirect to the preferred locale
+      const newUrl = new URL(req.url);
+      if (isRootPath) {
+        newUrl.pathname = `/${preferredLocale}`;
+      } else {
+        newUrl.pathname = `/${preferredLocale}${pathname}`;
+      }
+      return NextResponse.redirect(newUrl);
+    }
+  }
+
+  // Handle internationalization
   const intlResponse = intlMiddleware(req);
   
   // If intl middleware wants to redirect (for locale detection), let it
@@ -52,8 +73,7 @@ export default clerkMiddleware(async (auth, req) => {
     return intlResponse;
   }
 
-  // Extract locale from pathname
-  const pathname = req.nextUrl.pathname;
+  // Extract locale from pathname (reuse the pathname variable)
   const locale = pathname.split('/')[1];
   const isValidLocale = routing.locales.includes(locale as any);
   const currentLocale = isValidLocale ? locale : routing.defaultLocale;

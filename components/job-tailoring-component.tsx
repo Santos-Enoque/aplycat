@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -37,6 +38,7 @@ export function JobTailoringComponent({
   onTailoringStart,
   isLoading: externalLoading,
 }: JobTailoringComponentProps) {
+  const t = useTranslations("jobTailoring");
   const [jobUrl, setJobUrl] = useState(() => {
     if (typeof window === "undefined") return "";
     return sessionStorage.getItem("tailoringJobUrl") || "";
@@ -173,7 +175,7 @@ export function JobTailoringComponent({
 
   const handleTailoring = async () => {
     if (!jobDescription.trim()) {
-      setError("Please provide a job description");
+      setError(t("provideJobDescription"));
       return;
     }
     if (isLoadingCredits || credits === null || credits === undefined) {
@@ -259,7 +261,7 @@ export function JobTailoringComponent({
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Target className="h-5 w-5 text-purple-600" />
-          Tailor for Specific Job
+          {t("title")}
           <Badge
             variant="secondary"
             className="ml-2 bg-purple-100 text-purple-700"
@@ -267,10 +269,7 @@ export function JobTailoringComponent({
             4 Credits
           </Badge>
         </CardTitle>
-        <p className="text-sm text-gray-600">
-          Optimize your resume for a specific job posting with AI-powered
-          keyword matching and cover letter generation.
-        </p>
+        <p className="text-sm text-gray-600">{t("description")}</p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* URL Input Section - Always Shown First */}
@@ -278,7 +277,7 @@ export function JobTailoringComponent({
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium flex items-center gap-2">
               <Globe className="h-4 w-4 text-blue-600" />
-              Job Posting URL
+              {t("jobUrl")}
             </Label>
             {!showManualEntry && (
               <Button
@@ -288,14 +287,14 @@ export function JobTailoringComponent({
                 className="text-xs text-purple-600 hover:text-purple-700 h-auto p-1"
               >
                 <Edit3 className="h-3 w-3 mr-1" />
-                Enter details manually
+                {t("enterManually")}
               </Button>
             )}
           </div>
 
           <div className="flex gap-2">
             <Input
-              placeholder="https://company.com/careers/job-posting..."
+              placeholder={t("extractPlaceholder")}
               value={jobUrl}
               onChange={(e) => setJobUrl(e.target.value)}
               className="flex-1 text-sm"
@@ -313,15 +312,12 @@ export function JobTailoringComponent({
               ) : (
                 <>
                   <Link className="h-4 w-4 mr-1" />
-                  Extract
+                  {t("extract")}
                 </>
               )}
             </Button>
           </div>
-          <p className="text-xs text-gray-500">
-            Paste a job URL to automatically extract job details, or enter
-            manually below
-          </p>
+          <p className="text-xs text-gray-500">{t("extractDescription")}</p>
         </div>
 
         {/* Manual Entry Toggle */}
@@ -334,9 +330,7 @@ export function JobTailoringComponent({
               className="text-purple-600 border-purple-200 hover:bg-purple-50"
             >
               <Edit3 className="h-4 w-4 mr-2" />
-              {extractionSuccessful
-                ? "View/Edit Extracted Details"
-                : "Enter Details Manually"}
+              {extractionSuccessful ? t("viewEdit") : t("enterDetailsManually")}
             </Button>
           </div>
         )}
@@ -346,7 +340,7 @@ export function JobTailoringComponent({
           <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium text-gray-700">
-                {extractionSuccessful ? "Extracted Job Details" : "Job Details"}
+                {extractionSuccessful ? t("extractedDetails") : t("jobDetails")}
               </Label>
               <Button
                 variant="ghost"
@@ -354,15 +348,15 @@ export function JobTailoringComponent({
                 onClick={toggleManualEntry}
                 className="text-xs text-gray-500 hover:text-gray-700 h-auto p-1"
               >
-                Hide details
+                {t("hideDetails")}
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Job Title</Label>
+                <Label className="text-sm font-medium">{t("jobTitle")}</Label>
                 <Input
-                  placeholder="e.g., Senior Software Engineer"
+                  placeholder={t("jobTitlePlaceholder")}
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
                   className="text-sm"
@@ -370,9 +364,11 @@ export function JobTailoringComponent({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Company Name</Label>
+                <Label className="text-sm font-medium">
+                  {t("companyName")}
+                </Label>
                 <Input
-                  placeholder="e.g., Google"
+                  placeholder={t("companyPlaceholder")}
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   className="text-sm"
@@ -383,20 +379,18 @@ export function JobTailoringComponent({
 
             <div className="space-y-2">
               <Label className="text-sm font-medium">
-                Job Description <span className="text-red-500">*</span>
+                {t("jobDescription")}{" "}
+                <span className="text-red-500">{t("required")}</span>
               </Label>
               <Textarea
-                placeholder="Paste the full job description here..."
+                placeholder={t("jobDescriptionPlaceholder")}
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
                 rows={5}
                 className="resize-none text-sm"
                 disabled={isLoading}
               />
-              <p className="text-xs text-gray-500">
-                Include requirements, responsibilities, and skills for best
-                results
-              </p>
+              <p className="text-xs text-gray-500">{t("jobDescriptionHelp")}</p>
             </div>
           </div>
         )}
@@ -407,10 +401,10 @@ export function JobTailoringComponent({
             <FileText className="h-5 w-5 text-blue-600" />
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Generate Cover Letter
+                {t("includeCoverLetter")}
               </Label>
               <p className="text-xs text-gray-500">
-                Create a personalized cover letter for this position
+                {t("coverLetterDescription")}
               </p>
             </div>
           </div>
@@ -424,10 +418,10 @@ export function JobTailoringComponent({
             {includeCoverLetter ? (
               <>
                 <CheckCircle className="h-3 w-3 mr-1" />
-                Yes
+                {t("coverLetterToggleYes")}
               </>
             ) : (
-              "No"
+              t("coverLetterToggleNo")
             )}
           </Button>
         </div>
@@ -457,22 +451,23 @@ export function JobTailoringComponent({
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="space-y-3">
           <Button
             onClick={handleTailoring}
             disabled={!jobDescription.trim() || isLoading || isLoadingCredits}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
           >
             {isLoading ? (
               <>
                 <Loader className="h-4 w-4 mr-2 animate-spin" />
-                Tailoring...
+                {t("tailoring")}
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
-                Tailor Resume
-                {includeCoverLetter && " + Cover Letter"}
+                {includeCoverLetter
+                  ? t("tailorResumeAndCover")
+                  : t("tailorResume")}
               </>
             )}
           </Button>
@@ -480,10 +475,9 @@ export function JobTailoringComponent({
             onClick={resetForm}
             variant="outline"
             disabled={isLoading}
-            size="sm"
-            className="px-4"
+            className="w-full"
           >
-            Reset
+            {t("reset")}
           </Button>
         </div>
 

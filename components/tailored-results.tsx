@@ -16,6 +16,7 @@ import {
   EyeOff,
   Share2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface TailoredResultsProps {
   tailoredResume: any;
@@ -30,6 +31,7 @@ export function TailoredResults({
   tailoringAnalysis,
   onBack,
 }: TailoredResultsProps) {
+  const t = useTranslations("tailoredResults");
   const [activeView, setActiveView] = useState<"resume" | "cover">("resume");
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(true);
@@ -140,12 +142,10 @@ ${
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={onBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Customization
+            {t("backToCustomize")}
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Tailored Resume & Cover Letter
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
             <p className="text-gray-600">
               Optimized for the specific job description
             </p>
@@ -167,7 +167,7 @@ ${
           </Button>
           <Button variant="outline" onClick={downloadContent}>
             <Download className="h-4 w-4 mr-2" />
-            Download {activeView === "cover" ? "Cover Letter" : "Resume"}
+            {activeView === "cover" ? t("downloadCover") : t("downloadResume")}
           </Button>
         </div>
       </div>

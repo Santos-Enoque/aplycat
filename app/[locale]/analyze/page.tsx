@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useStreamingAnalysis } from "@/hooks/use-streaming-analysis";
 import { StreamingAnalysisDisplay } from "@/components/streaming-analysis-display";
 import { ImproveResumeModal } from "@/components/improve-resume-modal";
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 
 function AnalyzePageContent() {
   const router = useRouter();
+  const t = useTranslations("analyze");
   const { analysis, status, error, startAnalysis } = useStreamingAnalysis();
   const { refetch: refetchCredits } = useUserCredits();
   const [fileName, setFileName] = useState<string | null>(null);
@@ -63,7 +65,7 @@ function AnalyzePageContent() {
     targetIndustry: string
   ) => {
     if (!analysis || !originalFileRef.current) {
-      toast.error("Could not find the analysis data. Please try again.");
+      toast.error(t("toast.missingData"));
       setIsImproveModalOpen(false);
       return;
     }
@@ -103,11 +105,11 @@ function AnalyzePageContent() {
         <div className="text-center p-8">
           <Loader className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-800">
-            {status === "connecting" ? "Connecting..." : "Initializing..."}
+            {status === "connecting"
+              ? t("loading.connecting")
+              : t("loading.initializing")}
           </h3>
-          <p className="text-gray-600 mt-2">
-            Please wait while we prepare the analysis engine.
-          </p>
+          <p className="text-gray-600 mt-2">{t("loading.waitMessage")}</p>
         </div>
       );
     }
@@ -127,11 +129,11 @@ function AnalyzePageContent() {
         <Card className="bg-red-50 border-red-200 text-center p-8">
           <XCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-red-800">
-            Analysis Failed
+            {t("error.title")}
           </h3>
           <p className="text-red-700 mt-2">{error}</p>
           <Button onClick={() => router.push("/dashboard")} className="mt-4">
-            Return to Dashboard
+            {t("error.returnToDashboard")}
           </Button>
         </Card>
       );
@@ -143,13 +145,11 @@ function AnalyzePageContent() {
         <CardContent className="text-center p-8">
           <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-800">
-            No Resume Found for Analysis
+            {t("noResume.title")}
           </h3>
-          <p className="text-gray-600 mt-2">
-            Please upload a resume from your dashboard to begin.
-          </p>
+          <p className="text-gray-600 mt-2">{t("noResume.message")}</p>
           <Button onClick={() => router.push("/dashboard")} className="mt-6">
-            Go to Dashboard
+            {t("noResume.goToDashboard")}
           </Button>
         </CardContent>
       </Card>
@@ -165,11 +165,10 @@ function AnalyzePageContent() {
               <Zap className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
-              AI Resume Analysis
+              {t("title")}
             </h1>
             <p className="mt-3 md:mt-4 text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-4">
-              Get instant, detailed feedback on your resume with actionable
-              insights to land your dream job.
+              {t("subtitle")}
             </p>
           </header>
 
@@ -179,7 +178,7 @@ function AnalyzePageContent() {
                 status === "completed" ||
                 status === "error") && (
                 <p className="text-center text-muted-foreground mb-6">
-                  Analysis for: <strong>{fileName}</strong>
+                  {t("analysisFor", { fileName })}
                 </p>
               )}
             {renderContent()}
@@ -196,8 +195,10 @@ function AnalyzePageContent() {
 }
 
 export default function AnalyzePage() {
+  const tLayout = useTranslations("analyzeLayout");
+
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>{tLayout("loading")}</div>}>
       <AnalyzePageContent />
     </Suspense>
   );

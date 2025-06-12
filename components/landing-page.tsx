@@ -609,7 +609,7 @@ const TestimonialsSection = () => {
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                    {testimonial.name
+                    {(testimonial.name || "")
                       .split(" ")
                       .map((n: string) => n[0])
                       .join("")}
@@ -621,7 +621,8 @@ const TestimonialsSection = () => {
                       ))}
                     </div>
                     <p className="text-sm text-gray-600">
-                      {testimonial.name}, {testimonial.role}
+                      {testimonial.name && `${testimonial.name}, `}
+                      {testimonial.role}
                     </p>
                   </div>
                 </div>

@@ -26,6 +26,7 @@ import {
 import { JobTailoringComponent } from "@/components/job-tailoring-component";
 import { useUserCredits } from "@/hooks/use-user-credits";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { ImprovedResume } from "@/types/improved-resume";
 
@@ -53,6 +54,7 @@ function ResumePreview({
   onEdit: (field: string, value: any) => void;
   highlightedFields: string[];
 }) {
+  const t = useTranslations("improvedResume");
   const isHighlighted = (field: string) => {
     return highlightedFields.some((highlightedField) => {
       if (highlightedField.startsWith("keyword:")) return false;
@@ -200,7 +202,7 @@ function ResumePreview({
             onClick={handleClick}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            title="Click to edit"
+            title={t("clickToEdit")}
             role="textbox"
             aria-label={`Edit ${field}`}
             dangerouslySetInnerHTML={{ __html: displayValue }}
@@ -228,7 +230,7 @@ function ResumePreview({
         onClick={handleClick}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        title={isEditing ? "" : "Click to edit"}
+        title={isEditing ? "" : t("clickToEdit")}
         role="textbox"
         aria-label={`Edit ${field}`}
       >
@@ -255,7 +257,7 @@ function ResumePreview({
   if (!resumeData || !resumeData.personalInfo) {
     return (
       <div className="bg-white p-8 text-center">
-        <p className="text-gray-500">Loading resume data...</p>
+        <p className="text-gray-500">{t("resume.loadingData")}</p>
       </div>
     );
   }
@@ -320,7 +322,7 @@ function ResumePreview({
       {resumeData.professionalSummary && (
         <div className="p-8 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 uppercase tracking-wide">
-            Professional Summary
+            {t("resume.sections.professionalSummary")}
           </h3>
           <EditableText
             field="professionalSummary"
@@ -336,7 +338,7 @@ function ResumePreview({
       {resumeData.experience && resumeData.experience.length > 0 && (
         <div className="p-8 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 uppercase tracking-wide">
-            Professional Experience
+            {t("resume.sections.experience")}
           </h3>
           <div className="space-y-8">
             {resumeData.experience.map((exp, index) => (
@@ -453,7 +455,7 @@ function ResumePreview({
       {resumeData.education && resumeData.education.length > 0 && (
         <div className="p-8 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 uppercase tracking-wide">
-            Education
+            {t("resume.sections.education")}
           </h3>
           <div className="space-y-4">
             {resumeData.education.map((edu, index) => (
@@ -494,14 +496,14 @@ function ResumePreview({
       {resumeData.skills && (
         <div className="p-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 uppercase tracking-wide">
-            Skills
+            {t("resume.sections.skills")}
           </h3>
           <div className="space-y-4">
             {resumeData.skills.technical &&
               resumeData.skills.technical.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-3">
-                    Technical Skills
+                    {t("resume.sections.technicalSkills")}
                   </p>
                   <div className="text-sm text-gray-700 leading-relaxed">
                     {resumeData.skills.technical.join(" • ")}
@@ -512,7 +514,7 @@ function ResumePreview({
               resumeData.skills.certifications.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-3">
-                    Certifications
+                    {t("resume.sections.certifications")}
                   </p>
                   <div className="text-sm text-gray-700 leading-relaxed">
                     {resumeData.skills.certifications.join(" • ")}
@@ -523,7 +525,7 @@ function ResumePreview({
               resumeData.skills.languages.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-3">
-                    Languages
+                    {t("resume.sections.languages")}
                   </p>
                   <div className="text-sm text-gray-700 leading-relaxed">
                     {resumeData.skills.languages.join(" • ")}
@@ -539,6 +541,7 @@ function ResumePreview({
 
 export default function StreamingImprovedResumePage() {
   const router = useRouter();
+  const t = useTranslations("improvedResume");
   const [streamingData, setStreamingData] = useState<StreamingContext | null>(
     null
   );
@@ -684,7 +687,7 @@ export default function StreamingImprovedResumePage() {
       document.body.removeChild(a);
     } catch (error) {
       console.error("Download failed:", error);
-      alert("Failed to download resume. Please try again.");
+      alert(t("errors.downloadFailed"));
     } finally {
       setIsDownloading(false);
     }
@@ -718,7 +721,7 @@ export default function StreamingImprovedResumePage() {
 
     setIsTailoring(false);
     setShowTailoring(false); // Optionally close the tailoring view
-    toast.success("Resume tailored successfully!");
+    toast.success(t("tailoring.success"));
     refetchCredits(); // Refetch credits after tailoring
 
     // Save tailored resume as the new "original" for further tailoring
@@ -738,7 +741,7 @@ export default function StreamingImprovedResumePage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your improved resume...</p>
+          <p className="text-gray-600">{t("loading")}</p>
         </div>
       </div>
     );
@@ -764,7 +767,7 @@ export default function StreamingImprovedResumePage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2 sm:gap-0">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              AI-Improved Resume
+              {t("title")}
             </h1>
             <p className="text-gray-600 text-sm">
               {streamingData.targetRole} • {streamingData.targetIndustry}
@@ -794,8 +797,8 @@ export default function StreamingImprovedResumePage() {
                   <Download className="h-4 w-4 mr-2" />
                 )}
                 {activeTab === "coverLetter" && coverLetter
-                  ? "Cover Letter"
-                  : "DOCX"}
+                  ? t("header.coverLetter")
+                  : t("header.downloadDocx")}
               </Button>
               <Button
                 variant="outline"
@@ -805,9 +808,9 @@ export default function StreamingImprovedResumePage() {
                 className="w-full sm:w-auto"
               >
                 <Download className="h-4 w-4 mr-2" />
-                PDF
+                {t("header.downloadPdf")}
                 <Badge variant="secondary" className="ml-2 text-xs">
-                  Soon
+                  {t("header.soon")}
                 </Badge>
               </Button>
             </div>
@@ -818,7 +821,7 @@ export default function StreamingImprovedResumePage() {
               className="w-full sm:w-auto"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Dashboard
+              {t("header.dashboard")}
             </Button>
           </div>
         </div>
@@ -831,7 +834,9 @@ export default function StreamingImprovedResumePage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <FileText className="h-5 w-5 text-blue-600" />
-                    {activeTab === "resume" ? "Resume Preview" : "Cover Letter"}
+                    {activeTab === "resume"
+                      ? t("tabs.resumePreview")
+                      : t("tabs.coverLetter")}
                   </CardTitle>
                   {coverLetter && (
                     <Tabs
@@ -839,9 +844,11 @@ export default function StreamingImprovedResumePage() {
                       onValueChange={(val) => setActiveTab(val as any)}
                     >
                       <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="resume">Resume</TabsTrigger>
+                        <TabsTrigger value="resume">
+                          {t("tabs.resume")}
+                        </TabsTrigger>
                         <TabsTrigger value="coverLetter">
-                          Cover Letter
+                          {t("tabs.coverLetter")}
                         </TabsTrigger>
                       </TabsList>
                     </Tabs>
@@ -867,7 +874,7 @@ export default function StreamingImprovedResumePage() {
                         <div className="text-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
                           <p className="text-sm text-gray-600">
-                            Tailoring resume for job...
+                            {t("tailoring.tailoringResume")}
                           </p>
                         </div>
                       </div>
@@ -925,7 +932,7 @@ export default function StreamingImprovedResumePage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-purple-600" />
-                  Improvement Summary
+                  {t("cards.improvementSummary.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -940,19 +947,25 @@ export default function StreamingImprovedResumePage() {
                     <div className="text-lg font-bold text-gray-800">
                       {originalScore || "--"}
                     </div>
-                    <div className="text-xs text-gray-500">Original</div>
+                    <div className="text-xs text-gray-500">
+                      {t("cards.improvementSummary.original")}
+                    </div>
                   </div>
                   <div className="p-3 bg-green-50 rounded-lg">
                     <div className="text-lg font-bold text-green-600">
                       {improvementsAnalysis?.targetOptimizedResumeScore || "--"}
                     </div>
-                    <div className="text-xs text-gray-500">Improved</div>
+                    <div className="text-xs text-gray-500">
+                      {t("cards.improvementSummary.improved")}
+                    </div>
                   </div>
                   <div className="p-3 bg-blue-50 rounded-lg">
                     <div className="text-lg font-bold text-blue-600">
                       {scoreChange ? `+${scoreChange}` : "--"}
                     </div>
-                    <div className="text-xs text-gray-500">Increase</div>
+                    <div className="text-xs text-gray-500">
+                      {t("cards.improvementSummary.increase")}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -972,7 +985,7 @@ export default function StreamingImprovedResumePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-green-600" />
-                    Job Matching Analysis
+                    {t("cards.jobMatching.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -981,7 +994,9 @@ export default function StreamingImprovedResumePage() {
                       <div className="text-3xl font-bold text-green-600 mb-1">
                         {tailoringAnalysis.jobMatchScore}
                       </div>
-                      <p className="text-sm text-gray-600">Job Match Score</p>
+                      <p className="text-sm text-gray-600">
+                        {t("cards.jobMatching.jobMatchScore")}
+                      </p>
                     </div>
                   )}
 
@@ -989,7 +1004,7 @@ export default function StreamingImprovedResumePage() {
                     tailoringAnalysis.keywordAlignment.length > 0 && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-600 mb-2">
-                          Keywords Integrated:
+                          {t("cards.jobMatching.keywordsIntegrated")}
                         </h4>
                         <div className="flex flex-wrap gap-1">
                           {tailoringAnalysis.keywordAlignment.map(
@@ -1011,7 +1026,7 @@ export default function StreamingImprovedResumePage() {
                     tailoringAnalysis.emphasizedSkills.length > 0 && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-600 mb-2">
-                          Emphasized Skills:
+                          {t("cards.jobMatching.emphasizedSkills")}
                         </h4>
                         <ul className="space-y-1">
                           {tailoringAnalysis.emphasizedSkills.map(
@@ -1038,7 +1053,7 @@ export default function StreamingImprovedResumePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Zap className="h-5 w-5 text-yellow-600" />
-                    AI Improvements
+                    {t("cards.aiImprovements.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1065,7 +1080,7 @@ export default function StreamingImprovedResumePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-orange-600" />
-                    Important Notes
+                    {t("cards.importantNotes.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { useUser, SignInButton, UserButton } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Zap, User } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +11,7 @@ import Link from "next/link";
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isSignedIn, isLoaded } = useUser();
+  const t = useTranslations("navbar");
 
   const navItems = [
     { name: "Features", href: "#features" },
@@ -59,15 +61,18 @@ export function Navbar() {
               // Signed in state
               <div className="flex items-center space-x-4">
                 <Link href="/dashboard">
-                  <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-                    Dashboard
+                  <Button
+                    variant="ghost"
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    {t("dashboard")}
                   </Button>
                 </Link>
-                <UserButton 
+                <UserButton
                   appearance={{
                     elements: {
-                      avatarBox: "h-8 w-8"
-                    }
+                      avatarBox: "h-8 w-8",
+                    },
                   }}
                   afterSignOutUrl="/"
                 />
@@ -80,13 +85,13 @@ export function Navbar() {
                     variant="ghost"
                     className="text-gray-600 hover:text-gray-900"
                   >
-                    Sign In
+                    {t("signIn")}
                   </Button>
                 </SignInButton>
                 <SignInButton mode="modal">
                   <Button className="bg-purple-600 hover:bg-purple-700 text-white">
                     <Zap className="h-4 w-4 mr-2" />
-                    Try Free
+                    {t("tryFree")}
                   </Button>
                 </SignInButton>
               </div>
@@ -122,7 +127,7 @@ export function Navbar() {
                   {item.name}
                 </a>
               ))}
-              
+
               <div className="pt-4 pb-2 border-t border-gray-200 mt-4">
                 {!isLoaded ? (
                   // Loading skeleton
@@ -134,21 +139,21 @@ export function Navbar() {
                   // Signed in state
                   <div className="space-y-2">
                     <Link href="/dashboard">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         className="w-full justify-start"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <User className="h-4 w-4 mr-2" />
-                        Dashboard
+                        {t("dashboard")}
                       </Button>
                     </Link>
                     <div className="px-3 py-2">
-                      <UserButton 
+                      <UserButton
                         appearance={{
                           elements: {
-                            avatarBox: "h-8 w-8"
-                          }
+                            avatarBox: "h-8 w-8",
+                          },
                         }}
                         afterSignOutUrl="/"
                       />
@@ -163,13 +168,13 @@ export function Navbar() {
                     <SignInButton mode="modal">
                       <Button variant="ghost" className="justify-start">
                         <User className="h-4 w-4 mr-2" />
-                        Sign In
+                        {t("signIn")}
                       </Button>
                     </SignInButton>
                     <SignInButton mode="modal">
                       <Button className="bg-purple-600 hover:bg-purple-700 text-white justify-start">
                         <Zap className="h-4 w-4 mr-2" />
-                        Try Free
+                        {t("tryFree")}
                       </Button>
                     </SignInButton>
                   </div>

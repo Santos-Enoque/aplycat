@@ -6,6 +6,7 @@ import { UnifiedNavbar } from "../../components/unified-navbar";
 import { ResumeProvider } from "../../hooks/use-resume-context";
 import { PerformanceTracker } from "../../components/performance-tracker";
 import { QueryProvider } from "../../components/providers/query-provider";
+import { LocalePreferenceHandler } from "../../components/locale-preference-handler";
 import "../globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { PostHogProvider } from "../../components/providers/PostHogProvider";
@@ -86,6 +87,7 @@ export default async function RootLayout({ children, params }: Props) {
           suppressHydrationWarning={true}
         >
           <NextIntlClientProvider messages={messages}>
+            <LocalePreferenceHandler />
             <PostHogProvider>
               <CreditsModalProvider>
                 <QueryProvider>

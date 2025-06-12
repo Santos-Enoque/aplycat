@@ -16,9 +16,12 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function CachedAnalysesPage() {
   const { data: analysesData, isLoading, error, isError } = useAnalyses();
+  const t = useTranslations("cachedAnalyses");
+  const tAnalysis = useTranslations("analysisDisplay");
 
   if (isLoading) {
     return <AnalysesLoadingSkeleton />;
@@ -31,10 +34,10 @@ export function CachedAnalysesPage() {
           <div className="text-center">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Failed to load analyses
+              {t("error.title")}
             </h3>
             <p className="text-gray-600">
-              {error?.message || "Please try refreshing the page"}
+              {error?.message || t("error.fallbackMessage")}
             </p>
           </div>
         </CardContent>
@@ -73,26 +76,44 @@ export function CachedAnalysesPage() {
     }
   };
 
+  const getCategoryTranslation = (category: string) => {
+    const normalizedCategory = category.toLowerCase().replace(/\s+/g, "");
+    switch (normalizedCategory) {
+      case "excellent":
+        return tAnalysis("categories.excellent");
+      case "good":
+        return tAnalysis("categories.good");
+      case "needswork":
+        return tAnalysis("categories.needsWork");
+      case "needsimprovement":
+        return tAnalysis("categories.needsImprovement");
+      case "critical":
+        return tAnalysis("categories.critical");
+      case "poor":
+        return tAnalysis("categories.poor");
+      default:
+        return category; // fallback to original if no translation found
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            My Analyses
+            {t("title")}
           </h1>
-          <p className="text-gray-600 mt-1">
-            View all your resume analysis results and insights
-          </p>
+          <p className="text-gray-600 mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-3">
           <Badge className="bg-blue-100 text-blue-800">
-            {total} {total === 1 ? "analysis" : "analyses"}
+            {t("analysisCount", { count: total })}
           </Badge>
           <Link href="/dashboard">
             <Button className="bg-green-600 hover:bg-green-700">
               <Plus className="h-4 w-4 mr-2" />
-              New Analysis
+              {t("newAnalysis")}
             </Button>
           </Link>
         </div>
@@ -115,7 +136,7 @@ export function CachedAnalysesPage() {
                     <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
                       <Calendar className="h-3 w-3" />
                       <span>
-                        Analyzed{" "}
+                        {t("analyzed")}{" "}
                         {formatDistanceToNow(new Date(analysis.createdAt), {
                           addSuffix: true,
                         })}
@@ -135,7 +156,7 @@ export function CachedAnalysesPage() {
                           analysis.scoreCategory
                         )}`}
                       >
-                        {analysis.scoreCategory}
+                        {getCategoryTranslation(analysis.scoreCategory)}
                       </Badge>
                     )}
                   </div>
@@ -148,7 +169,7 @@ export function CachedAnalysesPage() {
                     <div className="p-3 bg-blue-50 rounded-lg">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-blue-900">
-                          Overall Score
+                          {tAnalysis("scores.overallScore")}
                         </span>
                         <TrendingUp className="h-4 w-4 text-blue-600" />
                       </div>
@@ -163,7 +184,7 @@ export function CachedAnalysesPage() {
                     <div className="p-3 bg-purple-50 rounded-lg">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-purple-900">
-                          ATS Score
+                          {tAnalysis("scores.atsScore")}
                         </span>
                         <BarChart3 className="h-4 w-4 text-purple-600" />
                       </div>
@@ -189,7 +210,7 @@ export function CachedAnalysesPage() {
                   {/* Processing Time */}
                   {analysis.processingTimeMs && (
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>Processing time:</span>
+                      <span>{t("processingTime")}</span>
                       <span>
                         {(analysis.processingTimeMs / 1000).toFixed(1)}s
                       </span>
@@ -207,7 +228,7 @@ export function CachedAnalysesPage() {
                         className="w-full bg-green-600 hover:bg-green-700"
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        View Details
+                        {t("viewDetails")}
                       </Button>
                     </Link>
                     <Link
@@ -216,7 +237,7 @@ export function CachedAnalysesPage() {
                     >
                       <Button size="sm" variant="outline" className="w-full">
                         <TrendingUp className="h-4 w-4 mr-1" />
-                        Improve
+                        {t("improve")}
                       </Button>
                     </Link>
                   </div>
@@ -230,16 +251,13 @@ export function CachedAnalysesPage() {
           <CardContent className="text-center py-12">
             <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No analyses yet
+              {t("noAnalyses.title")}
             </h3>
-            <p className="text-gray-600 mb-6">
-              Upload and analyze your first resume to get started with
-              AI-powered insights!
-            </p>
+            <p className="text-gray-600 mb-6">{t("noAnalyses.description")}</p>
             <Link href="/dashboard">
               <Button className="bg-green-600 hover:bg-green-700">
                 <FileText className="h-4 w-4 mr-2" />
-                Analyze Your First Resume
+                {t("noAnalyses.button")}
               </Button>
             </Link>
           </CardContent>

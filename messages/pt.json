@@ -72,9 +72,9 @@
     "upgradeDisclaimer": "7 créditos • Sem assinatura • Garantia de 30 dias"
   },
   "testimonials": {
-    "title": "Junte-se aos 50.000+ que Pararam de Ser Rejeitados",
+    "title": "Junte-se aos 1.000+ que Pararam de Ser Rejeitados",
     "stats": {
-      "roasted": "50.000+ currículos destruídos",
+      "roasted": "1.000+ currículos destruídos",
       "rating": "4.9/5 avaliação",
       "interviews": "78% conseguiram mais entrevistas"
     },
@@ -262,7 +262,12 @@
     "offerNote": "🚀 Oferta de lançamento acaba logo • Créditos bônus em todos os pacotes"
   },
   "navbar": {
-    "languageSelector": "Idioma"
+    "languageSelector": "Idioma",
+    "signIn": "Entrar",
+    "tryFree": "Experimentar Grátis",
+    "buyCredits": "Comprar Créditos",
+    "credits": "Créditos",
+    "dashboard": "Painel"
   },
   "banner": {
     "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas $1 • 10 Créditos no Valor de $8.30"
@@ -405,9 +410,9 @@
       "analyzed": "Analisado {timeAgo}",
       "share": "Compartilhar",
       "downloadReport": "Baixar Relatório",
-      "scoreBreakdown": "Detalhamento da Pontuação",
+      "scoreBreakdown": "Divisão da Pontuação",
       "overallAnalysis": "Análise Geral",
-      "sectionAnalysis": "Análise por Seção",
+      "sectionAnalysis": "Análise de Seções",
       "recommendations": "Recomendações",
       "improvementPlan": "Plano de Melhoria"
     },
@@ -439,7 +444,7 @@
       "noImprovements": "Nenhuma melhoria ainda",
       "createFirst": "Crie sua primeira melhoria de currículo",
       "version": "Versão {version}",
-      "targetRole": "Objetivo: {role}",
+      "targetRole": "Alvo: {role}",
       "download": "Baixar",
       "preview": "Visualizar",
       "improvedScore": "Pontuação Melhorada: {score}"
@@ -459,6 +464,343 @@
         "REFUND": "Reembolso",
         "BONUS": "Bônus"
       }
+    }
+  },
+  "creditsModal": {
+    "title": "Comprar Créditos",
+    "subtitle": "Escolha o pacote de créditos que melhor se adapta às suas necessidades. Os créditos nunca expiram!",
+    "requiredCredits": "Você precisa de pelo menos {credits} créditos para esta ação.",
+    "securityBadge": "Processamento seguro de pagamentos pela Stripe & PaySuite",
+    "paymentMethodsTitle": "Métodos de Pagamento Disponíveis",
+    "creditCardPayment": "Cartões de Crédito/Débito: Visa, Mastercard, Amex",
+    "mobileMoneyPayment": "Mobile Money: Emola (processamento instantâneo)",
+    "paymentMethodInfo": "A seleção do método de pagamento acontece após escolher seu pacote",
+    "selected": "Selecionado",
+    "mostPopular": "Mais Popular",
+    "perCredit": "por crédito",
+    "selectPackage": "Selecionar Este Pacote",
+    "packageSelected": "Pacote Selecionado",
+    "choosePaymentMethod": "Escolha o Método de Pagamento:",
+    "payWith": "Pagar com {method}",
+    "processing": "Processando...",
+    "credits": {
+      "features": {
+        "title": "Para que são usados os créditos?",
+        "analysis": "1 análise abrangente de currículo",
+        "improvement": "1 melhoria de currículo com IA",
+        "jobTailored": "1 currículo personalizado + carta de apresentação",
+        "neverExpire": "Os créditos nunca expiram e podem ser usados a qualquer momento",
+        "allFeatures": "Todos os recursos incluídos independentemente do tamanho do pacote"
+      },
+      "packages": {
+        "analyses": "{count} Análises de Currículo",
+        "improvements": "{count} Melhorias de Currículo",
+        "jobTailoring": "{count} combos de Currículo Personalizado + Carta de Apresentação",
+        "emailSupport": "Suporte por Email",
+        "prioritySupport": "Suporte Prioritário",
+        "premiumSupport": "Suporte Premium",
+        "careerOptimization": "Otimização para mudança de carreira"
+      }
+    },
+    "guarantees": "Processamento seguro de pagamentos • Garantia de 30 dias • Entrega instantânea de créditos",
+    "redirectingPayment": "Redirecionando para pagamento seguro...",
+    "redirectingMobile": "Redirecionando para pagamento mobile money...",
+    "paymentSuccess": "Pagamento bem-sucedido! Seus créditos foram adicionados à sua conta."
+  },
+  "analyze": {
+    "title": "Análise de Currículo com IA",
+    "subtitle": "Receba feedback instantâneo e detalhado sobre seu currículo com insights acionáveis para conseguir o emprego dos seus sonhos.",
+    "loading": {
+      "connecting": "Conectando...",
+      "initializing": "Inicializando...",
+      "waitMessage": "Por favor, aguarde enquanto preparamos o motor de análise."
+    },
+    "error": {
+      "title": "Falha na Análise",
+      "returnToDashboard": "Retornar ao Painel"
+    },
+    "noResume": {
+      "title": "Nenhum Currículo Encontrado para Análise",
+      "message": "Por favor, envie um currículo do seu painel para começar.",
+      "goToDashboard": "Ir ao Painel"
+    },
+    "analysisFor": "Análise para: {fileName}",
+    "toast": {
+      "missingData": "Não foi possível encontrar os dados da análise. Por favor, tente novamente."
+    }
+  },
+  "analysisDisplay": {
+    "scores": {
+      "overallScore": "Pontuação Geral",
+      "atsScore": "Pontuação ATS",
+      "improvementPotential": "Potencial de Melhoria",
+      "atsFormat": "formato amigável ao ATS",
+      "pointsPossible": "pontos possíveis"
+    },
+    "keyInsight": "Insight Principal",
+    "categories": {
+      "excellent": "Excelente",
+      "good": "Bom",
+      "needsWork": "Precisa de Trabalho",
+      "needsImprovement": "Precisa de Melhoria",
+      "critical": "Crítico",
+      "poor": "Ruim"
+    },
+    "ratings": {
+      "excellent": "Excelente",
+      "strong": "Forte",
+      "good": "Bom",
+      "fair": "Razoável",
+      "needsWork": "Precisa de Trabalho",
+      "critical": "Crítico",
+      "poor": "Ruim"
+    },
+    "improvement": {
+      "readyTitle": "Pronto para melhorar seu currículo?",
+      "readyDescription": "Obtenha melhorias com IA, seções reescritas e um currículo profissionalmente otimizado.",
+      "improveButton": "Melhorar com IA",
+      "fixTitle": "Pronto para consertar seu currículo?",
+      "fixDescription": "Deixe nossa IA reescrever as seções do seu currículo, otimizar para ATS e criar múltiplas versões para diferentes funções.",
+      "improveCredits": "Melhorar com IA - 2 Créditos"
+    },
+    "sectionAnalysis": {
+      "title": "Análise Seção por Seção",
+      "analysis": "Análise",
+      "whatsGood": "O Que Está Bom",
+      "issuesFound": "Problemas Encontrados",
+      "quickFixes": "Correções Rápidas"
+    },
+    "limitedAccess": {
+      "signUpButton": "Cadastre-se para Ver {count} Seções Adicionais",
+      "trialMessage": "Obtenha análise completa + teste de $1 para todos os recursos de IA"
+    },
+    "loading": {
+      "creditsMessage": "Verificando seu saldo de créditos..."
+    }
+  },
+  "analyzeLayout": {
+    "loading": "Carregando..."
+  },
+  "cachedAnalyses": {
+    "title": "Minhas Análises",
+    "subtitle": "Veja todos os resultados e insights das análises do seu currículo",
+    "analysisCount": "{count} {count, plural, one {análise} other {análises}}",
+    "newAnalysis": "Nova Análise",
+    "analyzed": "Analisado",
+    "processingTime": "Tempo de processamento:",
+    "viewDetails": "Ver Detalhes",
+    "improve": "Melhorar",
+    "noAnalyses": {
+      "title": "Ainda não há análises",
+      "description": "Envie e analise seu primeiro currículo para começar com insights alimentados por IA!",
+      "button": "Analisar Seu Primeiro Currículo"
+    },
+    "error": {
+      "title": "Falha ao carregar análises",
+      "fallbackMessage": "Por favor, tente atualizar a página"
+    }
+  },
+  "improve": {
+    "title": "Melhoria de Currículo com IA",
+    "subtitle": "Nossa IA está reescrevendo seu currículo para máximo impacto na sua função alvo.",
+    "loading": {
+      "title": "IA está melhorando seu currículo...",
+      "subtitle": "Isso pode levar um momento. Por favor, não feche esta página.",
+      "processing": "Processando",
+      "steps": {
+        "analyzing": "Analisando currículo original",
+        "optimizing": "Otimizando para função alvo",
+        "enhancing": "Aprimorando com melhorias de IA",
+        "finalizing": "Finalizando currículo melhorado"
+      }
+    },
+    "success": {
+      "title": "Currículo Melhorado com Sucesso!",
+      "subtitle": "Redirecionando para seu currículo melhorado..."
+    },
+    "error": {
+      "title": "Falha na Melhoria",
+      "button": "Retornar ao Painel",
+      "messages": {
+        "general": "Estamos enfrentando dificuldades técnicas. Por favor, tente novamente mais tarde.",
+        "credits": "Não foi possível melhorar o currículo. Por favor, tente novamente.",
+        "processing": "Não foi possível processar a melhoria do seu currículo. Por favor, tente novamente."
+      }
+    }
+  },
+  "improvedResume": {
+    "title": "Currículo Melhorado por IA",
+    "loading": "Carregando seu currículo melhorado...",
+    "clickToEdit": "Clique para editar",
+    "resume": {
+      "sections": {
+        "professionalSummary": "Resumo Profissional",
+        "experience": "Experiência Profissional",
+        "education": "Educação",
+        "skills": "Habilidades",
+        "technicalSkills": "Habilidades Técnicas",
+        "certifications": "Certificações",
+        "languages": "Idiomas"
+      },
+      "loadingData": "Carregando dados do currículo..."
+    },
+    "header": {
+      "downloadDocx": "DOCX",
+      "downloadPdf": "PDF",
+      "coverLetter": "Carta de Apresentação",
+      "dashboard": "Painel",
+      "soon": "Em Breve"
+    },
+    "tabs": {
+      "resume": "Currículo",
+      "coverLetter": "Carta de Apresentação",
+      "resumePreview": "Visualização do Currículo"
+    },
+    "cards": {
+      "improvementSummary": {
+        "title": "Resumo das Melhorias",
+        "original": "Original",
+        "improved": "Melhorado",
+        "increase": "Aumento"
+      },
+      "jobMatching": {
+        "title": "Análise de Compatibilidade com Vaga",
+        "jobMatchScore": "Pontuação de Compatibilidade",
+        "keywordsIntegrated": "Palavras-chave Integradas:",
+        "emphasizedSkills": "Habilidades Enfatizadas:"
+      },
+      "aiImprovements": {
+        "title": "Melhorias da IA"
+      },
+      "importantNotes": {
+        "title": "Notas Importantes"
+      }
+    },
+    "tailoring": {
+      "tailoringResume": "Personalizando currículo para vaga...",
+      "success": "Currículo personalizado com sucesso!"
+    },
+    "errors": {
+      "downloadFailed": "Falha ao baixar currículo. Por favor, tente novamente.",
+      "generateDownloadFailed": "Falha ao gerar download"
+    }
+  },
+  "improvement": {
+    "title": "Resumo das Melhorias",
+    "originalScore": "Pontuação Original",
+    "newScore": "Nova Pontuação",
+    "scoreIncrease": "Aumento da Pontuação",
+    "aiFeedback": "Feedback da IA",
+    "keyRevisions": "Principais Revisões Implementadas:",
+    "importantRecommendations": "Recomendações Importantes:",
+    "improvedSections": "Seções Melhoradas do Currículo",
+    "personalInfo": "Informações Pessoais",
+    "professionalSummary": "Resumo Profissional",
+    "experience": "Experiência Profissional",
+    "projects": "Projetos",
+    "education": "Educação",
+    "skills": "Competências",
+    "technicalSkills": "Competências Técnicas",
+    "certifications": "Certificações",
+    "languages": "Idiomas",
+    "methodologies": "Metodologias",
+    "technologies": "Tecnologias",
+    "name": "Nome",
+    "email": "Email",
+    "phone": "Telefone",
+    "location": "Localização",
+    "linkedin": "LinkedIn",
+    "website": "Website"
+  },
+  "jobTailoring": {
+    "title": "Personalizar para Vaga Específica",
+    "description": "Otimize o seu currículo para uma oferta de emprego específica com correspondência de palavras-chave e geração de carta de apresentação alimentadas por IA.",
+    "jobUrl": "URL da Oferta de Emprego",
+    "enterManually": "Inserir detalhes manualmente",
+    "extract": "Extrair",
+    "extractPlaceholder": "https://empresa.com/carreiras/oferta-emprego...",
+    "extractDescription": "Cole um URL de emprego para extrair automaticamente os detalhes do emprego, ou insira manualmente abaixo",
+    "viewEdit": "Ver/Editar Detalhes Extraídos",
+    "enterDetailsManually": "Inserir Detalhes Manualmente",
+    "extractedDetails": "Detalhes do Emprego Extraídos",
+    "jobDetails": "Detalhes do Emprego",
+    "hideDetails": "Ocultar detalhes",
+    "jobTitle": "Título do Emprego",
+    "jobTitlePlaceholder": "ex., Engenheiro de Software Sénior",
+    "companyName": "Nome da Empresa",
+    "companyPlaceholder": "ex., Google",
+    "jobDescription": "Descrição do Emprego",
+    "jobDescriptionPlaceholder": "Cole aqui a descrição completa do emprego...",
+    "jobDescriptionHelp": "Inclua requisitos, responsabilidades e competências para melhores resultados",
+    "includeCoverLetter": "Incluir Carta de Apresentação",
+    "coverLetterDescription": "Gere uma carta de apresentação personalizada com o seu currículo",
+    "coverLetterToggleYes": "Sim",
+    "coverLetterToggleNo": "Não",
+    "tailorResume": "Personalizar Currículo",
+    "tailorResumeAndCover": "Personalizar Currículo + Carta de Apresentação",
+    "tailoring": "Personalizando...",
+    "reset": "Repor",
+    "processingSteps": "Etapas de Processamento",
+    "extractingJob": "Extraindo informações do emprego...",
+    "analyzingKeywords": "Analisando palavras-chave do emprego...",
+    "optimizingContent": "Otimizando conteúdo do currículo...",
+    "generatingCover": "Gerando carta de apresentação...",
+    "finalizing": "Finalizando currículo personalizado...",
+    "provideJobDescription": "Forneça uma descrição do emprego",
+    "optional": "(Opcional)",
+    "required": "*"
+  },
+  "tailoredResults": {
+    "title": "Resultados do Currículo Personalizado",
+    "backToCustomize": "Voltar para Personalizar",
+    "downloadResume": "Baixar Currículo",
+    "downloadCover": "Baixar Carta de Apresentação",
+    "share": "Partilhar",
+    "toggleAnalysis": "Alternar Análise",
+    "professionalSummary": "RESUMO PROFISSIONAL",
+    "professionalExperience": "EXPERIÊNCIA PROFISSIONAL",
+    "education": "EDUCAÇÃO",
+    "coreCompetencies": "COMPETÊNCIAS PRINCIPAIS",
+    "technicalSkills": "Competências Técnicas:",
+    "certifications": "Certificações:",
+    "jobMatchAnalysis": "Análise de Correspondência de Emprego",
+    "jobMatchScore": "Pontuação de Correspondência de Emprego",
+    "keywordsIntegrated": "Palavras-chave Integradas",
+    "prioritizedExperience": "Experiência Priorizada",
+    "recommendedAdjustments": "Ajustes Recomendados",
+    "coverLetter": "Carta de Apresentação",
+    "resume": "Currículo"
+  },
+  "cachedImprovements": {
+    "title": "Melhorias de Currículo",
+    "noImprovements": "Ainda sem melhorias",
+    "noImprovementsDescription": "Analise primeiro um currículo, depois crie versões melhoradas adaptadas para funções específicas!",
+    "uploadAnalyze": "Carregar e Analisar Currículo",
+    "failedToLoad": "Falha ao carregar melhorias",
+    "tryRefreshing": "Tente atualizar a página",
+    "scoreImprovement": "Melhoria da Pontuação",
+    "viewImprovement": "Ver Melhoria",
+    "downloadResume": "Baixar Currículo",
+    "version": "Versão",
+    "original": "Original",
+    "improved": "Melhorado"
+  },
+  "improveModal": {
+    "title": "Melhorar Seu Currículo",
+    "description": "Conte-nos seu objetivo, e nossa IA reescreverá seu currículo para corresponder a ele.",
+    "targetRole": {
+      "label": "Função Alvo",
+      "placeholder": "ex., Engenheiro de Software Sênior"
+    },
+    "industry": {
+      "label": "Setor",
+      "placeholder": "ex., Tecnologia / SaaS"
+    },
+    "startImprovement": "Iniciar Melhoria",
+    "cancel": "Cancelar",
+    "validation": {
+      "bothFieldsRequired": "Ambos os campos são obrigatórios.",
+      "pleaseSpecify": "Por favor, especifique sua função alvo e setor."
     }
   }
 }

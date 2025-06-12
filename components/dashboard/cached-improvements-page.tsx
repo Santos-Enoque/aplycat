@@ -18,8 +18,10 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function CachedImprovementsPage() {
+  const t = useTranslations("cachedImprovements");
   const {
     data: improvementsData,
     isLoading,
@@ -38,10 +40,10 @@ export function CachedImprovementsPage() {
           <div className="text-center">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Failed to load improvements
+              {t("failedToLoad")}
             </h3>
             <p className="text-gray-600">
-              {error?.message || "Please try refreshing the page"}
+              {error?.message || t("tryRefreshing")}
             </p>
           </div>
         </CardContent>
@@ -73,7 +75,7 @@ export function CachedImprovementsPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            My Improvements
+            {t("title")}
           </h1>
           <p className="text-gray-600 mt-1">
             View all your improved resume versions and download them
@@ -143,7 +145,7 @@ export function CachedImprovementsPage() {
                     <div className="p-3 bg-green-50 rounded-lg">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-green-900">
-                          Score Improvement
+                          {t("scoreImprovement")}
                         </span>
                         <TrendingUp className="h-4 w-4 text-green-600" />
                       </div>
@@ -203,7 +205,7 @@ export function CachedImprovementsPage() {
                         className="w-full bg-green-600 hover:bg-green-700"
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        View
+                        {t("viewImprovement")}
                       </Button>
                     </Link>
                     <Button
@@ -216,7 +218,7 @@ export function CachedImprovementsPage() {
                       }}
                     >
                       <Download className="h-4 w-4 mr-1" />
-                      Download
+                      {t("downloadResume")}
                     </Button>
                   </div>
                 </div>
@@ -229,16 +231,15 @@ export function CachedImprovementsPage() {
           <CardContent className="text-center py-12">
             <Sparkles className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No improvements yet
+              {t("noImprovements")}
             </h3>
             <p className="text-gray-600 mb-6">
-              Analyze a resume first, then create improved versions tailored for
-              specific roles!
+              {t("noImprovementsDescription")}
             </p>
             <Link href="/dashboard">
               <Button className="bg-green-600 hover:bg-green-700">
                 <FileText className="h-4 w-4 mr-2" />
-                Upload & Analyze Resume
+                {t("uploadAnalyze")}
               </Button>
             </Link>
           </CardContent>

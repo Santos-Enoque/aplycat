@@ -72,9 +72,9 @@
     "upgradeDisclaimer": "7 credits • No subscription • 30-day money-back guarantee"
   },
   "testimonials": {
-    "title": "Join 50,000+ Who Stopped Getting Rejected",
+    "title": "Join 1,000+ Who Stopped Getting Rejected",
     "stats": {
-      "roasted": "50,000+ resumes roasted",
+      "roasted": "1,000+ resumes roasted",
       "rating": "4.9/5 rating",
       "interviews": "78% got more interviews"
     },
@@ -262,7 +262,12 @@
     "offerNote": "🚀 Launch offer ends soon • Bonus credits on all packs"
   },
   "navbar": {
-    "languageSelector": "Language"
+    "languageSelector": "Language",
+    "signIn": "Sign In",
+    "tryFree": "Try Free",
+    "buyCredits": "Buy Credits",
+    "credits": "Credits",
+    "dashboard": "Dashboard"
   },
   "banner": {
     "trial": "🚀 LIMITED TIME: Try ALL AI Features for Just $1 • 10 Credits Worth $8.30"
@@ -459,6 +464,343 @@
         "REFUND": "Refund",
         "BONUS": "Bonus"
       }
+    }
+  },
+  "creditsModal": {
+    "title": "Buy Credits",
+    "subtitle": "Choose the credit pack that best fits your needs. Credits never expire!",
+    "requiredCredits": "You need at least {credits} credits for this action.",
+    "securityBadge": "Secure payment processing by Stripe & PaySuite",
+    "paymentMethodsTitle": "Available Payment Methods",
+    "creditCardPayment": "Credit/Debit Cards: Visa, Mastercard, Amex",
+    "mobileMoneyPayment": "Mobile Money: Emola (instant processing)",
+    "paymentMethodInfo": "Payment method selection happens after choosing your package",
+    "selected": "Selected",
+    "mostPopular": "Most Popular",
+    "perCredit": "per credit",
+    "selectPackage": "Select This Package",
+    "packageSelected": "Package Selected",
+    "choosePaymentMethod": "Choose Payment Method:",
+    "payWith": "Pay with {method}",
+    "processing": "Processing...",
+    "credits": {
+      "features": {
+        "title": "What are credits used for?",
+        "analysis": "1 comprehensive resume analysis",
+        "improvement": "1 AI-powered resume improvement",
+        "jobTailored": "1 job-tailored resume + cover letter",
+        "neverExpire": "Credits never expire and can be used anytime",
+        "allFeatures": "All features included regardless of pack size"
+      },
+      "packages": {
+        "analyses": "{count} Resume Analyses",
+        "improvements": "{count} Resume Improvements",
+        "jobTailoring": "{count} Job-Tailored Resume + Cover Letter combos",
+        "emailSupport": "Email Support",
+        "prioritySupport": "Priority Support",
+        "premiumSupport": "Premium Support",
+        "careerOptimization": "Career change optimization"
+      }
+    },
+    "guarantees": "Secure payment processing • 30-day money-back guarantee • Instant credit delivery",
+    "redirectingPayment": "Redirecting to secure payment...",
+    "redirectingMobile": "Redirecting to mobile money payment...",
+    "paymentSuccess": "Payment successful! Your credits have been added to your account."
+  },
+  "analyze": {
+    "title": "AI Resume Analysis",
+    "subtitle": "Get instant, detailed feedback on your resume with actionable insights to land your dream job.",
+    "loading": {
+      "connecting": "Connecting...",
+      "initializing": "Initializing...",
+      "waitMessage": "Please wait while we prepare the analysis engine."
+    },
+    "error": {
+      "title": "Analysis Failed",
+      "returnToDashboard": "Return to Dashboard"
+    },
+    "noResume": {
+      "title": "No Resume Found for Analysis",
+      "message": "Please upload a resume from your dashboard to begin.",
+      "goToDashboard": "Go to Dashboard"
+    },
+    "analysisFor": "Analysis for: {fileName}",
+    "toast": {
+      "missingData": "Could not find the analysis data. Please try again."
+    }
+  },
+  "analysisDisplay": {
+    "scores": {
+      "overallScore": "Overall Score",
+      "atsScore": "ATS Score",
+      "improvementPotential": "Improvement Potential",
+      "atsFormat": "ATS-friendly format",
+      "pointsPossible": "points possible"
+    },
+    "keyInsight": "Key Insight",
+    "categories": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "needsWork": "Needs Work",
+      "needsImprovement": "Needs Improvement",
+      "critical": "Critical",
+      "poor": "Poor"
+    },
+    "ratings": {
+      "excellent": "Excellent",
+      "strong": "Strong",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work",
+      "critical": "Critical",
+      "poor": "Poor"
+    },
+    "improvement": {
+      "readyTitle": "Ready to improve your resume?",
+      "readyDescription": "Get AI-powered improvements, rewritten sections, and a professionally optimized resume.",
+      "improveButton": "Improve with AI",
+      "fixTitle": "Ready to fix your resume?",
+      "fixDescription": "Let our AI rewrite your resume sections, optimize for ATS, and create multiple versions for different roles.",
+      "improveCredits": "Improve with AI - 2 Credits"
+    },
+    "sectionAnalysis": {
+      "title": "Section-by-Section Analysis",
+      "analysis": "Analysis",
+      "whatsGood": "What's Good",
+      "issuesFound": "Issues Found",
+      "quickFixes": "Quick Fixes"
+    },
+    "limitedAccess": {
+      "signUpButton": "Sign Up to See {count} More Sections",
+      "trialMessage": "Get complete analysis + $1 trial for all AI features"
+    },
+    "loading": {
+      "creditsMessage": "Verifying your credit balance..."
+    }
+  },
+  "analyzeLayout": {
+    "loading": "Loading..."
+  },
+  "cachedAnalyses": {
+    "title": "My Analyses",
+    "subtitle": "View all your resume analysis results and insights",
+    "analysisCount": "{count} {count, plural, one {analysis} other {analyses}}",
+    "newAnalysis": "New Analysis",
+    "analyzed": "Analyzed",
+    "processingTime": "Processing time:",
+    "viewDetails": "View Details",
+    "improve": "Improve",
+    "noAnalyses": {
+      "title": "No analyses yet",
+      "description": "Upload and analyze your first resume to get started with AI-powered insights!",
+      "button": "Analyze Your First Resume"
+    },
+    "error": {
+      "title": "Failed to load analyses",
+      "fallbackMessage": "Please try refreshing the page"
+    }
+  },
+  "improve": {
+    "title": "AI-Powered Resume Improvement",
+    "subtitle": "Our AI is rewriting your resume for maximum impact in your target role.",
+    "loading": {
+      "title": "AI is improving your resume...",
+      "subtitle": "This may take a moment. Please don't close this page.",
+      "processing": "Processing",
+      "steps": {
+        "analyzing": "Analyzing original resume",
+        "optimizing": "Optimizing for target role",
+        "enhancing": "Enhancing with AI improvements",
+        "finalizing": "Finalizing improved resume"
+      }
+    },
+    "success": {
+      "title": "Resume Improved Successfully!",
+      "subtitle": "Redirecting to your improved resume..."
+    },
+    "error": {
+      "title": "Improvement Failed",
+      "button": "Return to Dashboard",
+      "messages": {
+        "general": "We're experiencing technical difficulties. Please try again later.",
+        "credits": "Unable to improve resume. Please try again.",
+        "processing": "Unable to process your resume improvement. Please try again."
+      }
+    }
+  },
+  "improvedResume": {
+    "title": "AI-Improved Resume",
+    "loading": "Loading your improved resume...",
+    "clickToEdit": "Click to edit",
+    "resume": {
+      "sections": {
+        "professionalSummary": "Professional Summary",
+        "experience": "Professional Experience",
+        "education": "Education",
+        "skills": "Skills",
+        "technicalSkills": "Technical Skills",
+        "certifications": "Certifications",
+        "languages": "Languages"
+      },
+      "loadingData": "Loading resume data..."
+    },
+    "header": {
+      "downloadDocx": "DOCX",
+      "downloadPdf": "PDF",
+      "coverLetter": "Cover Letter",
+      "dashboard": "Dashboard",
+      "soon": "Soon"
+    },
+    "tabs": {
+      "resume": "Resume",
+      "coverLetter": "Cover Letter",
+      "resumePreview": "Resume Preview"
+    },
+    "cards": {
+      "improvementSummary": {
+        "title": "Improvement Summary",
+        "original": "Original",
+        "improved": "Improved",
+        "increase": "Increase"
+      },
+      "jobMatching": {
+        "title": "Job Matching Analysis",
+        "jobMatchScore": "Job Match Score",
+        "keywordsIntegrated": "Keywords Integrated:",
+        "emphasizedSkills": "Emphasized Skills:"
+      },
+      "aiImprovements": {
+        "title": "AI Improvements"
+      },
+      "importantNotes": {
+        "title": "Important Notes"
+      }
+    },
+    "tailoring": {
+      "tailoringResume": "Tailoring resume for job...",
+      "success": "Resume tailored successfully!"
+    },
+    "errors": {
+      "downloadFailed": "Failed to download resume. Please try again.",
+      "generateDownloadFailed": "Failed to generate download"
+    }
+  },
+  "improvement": {
+    "title": "Improvement Summary",
+    "originalScore": "Original Score",
+    "newScore": "New Score",
+    "scoreIncrease": "Score Increase",
+    "aiFeedback": "AI Feedback",
+    "keyRevisions": "Key Revisions Implemented:",
+    "importantRecommendations": "Important Recommendations:",
+    "improvedSections": "Improved Resume Sections",
+    "personalInfo": "Personal Information",
+    "professionalSummary": "Professional Summary",
+    "experience": "Professional Experience",
+    "projects": "Projects",
+    "education": "Education",
+    "skills": "Skills",
+    "technicalSkills": "Technical Skills",
+    "certifications": "Certifications",
+    "languages": "Languages",
+    "methodologies": "Methodologies",
+    "technologies": "Technologies",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "location": "Location",
+    "linkedin": "LinkedIn",
+    "website": "Website"
+  },
+  "jobTailoring": {
+    "title": "Tailor for Specific Job",
+    "description": "Optimize your resume for a specific job posting with AI-powered keyword matching and cover letter generation.",
+    "jobUrl": "Job Posting URL",
+    "enterManually": "Enter details manually",
+    "extract": "Extract",
+    "extractPlaceholder": "https://company.com/careers/job-posting...",
+    "extractDescription": "Paste a job URL to automatically extract job details, or enter manually below",
+    "viewEdit": "View/Edit Extracted Details",
+    "enterDetailsManually": "Enter Details Manually",
+    "extractedDetails": "Extracted Job Details",
+    "jobDetails": "Job Details",
+    "hideDetails": "Hide details",
+    "jobTitle": "Job Title",
+    "jobTitlePlaceholder": "e.g., Senior Software Engineer",
+    "companyName": "Company Name",
+    "companyPlaceholder": "e.g., Google",
+    "jobDescription": "Job Description",
+    "jobDescriptionPlaceholder": "Paste the full job description here...",
+    "jobDescriptionHelp": "Include requirements, responsibilities, and skills for best results",
+    "includeCoverLetter": "Include Cover Letter",
+    "coverLetterDescription": "Generate a tailored cover letter with your resume",
+    "coverLetterToggleYes": "Yes",
+    "coverLetterToggleNo": "No",
+    "tailorResume": "Tailor Resume",
+    "tailorResumeAndCover": "Tailor Resume + Cover Letter",
+    "tailoring": "Tailoring...",
+    "reset": "Reset",
+    "processingSteps": "Processing Steps",
+    "extractingJob": "Extracting job information...",
+    "analyzingKeywords": "Analyzing job keywords...",
+    "optimizingContent": "Optimizing resume content...",
+    "generatingCover": "Generating cover letter...",
+    "finalizing": "Finalizing tailored resume...",
+    "provideJobDescription": "Please provide a job description",
+    "optional": "(Optional)",
+    "required": "*"
+  },
+  "tailoredResults": {
+    "title": "Tailored Resume Results",
+    "backToCustomize": "Back to Customize",
+    "downloadResume": "Download Resume",
+    "downloadCover": "Download Cover Letter",
+    "share": "Share",
+    "toggleAnalysis": "Toggle Analysis",
+    "professionalSummary": "PROFESSIONAL SUMMARY",
+    "professionalExperience": "PROFESSIONAL EXPERIENCE",
+    "education": "EDUCATION",
+    "coreCompetencies": "CORE COMPETENCIES",
+    "technicalSkills": "Technical Skills:",
+    "certifications": "Certifications:",
+    "jobMatchAnalysis": "Job Match Analysis",
+    "jobMatchScore": "Job Match Score",
+    "keywordsIntegrated": "Keywords Integrated",
+    "prioritizedExperience": "Prioritized Experience",
+    "recommendedAdjustments": "Recommended Adjustments",
+    "coverLetter": "Cover Letter",
+    "resume": "Resume"
+  },
+  "cachedImprovements": {
+    "title": "Resume Improvements",
+    "noImprovements": "No improvements yet",
+    "noImprovementsDescription": "Analyze a resume first, then create improved versions tailored for specific roles!",
+    "uploadAnalyze": "Upload & Analyze Resume",
+    "failedToLoad": "Failed to load improvements",
+    "tryRefreshing": "Please try refreshing the page",
+    "scoreImprovement": "Score Improvement",
+    "viewImprovement": "View Improvement",
+    "downloadResume": "Download Resume",
+    "version": "Version",
+    "original": "Original",
+    "improved": "Improved"
+  },
+  "improveModal": {
+    "title": "Improve Your Resume",
+    "description": "Tell us your goal, and our AI will rewrite your resume to match it.",
+    "targetRole": {
+      "label": "Target Role",
+      "placeholder": "e.g., Senior Software Engineer"
+    },
+    "industry": {
+      "label": "Industry",
+      "placeholder": "e.g., Tech / SaaS"
+    },
+    "startImprovement": "Start Improvement",
+    "cancel": "Cancel",
+    "validation": {
+      "bothFieldsRequired": "Both fields are required.",
+      "pleaseSpecify": "Please specify your target role and industry."
     }
   }
 }

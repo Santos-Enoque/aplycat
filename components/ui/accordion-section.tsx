@@ -8,6 +8,7 @@ import {
   Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface AccordionSectionProps {
   section: {
@@ -34,7 +35,7 @@ const getRatingColors = (rating: string) => {
         text: "text-emerald-900",
         score: "text-emerald-700",
         icon: "text-emerald-600",
-        focus: "focus:ring-emerald-500",
+        focus: "",
       };
     case "good":
       return {
@@ -44,7 +45,7 @@ const getRatingColors = (rating: string) => {
         text: "text-blue-900",
         score: "text-blue-700",
         icon: "text-blue-600",
-        focus: "focus:ring-blue-500",
+        focus: "",
       };
     case "needs work":
       return {
@@ -54,7 +55,7 @@ const getRatingColors = (rating: string) => {
         text: "text-amber-900",
         score: "text-amber-700",
         icon: "text-amber-600",
-        focus: "focus:ring-amber-500",
+        focus: "",
       };
     case "critical":
     case "poor":
@@ -66,7 +67,7 @@ const getRatingColors = (rating: string) => {
         text: "text-red-900",
         score: "text-red-700",
         icon: "text-red-600",
-        focus: "focus:ring-red-500",
+        focus: "",
       };
   }
 };
@@ -93,6 +94,29 @@ export function AccordionSection({
 }: AccordionSectionProps) {
   const colors = getRatingColors(section.rating);
   const Icon = getRatingIcon(section.rating);
+  const t = useTranslations("analysisDisplay");
+
+  const getRatingTranslation = (rating: string) => {
+    const normalizedRating = rating.toLowerCase().replace(/\s+/g, "");
+    switch (normalizedRating) {
+      case "excellent":
+        return t("ratings.excellent");
+      case "strong":
+        return t("ratings.strong");
+      case "good":
+        return t("ratings.good");
+      case "fair":
+        return t("ratings.fair");
+      case "needswork":
+        return t("ratings.needsWork");
+      case "critical":
+        return t("ratings.critical");
+      case "poor":
+        return t("ratings.poor");
+      default:
+        return rating; // fallback to original if no translation found
+    }
+  };
 
   return (
     <div
@@ -109,7 +133,7 @@ export function AccordionSection({
         className={cn(
           "w-full px-4 md:px-6 py-4 md:py-5 text-left transition-all duration-200",
           colors.header,
-          "focus:outline-none focus:ring-2 focus:ring-offset-2",
+          "focus:outline-none",
           colors.focus
         )}
       >
@@ -127,7 +151,7 @@ export function AccordionSection({
               </h3>
               <div className="flex items-center space-x-2 mt-1">
                 <span className={cn("text-sm font-medium", colors.score)}>
-                  {section.rating}
+                  {getRatingTranslation(section.rating)}
                 </span>
                 <span className={cn("text-xs", colors.score)}>•</span>
                 <span className={cn("text-sm font-semibold", colors.score)}>
@@ -150,7 +174,7 @@ export function AccordionSection({
 
       {/* Content */}
       {isOpen && (
-        <div className="px-4 md:px-6 pb-4 md:pb-6 space-y-4 md:space-y-6 animate-in slide-in-from-top-1 duration-300">
+        <div className="px-4 md:px-6 pt-4 md:pt-6 pb-4 md:pb-6 space-y-4 md:space-y-6 animate-in slide-in-from-top-1 duration-300">
           {/* Main Roast */}
           <div>
             <h4
@@ -159,7 +183,7 @@ export function AccordionSection({
                 colors.text
               )}
             >
-              💬 Analysis
+              💬 {t("sectionAnalysis.analysis")}
             </h4>
             <div className="bg-white/70 rounded-lg p-3 md:p-4 border">
               <p
@@ -180,7 +204,7 @@ export function AccordionSection({
               <div>
                 <h4 className="font-semibold text-sm mb-2 text-emerald-700 flex items-center">
                   <CheckCircle className="w-4 h-4 mr-1" />
-                  What's Good
+                  {t("sectionAnalysis.whatsGood")}
                 </h4>
                 <ul className="space-y-1">
                   {section.good_things.map((item, i) => (
@@ -201,7 +225,7 @@ export function AccordionSection({
               <div>
                 <h4 className="font-semibold text-sm mb-2 text-red-700 flex items-center">
                   <AlertTriangle className="w-4 h-4 mr-1" />
-                  Issues Found
+                  {t("sectionAnalysis.issuesFound")}
                 </h4>
                 <ul className="space-y-1">
                   {section.issues_found.map((item, i) => (
@@ -222,7 +246,7 @@ export function AccordionSection({
               <div>
                 <h4 className="font-semibold text-sm mb-2 text-blue-700 flex items-center">
                   <Star className="w-4 h-4 mr-1" />
-                  Quick Fixes
+                  {t("sectionAnalysis.quickFixes")}
                 </h4>
                 <ul className="space-y-1">
                   {section.quick_fixes.map((item, i) => (

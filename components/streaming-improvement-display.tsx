@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, ArrowRight, Bot, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 // Updated interface to match the actual API response
 interface ImprovedResumeResponse {
@@ -66,6 +67,8 @@ interface StreamingImprovementDisplayProps {
 export function StreamingImprovementDisplay({
   improvement,
 }: StreamingImprovementDisplayProps) {
+  const t = useTranslations("improvement");
+
   if (!improvement) {
     return <div>Loading...</div>;
   }
@@ -91,7 +94,7 @@ export function StreamingImprovementDisplay({
       {/* Improvement Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>Improvement Summary</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <CardDescription>
             {improvementsAnalysis?.analysisHeadline || (
               <Skeleton className="h-5 w-3/4" />
@@ -101,7 +104,7 @@ export function StreamingImprovementDisplay({
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-medium text-gray-500 mb-1">
-              Original Score
+              {t("originalScore")}
             </h4>
             {originalScore ? (
               <p className="text-2xl font-bold">{originalScore}</p>
@@ -111,7 +114,7 @@ export function StreamingImprovementDisplay({
           </div>
           <div className="text-center p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-medium text-gray-500 mb-1">
-              New Score
+              {t("newScore")}
             </h4>
             {improvementsAnalysis?.targetOptimizedResumeScore ? (
               <p className="text-2xl font-bold text-green-600">
@@ -123,7 +126,7 @@ export function StreamingImprovementDisplay({
           </div>
           <div className="text-center p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-medium text-gray-500 mb-1">
-              Score Increase
+              {t("scoreIncrease")}
             </h4>
             {scoreChange && scoreChange > 0 ? (
               <p className="text-2xl font-bold text-green-600">
@@ -144,14 +147,14 @@ export function StreamingImprovementDisplay({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Bot /> AI Feedback
+            <Bot /> {t("aiFeedback")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {improvementsAnalysis?.keyRevisionsImplemented ? (
             <div className="space-y-3">
               <h4 className="font-semibold text-gray-600">
-                Key Revisions Implemented:
+                {t("keyRevisions")}
               </h4>
               <ul className="list-disc list-inside space-y-2">
                 {improvementsAnalysis.keyRevisionsImplemented.map(
@@ -167,7 +170,7 @@ export function StreamingImprovementDisplay({
               {improvementsAnalysis.recommendationsForUser && (
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <h4 className="font-semibold text-yellow-800 mb-2">
-                    Important Recommendations:
+                    {t("importantRecommendations")}
                   </h4>
                   <ul className="list-disc list-inside space-y-1">
                     {improvementsAnalysis.recommendationsForUser.map(
@@ -190,36 +193,39 @@ export function StreamingImprovementDisplay({
       {/* Improved Resume Sections */}
       <div className="space-y-4">
         <h3 className="text-2xl font-semibold text-center">
-          Improved Resume Sections
+          {t("improvedSections")}
         </h3>
 
         {/* Personal Information */}
         {improvement.personalInfo && (
           <Card>
             <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
+              <CardTitle>{t("personalInfo")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <p>
-                <strong>Name:</strong> {improvement.personalInfo.name}
+                <strong>{t("name")}:</strong> {improvement.personalInfo.name}
               </p>
               <p>
-                <strong>Email:</strong> {improvement.personalInfo.email}
+                <strong>{t("email")}:</strong> {improvement.personalInfo.email}
               </p>
               <p>
-                <strong>Phone:</strong> {improvement.personalInfo.phone}
+                <strong>{t("phone")}:</strong> {improvement.personalInfo.phone}
               </p>
               <p>
-                <strong>Location:</strong> {improvement.personalInfo.location}
+                <strong>{t("location")}:</strong>{" "}
+                {improvement.personalInfo.location}
               </p>
               {improvement.personalInfo.linkedin && (
                 <p>
-                  <strong>LinkedIn:</strong> {improvement.personalInfo.linkedin}
+                  <strong>{t("linkedin")}:</strong>{" "}
+                  {improvement.personalInfo.linkedin}
                 </p>
               )}
               {improvement.personalInfo.website && (
                 <p>
-                  <strong>Website:</strong> {improvement.personalInfo.website}
+                  <strong>{t("website")}:</strong>{" "}
+                  {improvement.personalInfo.website}
                 </p>
               )}
             </CardContent>
@@ -230,7 +236,7 @@ export function StreamingImprovementDisplay({
         {improvement.professionalSummary && (
           <Card>
             <CardHeader>
-              <CardTitle>Professional Summary</CardTitle>
+              <CardTitle>{t("professionalSummary")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 leading-relaxed">
@@ -244,7 +250,7 @@ export function StreamingImprovementDisplay({
         {improvement.experience && improvement.experience.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Experience</CardTitle>
+              <CardTitle>{t("experience")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {improvement.experience.map((job, index) => (
@@ -280,7 +286,7 @@ export function StreamingImprovementDisplay({
         {improvement.projects && improvement.projects.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Projects</CardTitle>
+              <CardTitle>{t("projects")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {improvement.projects.map((project, index) => (
@@ -289,7 +295,8 @@ export function StreamingImprovementDisplay({
                   <p className="text-gray-600 mb-2">{project.description}</p>
                   {project.technologies && (
                     <p className="text-sm text-gray-500 mb-2">
-                      <strong>Technologies:</strong> {project.technologies}
+                      <strong>{t("technologies")}:</strong>{" "}
+                      {project.technologies}
                     </p>
                   )}
                   <ul className="list-disc list-inside space-y-1">
@@ -309,7 +316,7 @@ export function StreamingImprovementDisplay({
         {improvement.education && improvement.education.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Education</CardTitle>
+              <CardTitle>{t("education")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {improvement.education.map((edu, index) => (
@@ -337,14 +344,14 @@ export function StreamingImprovementDisplay({
         {improvement.skills && (
           <Card>
             <CardHeader>
-              <CardTitle>Skills</CardTitle>
+              <CardTitle>{t("skills")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {improvement.skills.technical &&
                 improvement.skills.technical.length > 0 && (
                   <div>
                     <h4 className="font-semibold text-gray-600 mb-2">
-                      Technical Skills
+                      {t("technicalSkills")}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {improvement.skills.technical.map((skill, index) => (
@@ -360,7 +367,7 @@ export function StreamingImprovementDisplay({
                 improvement.skills.languages.length > 0 && (
                   <div>
                     <h4 className="font-semibold text-gray-600 mb-2">
-                      Languages
+                      {t("languages")}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {improvement.skills.languages.map((lang, index) => (
@@ -376,7 +383,7 @@ export function StreamingImprovementDisplay({
                 improvement.skills.certifications.length > 0 && (
                   <div>
                     <h4 className="font-semibold text-gray-600 mb-2">
-                      Certifications
+                      {t("certifications")}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {improvement.skills.certifications.map((cert, index) => (

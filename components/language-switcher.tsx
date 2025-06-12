@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Globe, Check } from "lucide-react";
+import { saveLocalePreference } from "@/lib/locale-utils";
 
 const languages = [
   { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "pt", name: "Português", flag: "🇧🇷" },
+  { code: "pt", name: "Português", flag: "🇲🇿" },
 ];
 
 export function LanguageSwitcher() {
@@ -26,6 +27,9 @@ export function LanguageSwitcher() {
 
   const handleLanguageChange = (newLocale: string) => {
     startTransition(() => {
+      // Save the selected locale to localStorage and cookie
+      saveLocalePreference(newLocale);
+
       // Replace the locale in the current pathname
       const segments = pathname.split("/");
       segments[1] = newLocale; // Replace the locale segment

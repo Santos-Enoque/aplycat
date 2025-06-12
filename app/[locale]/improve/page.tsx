@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader, AlertCircle, Zap, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 function ImprovePageContent() {
   const router = useRouter();
+  const t = useTranslations("improve");
   const [improvement, setImprovement] = useState(null);
   const [status, setStatus] = useState<
     "idle" | "loading" | "completed" | "error"
@@ -104,8 +106,7 @@ function ImprovePageContent() {
       }
     } catch (err: any) {
       // Show user-friendly error messages
-      let userMessage =
-        "We're experiencing technical difficulties. Please try again later.";
+      let userMessage = t("error.messages.general");
 
       if (err.message) {
         // If the error message is already user-friendly (from our API), use it
@@ -117,7 +118,9 @@ function ImprovePageContent() {
         ) {
           userMessage = err.message;
         } else if (err.message.includes("Failed to improve resume")) {
-          userMessage = "Unable to improve resume. Please try again.";
+          userMessage = t("error.messages.credits");
+        } else if (err.message.includes("Unable to process")) {
+          userMessage = t("error.messages.processing");
         }
       }
 
@@ -132,11 +135,11 @@ function ImprovePageContent() {
       <Card className="bg-red-50 border-red-200 text-center p-8">
         <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-red-800">
-          Improvement Failed
+          {t("error.title")}
         </h3>
         <p className="text-red-700 mt-2">{error}</p>
         <Button onClick={() => router.push("/dashboard")} className="mt-4">
-          Return to Dashboard
+          {t("error.button")}
         </Button>
       </Card>
     );
@@ -147,11 +150,9 @@ function ImprovePageContent() {
       <Card className="bg-green-50 border-green-200 text-center p-8">
         <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-green-800">
-          Resume Improved Successfully!
+          {t("success.title")}
         </h3>
-        <p className="text-green-700 mt-2">
-          Redirecting to your improved resume...
-        </p>
+        <p className="text-green-700 mt-2">{t("success.subtitle")}</p>
         <div className="w-full bg-green-200 rounded-full h-2 mt-4">
           <div className="bg-green-600 h-2 rounded-full transition-all duration-300 w-full"></div>
         </div>
@@ -163,16 +164,14 @@ function ImprovePageContent() {
     <div className="text-center p-8">
       <Loader className="w-12 h-12 text-purple-500 animate-spin mx-auto mb-4" />
       <h3 className="text-xl font-semibold text-gray-800">
-        AI is improving your resume...
+        {t("loading.title")}
       </h3>
-      <p className="text-gray-600 mt-2">
-        This may take a moment. Please don't close this page.
-      </p>
+      <p className="text-gray-600 mt-2">{t("loading.subtitle")}</p>
 
       {/* Progress bar */}
       <div className="w-full max-w-md mx-auto mt-6">
         <div className="flex justify-between text-sm text-gray-500 mb-2">
-          <span>Processing</span>
+          <span>{t("loading.processing")}</span>
           <span>{Math.round(progress)}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -197,7 +196,9 @@ function ImprovePageContent() {
           ) : (
             <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
           )}
-          <span className="text-sm font-medium">Analyzing original resume</span>
+          <span className="text-sm font-medium">
+            {t("loading.steps.analyzing")}
+          </span>
         </div>
 
         <div
@@ -213,7 +214,7 @@ function ImprovePageContent() {
             <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
           )}
           <span className="text-sm font-medium">
-            Optimizing for target role
+            {t("loading.steps.optimizing")}
           </span>
         </div>
 
@@ -230,7 +231,7 @@ function ImprovePageContent() {
             <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
           )}
           <span className="text-sm font-medium">
-            Enhancing with AI improvements
+            {t("loading.steps.enhancing")}
           </span>
         </div>
 
@@ -247,7 +248,7 @@ function ImprovePageContent() {
             <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
           )}
           <span className="text-sm font-medium">
-            Finalizing improved resume
+            {t("loading.steps.finalizing")}
           </span>
         </div>
       </div>
@@ -256,6 +257,8 @@ function ImprovePageContent() {
 }
 
 export default function ImprovePage() {
+  const t = useTranslations("improve");
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100">
       <div className="container mx-auto px-4 py-12">
@@ -265,11 +268,10 @@ export default function ImprovePage() {
               <Zap className="w-8 h-8" />
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              AI-Powered Resume Improvement
+              {t("title")}
             </h1>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              Our AI is rewriting your resume for maximum impact in your target
-              role.
+              {t("subtitle")}
             </p>
           </header>
           <main>
