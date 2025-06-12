@@ -245,7 +245,9 @@
     "tryFree": "Testar Grátis",
     "buyCredits": "Comprar Créditos",
     "credits": "Créditos",
-    "dashboard": "Painel"
+    "dashboard": "Painel",
+    "settings": "Configurações",
+    "help": "Ajuda"
   },
   "banner": {
     "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas $1 • 22 Créditos no Valor de $11"

@@ -245,7 +245,9 @@
     "tryFree": "Try Free",
     "buyCredits": "Buy Credits",
     "credits": "Credits",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "help": "Help"
   },
   "banner": {
     "trial": "🚀 LIMITED TIME: Try ALL AI Features for Just $1 • 22 Credits Worth $11"
