@@ -30,85 +30,30 @@ export function getClientIP(request: NextRequest): string {
 }
 
 /**
- * Detect country from IP address using a free geolocation service
+ * Detect country from IP address - simplified for Mozambique focus
  */
 export async function detectCountryFromIP(ip: string): Promise<CountryInfo> {
-  // Default fallback
-  const defaultCountry: CountryInfo = {
-    country: 'Unknown',
-    countryCode: 'XX',
-    isMozambique: false,
+  // Since we're focused on Mozambique, always return Mozambique as default
+  // This avoids external API calls and rate limiting issues
+  return {
+    country: 'Mozambique',
+    countryCode: 'MZ',
+    isMozambique: true,
   };
-
-  // Skip detection for localhost/private IPs
-  if (ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.')) {
-    return defaultCountry;
-  }
-
-  try {
-    // Use AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-    // Use ipapi.co for free IP geolocation (1000 requests/month free)
-    const response = await fetch(`https://ipapi.co/${ip}/json/`, {
-      headers: {
-        'User-Agent': 'Aplycat Resume Service',
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      console.warn(`[GEOLOCATION] API request failed: ${response.status}`);
-      return defaultCountry;
-    }
-
-    const data = await response.json();
-    
-    if (data.error) {
-      console.warn(`[GEOLOCATION] API error: ${data.reason}`);
-      return defaultCountry;
-    }
-
-    const countryCode = data.country_code?.toLowerCase();
-    const country = data.country_name || 'Unknown';
-    
-    return {
-      country,
-      countryCode: countryCode?.toUpperCase() || 'XX',
-      isMozambique: countryCode === 'mz',
-    };
-  } catch (error) {
-    console.warn('[GEOLOCATION] Detection failed:', error);
-    return defaultCountry;
-  }
 }
 
 /**
  * Get pricing info based on country
  */
 export function getPricingForCountry(country: CountryInfo) {
-  const exchangeRate = 63; // 1 USD = 63 MZN
-
-  if (country.isMozambique) {
-    return {
-      currency: 'MZN',
-      symbol: 'MZN',
-      trialPrice: 100, // 100 MZN
-      proPrice: 200,   // 200 MZN
-      exchangeRate,
-    };
-  } else {
-    return {
-      currency: 'USD',
-      symbol: '$',
-      trialPrice: 1.00, // $1 USD
-      proPrice: 4.99,   // $4.99 USD
-      exchangeRate: 1,
-    };
-  }
+  // Always return MZN pricing (Mozambique-focused platform)
+  return {
+    currency: 'MZN',
+    symbol: 'MZN',
+    trialPrice: 100, // 100 MZN
+    proPrice: 200,   // 200 MZN
+    exchangeRate: 63,
+  };
 }
 
 /**

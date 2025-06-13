@@ -40,9 +40,8 @@ _Rate limiting only applies when you have 0 credits. Users with credits get unli
 **Only available to new users who haven't purchased anything before**
 
 - **22 credits** included
-- **Country-based pricing:**
-  - **Mozambique:** 100 MZN
-  - **Rest of world:** $1 USD
+- **Pricing:**
+  - 100 MZN
 - Perfect way to try all features
 
 **What you can do with 22 credits:**
@@ -57,9 +56,8 @@ _Rate limiting only applies when you have 0 credits. Users with credits get unli
 **Available for multiple purchases**
 
 - **44 credits** included
-- **Country-based pricing:**
-  - **Mozambique:** 200 MZN
-  - **Rest of world:** $4.99 USD
+- **Pricing:**
+  - 200 MZN
 - Best value for serious job seekers
 
 **What you can do with 44 credits:**
@@ -69,18 +67,12 @@ _Rate limiting only applies when you have 0 credits. Users with credits get unli
 - 44 Custom Improvements
 - Or any combination of features
 
-## 🌍 Country-Based Pricing
+## 💰 Pricing
 
-### Automatic Detection
+### Currency
 
-- Your location is automatically detected via IP address
-- Pricing and currency display adjust automatically
-
-### Currency Display
-
-- **Mozambique users:** All prices shown in MZN (Meticais)
-- **International users:** All prices shown in USD (US Dollars)
-- **Exchange rate:** 63 MZN = 1 USD (approximately)
+- All prices are shown in MZN (Meticais)
+- Simple, transparent pricing for everyone
 
 ## 🔄 How Credits Are Used
 

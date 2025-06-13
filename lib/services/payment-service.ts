@@ -268,7 +268,7 @@ class PaymentService {
     const paymentData: PaySuitePaymentRequest = {
       amount: amountMzn.toString(),
       reference,
-      description: `${packageDetails.name} - ${packageDetails.credits} AI Credits`,
+      description: `${packageDetails.name} - ${packageDetails.credits} AI Credits - ${params.userEmail}`,
       return_url: `${returnUrl}?payment=success&provider=paysuite`,
       callback_url: `${process.env.WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/paysuite`,
       method: 'mobile_money', // PaySuite mobile money (Emola)

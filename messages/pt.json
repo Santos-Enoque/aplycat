@@ -1,23 +1,29 @@
 {
   "trialPopup": {
     "limitedTimeOffer": "OFERTA POR TEMPO LIMITADO",
-    "title": "Experimente Todos os Recursos de IA por {price}",
-    "subtitle": "Desbloqueie a experiência completa Aplycat com 22 créditos",
-    "creditsIncluded": "22 Créditos Incluídos:",
-    "creditsValue": "🎁 Análise GRATUITA + Recursos Premium",
-    "resumeImprovements": "11× Melhorias de Currículo (2 créditos cada)",
-    "jobTailoredResumes": "7× Currículos Personalizados + Cartas de Apresentação (3 créditos cada)",
-    "linkedinAnalysis": "Análise Ilimitada de Currículo & LinkedIn (GRATUITA)",
-    "customEnhancement": "22× Melhorias Personalizadas (1 crédito cada)",
-    "offerExpires": "Oferta expira em {timeLeft}",
-    "startTrial": "🚀 Iniciar Teste de $1 (Pagar com Cartão) →",
-    "signUpFirst": "Cadastre-se Primeiro (Sem Pagamento)",
-    "maybeLater": "Talvez mais tarde",
+    "title": "Teste 100 MZN - Todos os Recursos de IA",
+    "subtitle": "Obtenha 22 créditos no valor de 1,100 MZN por apenas 100 MZN",
+    "creditsIncluded": "22 Créditos Incluídos",
+    "creditsValue": "valor de 1,100 MZN",
+    "resumeImprovements": "✓ 11 Melhorias de Currículo",
+    "jobTailoredResumes": "✓ 7 Currículos Personalizados + Cartas de Apresentação",
+    "linkedinAnalysis": "✓ Análise Ilimitada do LinkedIn",
+    "customEnhancement": "✓ 22 Melhorias Personalizadas",
+    "offerExpires": "Oferta expira em: {timeLeft}",
+    "startTrial": "Iniciar Teste de 100 MZN",
+    "signUpFirst": "Inscrever-se Primeiro",
+    "maybeLater": "Talvez Depois",
     "choosePaymentMethod": "Escolha seu método de pagamento:",
-    "payWithCreditCard": "💳 Pagar com Cartão de Crédito",
-    "payWithMobileMoney": "📱 Pagar com Mobile Money (Emola)",
-    "backToOptions": "← Voltar às opções",
-    "disclaimer": "Pagamento único • Sem assinatura • Garantia de reembolso de 30 dias"
+    "payWithCreditCard": "Pagar com Cartão de Crédito",
+    "payWithMobileMoney": "Pagar com Mobile Money",
+    "backToOptions": "← Voltar às Opções",
+    "disclaimer": "Oferta única • Garantia de reembolso de 30 dias • Créditos nunca expiram",
+    "titleTrial": "Inicie Seu Teste de 100 MZN",
+    "claimTrial": "Reivindique Seu Teste de 100 MZN!",
+    "oneStepAway": "Você está a um passo de desbloquear todos os recursos de IA por apenas 100 MZN",
+    "creditsIncludedValue": "22 Créditos Incluídos (valor de 1,100 MZN):",
+    "price": "100 MZN",
+    "claimTrialNow": "Reivindique o Teste de 100 MZN Agora"
   },
   "hero": {
     "badge": "🎁 Análise GRATUITA de Currículo • Sem Cadastro Necessário",
@@ -31,14 +37,14 @@
     }
   },
   "upload": {
-    "rateLimit": "{remaining} análises gratuitas restantes nesta hora",
-    "dropTitle": "Solte Seu Currículo Aqui",
-    "dropSubtitle": "Análise instantânea de IA • Sem cadastro necessário • Completamente gratuito",
-    "fileInfo": "PDF, DOC, ou DOCX • Máx 10MB",
-    "browseButton": "Ou Clique para Navegar",
-    "analyzing": "IA está analisando seu currículo...",
+    "rateLimit": "Você tem {remaining} análises gratuitas restantes",
+    "dropTitle": "Solte seu currículo aqui",
+    "dropSubtitle": "Receba feedback brutalmente honesto em 30 segundos",
+    "fileInfo": "PDF, DOC ou DOCX • Max 10MB",
+    "browseButton": "Procurar Arquivos",
+    "analyzing": "IA está avaliando seu currículo...",
     "connecting": "Conectando à IA...",
-    "waitMessage": "Isso levará apenas alguns segundos",
+    "waitMessage": "Isso levará 15-30 segundos",
     "analysisFor": "Análise para: {fileName}"
   },
   "rateLimitError": {
@@ -51,25 +57,25 @@
   "analysisResults": {
     "overallScore": "Pontuação Geral",
     "atsScore": "Pontuação ATS",
-    "brutailFeedback": "Feedback Brutalmente Honesto",
+    "brutailFeedback": "🔥 Roast da IA",
     "sectionAnalysis": "Análise de Seções",
-    "limitedPreview": "Prévia Limitada",
-    "seeMoreSections": "Cadastre-se para Ver {count} Mais Seções",
+    "limitedPreview": "Visualização Limitada",
+    "seeMoreSections": "Ver mais {count} seções →",
     "upgradeTitle": {
       "limited": "Quer a Análise Completa?",
-      "full": "Quer Mais Recursos de IA?"
+      "full": "Pronto para Transformar Seu Currículo?"
     },
     "upgradeSubtitle": {
-      "limited": "Veja todas as seções, currículo reescrito por IA, personalização para vagas e mais",
-      "full": "Currículo reescrito por IA, personalização para vagas, cartas de apresentação e mais"
+      "limited": "Desbloqueie análise completa de seções + todos os recursos de IA",
+      "full": "Obtenha melhorias de IA, personalização para vagas e cartas de apresentação"
     },
     "upgradeStats": {
       "credits": "Créditos",
-      "value": "Valor",
-      "limitedTime": "Tempo Limitado"
+      "value": "Valor Total",
+      "limitedTime": "Preço de Teste"
     },
-    "upgradeButton": "Obter Teste: Todos os Recursos de IA por $1 →",
-    "upgradeDisclaimer": "7 créditos • Sem assinatura • Garantia de 30 dias"
+    "upgradeButton": "Obter Teste: Todos os Recursos de IA por 100 MZN →",
+    "upgradeDisclaimer": "Pagamento único • Garantia de 30 dias • Créditos nunca expiram"
   },
   "testimonials": {
     "title": "Junte-se aos 1.000+ que Pararam de Ser Rejeitados",
@@ -212,21 +218,21 @@
     ]
   },
   "pricing": {
-    "launchOffer": "🚀 PREÇOS SIMPLIFICADOS: UM PACOTE, MÁXIMO VALOR",
+    "launchOffer": "🚀 PREÇOS SIMPLIFICADOS: UM PACOTE, VALOR MÁXIMO",
     "title": "Preços Simples. Sem Assinaturas.",
     "subtitle": "Compre créditos uma vez. Use quando precisar de um impulso na carreira. Análise é sempre grátis!",
     "mostPopular": "Melhor Valor",
     "packages": [
       {
         "name": "🥇 Pacote Pro",
-        "price": "$4.99",
+        "price": "200 MZN",
         "credits": "44 Créditos",
         "isPopular": true,
         "features": [
           "<span class=\"font-bold text-foreground\">22x</span> Melhorias de Currículo (2 créditos cada)",
           "<span class=\"font-bold text-foreground\">14x</span> Currículo Personalizado + Carta de Apresentação (3 créditos cada)",
           "<span class=\"font-bold text-foreground\">44x</span> Melhorias Personalizadas (1 crédito cada)",
-          "<span class=\"font-bold text-foreground\">GRÁTIS</span> Análise Ilimitada de Currículo & LinkedIn",
+          "<span class=\"font-bold text-foreground\">GRÁTIS</span> Análise Ilimitada de Currículo e LinkedIn",
           "<span class=\"font-bold text-foreground\">Suporte</span> por Email"
         ],
         "buttonText": "Obter Pacote Pro"
@@ -250,7 +256,7 @@
     "help": "Ajuda"
   },
   "banner": {
-    "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas $1 • 22 Créditos no Valor de $11"
+    "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas 100 MZN • 22 Créditos no Valor de 1,100 MZN"
   },
   "signup": {
     "trial": {

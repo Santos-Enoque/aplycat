@@ -106,7 +106,13 @@ export function EnhancedCreditsModal({
 
         const data = await response.json();
 
-        // Set packages with country-based pricing
+        console.log("[CREDITS_MODAL] API Response:", data);
+
+        if (!data.success || !data.packages) {
+          throw new Error(data.error || "Invalid API response");
+        }
+
+        // Set packages with MZN pricing (filter out trial packages)
         const packagesWithCountryPricing = data.packages
           .filter(
             (pkg: any) =>
@@ -115,23 +121,67 @@ export function EnhancedCreditsModal({
           )
           .map((pkg: any) => ({
             ...pkg,
-            // Format price with proper currency symbol
-            formattedPrice:
-              data.pricing.currency === "MZN"
-                ? `${pkg.price} MZN`
-                : `$${pkg.price.toFixed(2)}`,
-            currency: data.pricing.currency,
+            // Always format price in MZN
+            formattedPrice: `${pkg.price} MZN`,
+            currency: "MZN",
             countryInfo: data.country,
           }));
 
-        setPackages(packagesWithCountryPricing);
+        console.log(
+          "[CREDITS_MODAL] Filtered packages:",
+          packagesWithCountryPricing
+        );
+
+        if (packagesWithCountryPricing.length === 0) {
+          // Fallback: create Pro Pack manually if no packages found
+          const fallbackPackages = [
+            {
+              id: "pro",
+              name: "🥇 Pro Pack",
+              credits: 44,
+              price: 200,
+              formattedPrice: "200 MZN",
+              currency: "MZN",
+              description: "Best value for serious job seekers",
+              pricePerCredit: "5",
+              isTrialPackage: false,
+              availableForUser: true,
+              countryInfo: data.country,
+            },
+          ];
+          console.log(
+            "[CREDITS_MODAL] Using fallback packages:",
+            fallbackPackages
+          );
+          setPackages(fallbackPackages);
+        } else {
+          setPackages(packagesWithCountryPricing);
+        }
 
         // Log country detection for debugging
         console.log("[CREDITS_MODAL] Country detected:", data.country);
         console.log("[CREDITS_MODAL] Pricing:", data.pricing);
       } catch (error) {
         console.error("Failed to load credit packages:", error);
-        toast.error("Failed to load credit packages. Please try again.");
+
+        // Fallback packages if API fails completely
+        const fallbackPackages = [
+          {
+            id: "pro",
+            name: "🥇 Pro Pack",
+            credits: 44,
+            price: 200,
+            formattedPrice: "200 MZN",
+            currency: "MZN",
+            description: "Best value for serious job seekers",
+            pricePerCredit: "5",
+            isTrialPackage: false,
+            availableForUser: true,
+          },
+        ];
+        setPackages(fallbackPackages);
+
+        toast.error("Using offline pricing. Some features may be limited.");
       } finally {
         setIsLoadingPackages(false);
       }
@@ -379,17 +429,13 @@ export function EnhancedCreditsModal({
                     <div className="text-center">
                       <div className="text-3xl font-bold text-purple-600">
                         {(pkg as any).formattedPrice ||
-                          (pkg.price
-                            ? `$${pkg.price.toFixed(2)}`
-                            : "Loading...")}
+                          (pkg.price ? `${pkg.price} MZN` : "Loading...")}
                       </div>
                       <div className="text-sm text-gray-500">
                         {pkg.credits} credits
                       </div>
                       <div className="text-xs text-green-600 font-medium mt-1">
-                        {(pkg as any).currency === "MZN"
-                          ? `${(pkg.price / pkg.credits).toFixed(0)} MZN`
-                          : `$${(pkg.price / pkg.credits).toFixed(2)}`}{" "}
+                        {`${(pkg.price / pkg.credits).toFixed(0)} MZN`}{" "}
                         {t("perCredit")}
                       </div>
                     </div>

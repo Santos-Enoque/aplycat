@@ -1,23 +1,29 @@
 {
   "trialPopup": {
     "limitedTimeOffer": "LIMITED TIME OFFER",
-    "title": "Try All AI Features for {price}",
-    "subtitle": "Unlock the complete Aplycat experience with 22 credits",
-    "creditsIncluded": "22 Credits Included:",
-    "creditsValue": "🎁 FREE Analysis + Premium Features",
-    "resumeImprovements": "11× Resume Improvements (2 credits each)",
-    "jobTailoredResumes": "7× Job-Tailored Resumes + Cover Letters (3 credits each)",
-    "linkedinAnalysis": "Unlimited Resume & LinkedIn Analysis (FREE)",
-    "customEnhancement": "22× Custom Improvements (1 credit each)",
-    "offerExpires": "Offer expires in {timeLeft}",
-    "startTrial": "🚀 Start $1 Trial (Pay with Card) →",
-    "signUpFirst": "Sign Up First (No Payment)",
-    "maybeLater": "Maybe later",
+    "title": "100 MZN Trial - All AI Features",
+    "subtitle": "Get 22 credits worth 1,100 MZN for just 100 MZN",
+    "creditsIncluded": "22 Credits Included",
+    "creditsValue": "1,100 MZN value",
+    "resumeImprovements": "✓ 11 Resume Improvements",
+    "jobTailoredResumes": "✓ 7 Job-Tailored Resumes + Cover Letters",
+    "linkedinAnalysis": "✓ Unlimited LinkedIn Analysis",
+    "customEnhancement": "✓ 22 Custom Enhancements",
+    "offerExpires": "Offer expires in: {timeLeft}",
+    "startTrial": "Start 100 MZN Trial",
+    "signUpFirst": "Sign Up First",
+    "maybeLater": "Maybe Later",
     "choosePaymentMethod": "Choose your payment method:",
-    "payWithCreditCard": "💳 Pay with Credit Card",
-    "payWithMobileMoney": "📱 Pay with Mobile Money (Emola)",
-    "backToOptions": "← Back to options",
-    "disclaimer": "One-time payment • No subscription • 30-day money-back guarantee"
+    "payWithCreditCard": "Pay with Credit Card",
+    "payWithMobileMoney": "Pay with Mobile Money",
+    "backToOptions": "← Back to Options",
+    "disclaimer": "One-time offer • 30-day money-back guarantee • Credits never expire",
+    "titleTrial": "Start Your 100 MZN Trial",
+    "claimTrial": "Claim Your 100 MZN Trial!",
+    "oneStepAway": "You're one step away from unlocking all AI features for just 100 MZN",
+    "creditsIncludedValue": "22 Credits Included (1,100 MZN value):",
+    "price": "100 MZN",
+    "claimTrialNow": "Claim 100 MZN Trial Now"
   },
   "hero": {
     "badge": "🎁 FREE Resume Analysis • No Signup Required",
@@ -31,15 +37,17 @@
     }
   },
   "upload": {
-    "rateLimit": "{remaining} free analyses remaining this hour",
-    "dropTitle": "Drop Your Resume Here",
-    "dropSubtitle": "Get instant AI analysis • No signup required • Completely free",
+    "dropTitle": "Drop your resume here",
+    "dropSubtitle": "Get brutally honest feedback in 30 seconds",
     "fileInfo": "PDF, DOC, or DOCX • Max 10MB",
-    "browseButton": "Or Click to Browse",
-    "analyzing": "AI is analyzing your resume...",
+    "browseButton": "Browse Files",
+    "analyzing": "AI is roasting your resume...",
     "connecting": "Connecting to AI...",
-    "waitMessage": "This will take just a few seconds",
-    "analysisFor": "Analysis for: {fileName}"
+    "waitMessage": "This will take 15-30 seconds",
+    "rateLimit": "You have {remaining} free analyses remaining",
+    "resetTime": "Reset at {time}",
+    "upgradeButton": "Get Unlimited Access for 100 MZN →",
+    "signupMessage": "Sign up for unlimited free analysis"
   },
   "rateLimitError": {
     "title": "Rate Limit Reached",
@@ -51,25 +59,25 @@
   "analysisResults": {
     "overallScore": "Overall Score",
     "atsScore": "ATS Score",
-    "brutailFeedback": "Brutal Honest Feedback",
+    "brutailFeedback": "🔥 AI Roast",
     "sectionAnalysis": "Section Analysis",
     "limitedPreview": "Limited Preview",
-    "seeMoreSections": "Sign Up to See {count} More Sections",
+    "seeMoreSections": "See {count} more sections →",
     "upgradeTitle": {
-      "limited": "Want the Complete Analysis?",
-      "full": "Want More AI Features?"
+      "limited": "Want the Full Analysis?",
+      "full": "Ready to Transform Your Resume?"
     },
     "upgradeSubtitle": {
-      "limited": "See all sections, get AI-rewritten resume, job tailoring & more",
-      "full": "Get AI-rewritten resume, job tailoring, cover letters & more"
+      "limited": "Unlock complete section analysis + all AI features",
+      "full": "Get AI improvements, job tailoring, and cover letters"
     },
     "upgradeStats": {
       "credits": "Credits",
-      "value": "Value",
-      "limitedTime": "Limited Time"
+      "value": "Total Value",
+      "limitedTime": "Trial Price"
     },
-    "upgradeButton": "Get Trial: All AI Features for $1 →",
-    "upgradeDisclaimer": "7 credits • No subscription • 30-day money-back guarantee"
+    "upgradeButton": "Get Trial: All AI Features for 100 MZN →",
+    "upgradeDisclaimer": "One-time payment • 30-day guarantee • Credits never expire"
   },
   "testimonials": {
     "title": "Join 1,000+ Who Stopped Getting Rejected",
@@ -219,7 +227,7 @@
     "packages": [
       {
         "name": "🥇 Pro Pack",
-        "price": "$4.99",
+        "price": "200 MZN",
         "credits": "44 Credits",
         "isPopular": true,
         "features": [
@@ -250,7 +258,7 @@
     "help": "Help"
   },
   "banner": {
-    "trial": "🚀 LIMITED TIME: Try ALL AI Features for Just $1 • 22 Credits Worth $11"
+    "trial": "🚀 LIMITED TIME: Try ALL AI Features for Just 100 MZN • 22 Credits Worth 1,100 MZN"
   },
   "signup": {
     "trial": {
@@ -330,28 +338,39 @@
     "unknown": "Unknown"
   },
   "dashboard": {
-    "welcome": {
-      "title": "Ready to get roasted?",
-      "subtitle": "Upload your resume or connect LinkedIn to get brutally honest feedback"
-    },
+    "welcome": "Welcome back!",
+    "credits": "{count} Credits",
+    "analyses": "Analyses",
+    "improvements": "Improvements",
+    "quickActions": "Quick Actions",
+    "analyzeResume": "Analyze Resume",
+    "improveResume": "Improve Resume",
+    "tailorForJob": "Tailor for Job",
+    "uploadHistory": "Upload History",
+    "creditHistory": "Credit History",
+    "buyCredits": "Buy Credits",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No activity yet",
+    "analysisComplete": "Analysis completed",
+    "improvementGenerated": "Improvement generated",
+    "trialMessage": "Get complete analysis + 100 MZN trial for all AI features",
     "trialCard": {
-      "claimTrial": "Claim Your $1 Trial!",
-      "limitedTime": "LIMITED TIME",
-      "oneStepAway": "You're one step away from unlocking all AI features for just $1",
-      "creditsIncluded": "7 Credits Included ($5.81 value):",
-      "resumeImprovements": "3× Resume Improvements",
-      "jobTailoredResumes": "2× Job-Tailored Resumes + Cover Letters",
-      "linkedinAnalysis": "1× LinkedIn Analysis",
-      "customEnhancement": "1× Custom Enhancement",
-      "price": "$1.00",
-      "oneTimePayment": "One-time payment • No subscription",
-      "claimTrialNow": "Claim $1 Trial Now",
-      "choosePaymentMethod": "Choose your payment method:",
+      "claimTrial": "Claim Your 100 MZN Trial!",
+      "subtitle": "Transform your career for the price of a coffee",
+      "oneStepAway": "You're one step away from unlocking all AI features for just 100 MZN",
+      "creditsIncluded": "22 Credits Included (1,100 MZN value):",
+      "resumeImprovements": "11× Resume Improvements",
+      "jobTailoredContent": "7× Job-Tailored Resume + Cover Letter combos",
+      "customImprovements": "22× Custom Improvements",
+      "unlimitedAnalysis": "FREE Unlimited Analysis",
+      "price": "100 MZN",
+      "paymentMethods": "Choose Payment Method:",
       "creditCard": "Credit Card",
-      "mobileMoney": "Mobile Money",
-      "backToOptions": "← Back to options",
+      "mobileMoney": "Mobile Money (Emola)",
       "processing": "Processing...",
-      "securePayment": "🔒 Secure payment • 30-day money-back guarantee"
+      "claimTrialNow": "Claim 100 MZN Trial Now",
+      "signUpBenefit": "Create account to claim your trial",
+      "limitedTime": "⏰ Limited time offer"
     },
     "uploadCard": {
       "title": "Upload Resume",

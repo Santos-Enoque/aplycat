@@ -55,11 +55,8 @@ const TrialPopup = ({
         const data = await response.json();
         const trialPackage = data.packages.find((p: any) => p.id === "trial");
         if (trialPackage) {
-          if (data.pricing.currency === "MZN") {
-            setTrialPrice(`${trialPackage.price} MZN`);
-          } else {
-            setTrialPrice(`$${trialPackage.price.toFixed(2)}`);
-          }
+          // Always show price in MZN
+          setTrialPrice("100 MZN");
         } else {
           setTrialPrice("$1"); // Fallback
         }
@@ -973,7 +970,7 @@ const PricingSection = () => {
   const t = useTranslations("pricing");
   const [packages, setPackages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("MZN");
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -992,10 +989,7 @@ const PricingSection = () => {
             [];
           return {
             ...pkg,
-            formattedPrice:
-              data.pricing.currency === "MZN"
-                ? `${pkg.price} MZN`
-                : `$${pkg.price.toFixed(2)}`,
+            formattedPrice: `${pkg.price} MZN`,
             features,
             buttonText:
               t.raw("packages").find((p: any) => p.name === pkg.name)
@@ -1010,9 +1004,9 @@ const PricingSection = () => {
         setPackages([
           {
             name: "Pro Pack",
-            price: 4.99,
+            price: 200,
             credits: 44,
-            formattedPrice: "$4.99",
+            formattedPrice: "200 MZN",
             features: t.raw("packages.0.features"),
             buttonText: t.raw("packages.0.buttonText"),
             isPopular: true,
@@ -1202,7 +1196,7 @@ export function LandingPage() {
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3">
         <div className="container mx-auto px-4 text-center">
           <p className="font-semibold">
-            {t("banner.trial", { price: "100Mzn" })}
+            {t("banner.trial", { price: "100 MZN" })}
           </p>
         </div>
       </div>
