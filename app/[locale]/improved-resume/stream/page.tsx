@@ -2398,11 +2398,11 @@ export default function StreamingImprovedResumePage() {
 
           {/* Right Column - Improvement Stats & Tools */}
           <div className="lg:col-span-1 space-y-4 mt-4 lg:mt-0">
-            {/* Template Selector */}
-            <TemplateSelector
+            {/* Template Selector - Hidden for now */}
+            {/* <TemplateSelector
               selectedTemplate={selectedTemplate}
               onTemplateChange={setSelectedTemplate}
-            />
+            /> */}
 
             {/* Score Improvement */}
             <Card>
