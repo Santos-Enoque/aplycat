@@ -44,8 +44,79 @@ interface StreamingContext {
   highlightedFields?: string[];
 }
 
-// ATS-Friendly Resume Preview Component
-function ResumePreview({
+// Template types
+type TemplateType = "classic" | "minimalist" | "two-column" | "modern";
+
+// Template Selector Component
+function TemplateSelector({
+  selectedTemplate,
+  onTemplateChange,
+}: {
+  selectedTemplate: TemplateType;
+  onTemplateChange: (template: TemplateType) => void;
+}) {
+  const t = useTranslations("improvedResume");
+
+  const templates = [
+    {
+      id: "classic" as TemplateType,
+      name: "Classic",
+      preview: "Standard single-column layout",
+    },
+    {
+      id: "minimalist" as TemplateType,
+      name: "Minimalist",
+      preview: "Clean and simple design",
+    },
+    {
+      id: "two-column" as TemplateType,
+      name: "Two-Column",
+      preview: "Sidebar layout with main content",
+    },
+    {
+      id: "modern" as TemplateType,
+      name: "Modern",
+      preview: "Contemporary section organization",
+    },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Layout className="h-5 w-5 text-blue-600" />
+          Resume Templates
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {templates.map((template) => (
+          <div
+            key={template.id}
+            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+              selectedTemplate === template.id
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-200 hover:border-gray-300"
+            }`}
+            onClick={() => onTemplateChange(template.id)}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-sm">{template.name}</h4>
+                <p className="text-xs text-gray-500">{template.preview}</p>
+              </div>
+              {selectedTemplate === template.id && (
+                <CheckCircle className="h-4 w-4 text-blue-500" />
+              )}
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Classic Template (existing template)
+function ClassicTemplate({
   resumeData,
   onEdit,
   highlightedFields = [],
@@ -55,6 +126,7 @@ function ResumePreview({
   highlightedFields: string[];
 }) {
   const t = useTranslations("improvedResume");
+
   const isHighlighted = (field: string) => {
     return highlightedFields.some((highlightedField) => {
       if (highlightedField.startsWith("keyword:")) return false;
@@ -549,6 +621,1392 @@ function ResumePreview({
   );
 }
 
+// Minimalist Template
+function MinimalistTemplate({
+  resumeData,
+  onEdit,
+  highlightedFields = [],
+}: {
+  resumeData: StreamingImprovedResumeData;
+  onEdit: (field: string, value: any) => void;
+  highlightedFields: string[];
+}) {
+  const t = useTranslations("improvedResume");
+
+  const isHighlighted = (field: string) => {
+    return highlightedFields.some((highlightedField) => {
+      if (highlightedField.startsWith("keyword:")) return false;
+      if (highlightedField === field) return true;
+      if (
+        highlightedField === "experience.achievements" &&
+        field.includes("experience.") &&
+        field.includes(".achievements.")
+      ) {
+        return true;
+      }
+      if (
+        highlightedField === "professionalSummary" &&
+        field === "professionalSummary"
+      ) {
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const highlightKeywords = (text: string) => {
+    if (!text || typeof text !== "string") {
+      return text || "";
+    }
+
+    const keywords = highlightedFields
+      .filter((field) => field.startsWith("keyword:"))
+      .map((field) => field.replace("keyword:", ""));
+
+    if (keywords.length === 0) return text;
+
+    let highlightedText = text;
+    keywords.forEach((keyword) => {
+      if (!keyword || !highlightedText) return;
+
+      const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`\\b(${escapedKeyword})\\b`, "gi");
+      highlightedText = highlightedText.replace(
+        regex,
+        '<span class="bg-green-200 text-green-800 px-1 rounded font-medium">$1</span>'
+      );
+    });
+    return highlightedText || "";
+  };
+
+  const EditableText = ({
+    field,
+    value,
+    className = "",
+    multiline = false,
+    style = {},
+  }: {
+    field: string;
+    value: string;
+    className?: string;
+    multiline?: boolean;
+    style?: React.CSSProperties;
+  }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const editableRef = useRef<HTMLDivElement>(null);
+    const hasKeywordHighlights = highlightedFields.some((field) =>
+      field.startsWith("keyword:")
+    );
+
+    const handleClick = () => {
+      setIsEditing(true);
+      setTimeout(() => {
+        if (editableRef.current) {
+          editableRef.current.focus();
+          const range = document.createRange();
+          const selection = window.getSelection();
+          if (editableRef.current.childNodes.length > 0) {
+            range.selectNodeContents(editableRef.current);
+            range.collapse(false);
+          } else {
+            range.setStart(editableRef.current, 0);
+            range.setEnd(editableRef.current, 0);
+          }
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }, 0);
+    };
+
+    const handleBlur = () => {
+      if (editableRef.current) {
+        const newValue = editableRef.current.innerText;
+        if (newValue !== safeValue) {
+          onEdit(field, newValue);
+        }
+      }
+      setIsEditing(false);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey && !multiline) {
+        e.preventDefault();
+        handleBlur();
+      }
+      if (e.key === "Escape") {
+        if (editableRef.current) {
+          editableRef.current.innerText = safeValue;
+        }
+        setIsEditing(false);
+      }
+    };
+
+    const safeValue = value || "";
+    const displayValue =
+      hasKeywordHighlights && !isEditing
+        ? highlightKeywords(safeValue)
+        : safeValue;
+
+    const commonStyles = {
+      ...style,
+      wordWrap: "break-word" as const,
+      whiteSpace: multiline ? ("pre-wrap" as const) : ("nowrap" as const),
+      overflow: multiline ? ("hidden" as const) : ("visible" as const),
+      lineHeight: multiline ? "1.5" : "inherit",
+    };
+
+    const commonClassName = `${className} outline-none transition-all duration-200 group relative
+      ${
+        isEditing
+          ? "bg-white ring-2 ring-blue-400 ring-opacity-50 shadow-sm rounded-md px-2 py-1"
+          : "cursor-text hover:bg-gray-50 hover:bg-opacity-70 rounded px-1 py-0.5"
+      }
+      ${isHighlighted(field) ? "bg-yellow-100 border border-yellow-300" : ""}
+      ${multiline ? "min-h-[1.5rem]" : ""}
+    `;
+
+    if (!isEditing && hasKeywordHighlights) {
+      return (
+        <div className="relative group">
+          <div
+            ref={editableRef}
+            contentEditable={isEditing}
+            suppressContentEditableWarning={true}
+            className={commonClassName}
+            style={commonStyles}
+            onClick={handleClick}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            title={t("clickToEdit")}
+            role="textbox"
+            aria-label={`Edit ${field}`}
+            dangerouslySetInnerHTML={{ __html: displayValue }}
+          />
+          <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
+          {isHighlighted(field) && (
+            <Badge
+              variant="secondary"
+              className="absolute -top-2 -right-2 text-xs pointer-events-none"
+            >
+              AI Added
+            </Badge>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={editableRef}
+        contentEditable={isEditing}
+        suppressContentEditableWarning={true}
+        className={commonClassName}
+        style={commonStyles}
+        onClick={handleClick}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        title={isEditing ? "" : t("clickToEdit")}
+        role="textbox"
+        aria-label={`Edit ${field}`}
+      >
+        {isEditing ? (
+          safeValue
+        ) : (
+          <>
+            {safeValue}
+            <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
+            {isHighlighted(field) && (
+              <Badge
+                variant="secondary"
+                className="absolute -top-2 -right-2 text-xs pointer-events-none"
+              >
+                AI Added
+              </Badge>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  if (!resumeData || !resumeData.personalInfo) {
+    return (
+      <div className="bg-white p-8 text-center">
+        <p className="text-gray-500">{t("resume.loadingData")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white shadow-xl w-full mx-auto min-h-[297mm] relative border border-gray-200 max-w-3xl p-6 overflow-hidden">
+      {/* Minimalist Header */}
+      <div className="mb-8">
+        <EditableText
+          field="personalInfo.name"
+          value={resumeData.personalInfo.name}
+          className="text-3xl font-light text-black mb-2"
+          style={{ minHeight: "40px", wordWrap: "break-word" }}
+        />
+        <div className="text-sm text-gray-600 mb-4">
+          <EditableText
+            field="personalInfo.email"
+            value={resumeData.personalInfo.email}
+            className="text-sm break-all"
+          />
+          {" | "}
+          <EditableText
+            field="personalInfo.phone"
+            value={resumeData.personalInfo.phone}
+            className="text-sm"
+          />
+          {" | "}
+          <EditableText
+            field="personalInfo.location"
+            value={resumeData.personalInfo.location}
+            className="text-sm break-words"
+          />
+        </div>
+        {resumeData.personalInfo.linkedin && (
+          <div className="text-sm text-gray-600">
+            <EditableText
+              field="personalInfo.linkedin"
+              value={resumeData.personalInfo.linkedin}
+              className="text-sm break-all"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Professional Summary */}
+      {resumeData.professionalSummary && (
+        <div className="mb-8">
+          <div className="h-px bg-gray-300 mb-4"></div>
+          <EditableText
+            field="professionalSummary"
+            value={resumeData.professionalSummary}
+            className="text-sm text-gray-700 leading-relaxed break-words"
+            multiline
+            style={{
+              minHeight: "60px",
+              wordWrap: "break-word",
+              whiteSpace: "pre-wrap",
+            }}
+          />
+        </div>
+      )}
+
+      {/* Experience */}
+      {resumeData.experience && resumeData.experience.length > 0 && (
+        <div className="mb-8">
+          <div className="h-px bg-gray-300 mb-4"></div>
+          <h3 className="text-lg font-light text-black mb-4 tracking-wide">
+            EXPERIENCE
+          </h3>
+          <div className="space-y-6">
+            {resumeData.experience.map((exp, index) => (
+              <div key={`exp-${index}-${exp.company}-${exp.title}`}>
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <EditableText
+                      field={`experience.${index}.title`}
+                      value={exp.title}
+                      className="text-base font-medium text-black"
+                    />
+                    <EditableText
+                      field={`experience.${index}.company`}
+                      value={exp.company}
+                      className="text-sm text-gray-600"
+                    />
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    <EditableText
+                      field={`experience.${index}.startDate`}
+                      value={exp.startDate}
+                      className="text-sm"
+                    />
+                    {" - "}
+                    <EditableText
+                      field={`experience.${index}.endDate`}
+                      value={exp.endDate}
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  {exp.achievements.map((achievement, achIndex) => (
+                    <div key={achIndex} className="text-sm text-gray-700">
+                      <EditableText
+                        field={`experience.${index}.achievements.${achIndex}`}
+                        value={achievement}
+                        className="text-sm leading-relaxed break-words"
+                        multiline
+                        style={{
+                          minHeight: "20px",
+                          wordWrap: "break-word",
+                          whiteSpace: "pre-wrap",
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Education */}
+      {resumeData.education && resumeData.education.length > 0 && (
+        <div className="mb-8">
+          <div className="h-px bg-gray-300 mb-4"></div>
+          <h3 className="text-lg font-light text-black mb-4 tracking-wide">
+            EDUCATION
+          </h3>
+          <div className="space-y-3">
+            {resumeData.education.map((edu, index) => (
+              <div key={`edu-${index}-${edu.institution}-${edu.degree}`}>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <EditableText
+                      field={`education.${index}.degree`}
+                      value={edu.degree}
+                      className="text-base font-medium text-black"
+                    />
+                    <EditableText
+                      field={`education.${index}.institution`}
+                      value={edu.institution}
+                      className="text-sm text-gray-600"
+                    />
+                  </div>
+                  <EditableText
+                    field={`education.${index}.year`}
+                    value={edu.year}
+                    className="text-sm text-gray-500"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Skills */}
+      {resumeData.skills && (
+        <div>
+          <div className="h-px bg-gray-300 mb-4"></div>
+          <h3 className="text-lg font-light text-black mb-4 tracking-wide">
+            SKILLS
+          </h3>
+          <div className="text-sm text-gray-700">
+            {resumeData.skills.technical &&
+              resumeData.skills.technical.length > 0 && (
+                <div className="mb-2">
+                  {resumeData.skills.technical.join(" • ")}
+                </div>
+              )}
+            {resumeData.skills.certifications &&
+              resumeData.skills.certifications.length > 0 && (
+                <div className="mb-2">
+                  <strong>Certifications:</strong>{" "}
+                  {resumeData.skills.certifications.join(" • ")}
+                </div>
+              )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Two-Column Template
+function TwoColumnTemplate({
+  resumeData,
+  onEdit,
+  highlightedFields = [],
+}: {
+  resumeData: StreamingImprovedResumeData;
+  onEdit: (field: string, value: any) => void;
+  highlightedFields: string[];
+}) {
+  const t = useTranslations("improvedResume");
+
+  const isHighlighted = (field: string) => {
+    return highlightedFields.some((highlightedField) => {
+      if (highlightedField.startsWith("keyword:")) return false;
+      if (highlightedField === field) return true;
+      if (
+        highlightedField === "experience.achievements" &&
+        field.includes("experience.") &&
+        field.includes(".achievements.")
+      ) {
+        return true;
+      }
+      if (
+        highlightedField === "professionalSummary" &&
+        field === "professionalSummary"
+      ) {
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const highlightKeywords = (text: string) => {
+    if (!text || typeof text !== "string") {
+      return text || "";
+    }
+
+    const keywords = highlightedFields
+      .filter((field) => field.startsWith("keyword:"))
+      .map((field) => field.replace("keyword:", ""));
+
+    if (keywords.length === 0) return text;
+
+    let highlightedText = text;
+    keywords.forEach((keyword) => {
+      if (!keyword || !highlightedText) return;
+
+      const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`\\b(${escapedKeyword})\\b`, "gi");
+      highlightedText = highlightedText.replace(
+        regex,
+        '<span class="bg-green-200 text-green-800 px-1 rounded font-medium">$1</span>'
+      );
+    });
+    return highlightedText || "";
+  };
+
+  const EditableText = ({
+    field,
+    value,
+    className = "",
+    multiline = false,
+    style = {},
+  }: {
+    field: string;
+    value: string;
+    className?: string;
+    multiline?: boolean;
+    style?: React.CSSProperties;
+  }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const editableRef = useRef<HTMLDivElement>(null);
+    const hasKeywordHighlights = highlightedFields.some((field) =>
+      field.startsWith("keyword:")
+    );
+
+    const handleClick = () => {
+      setIsEditing(true);
+      setTimeout(() => {
+        if (editableRef.current) {
+          editableRef.current.focus();
+          const range = document.createRange();
+          const selection = window.getSelection();
+          if (editableRef.current.childNodes.length > 0) {
+            range.selectNodeContents(editableRef.current);
+            range.collapse(false);
+          } else {
+            range.setStart(editableRef.current, 0);
+            range.setEnd(editableRef.current, 0);
+          }
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }, 0);
+    };
+
+    const handleBlur = () => {
+      if (editableRef.current) {
+        const newValue = editableRef.current.innerText;
+        if (newValue !== safeValue) {
+          onEdit(field, newValue);
+        }
+      }
+      setIsEditing(false);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey && !multiline) {
+        e.preventDefault();
+        handleBlur();
+      }
+      if (e.key === "Escape") {
+        if (editableRef.current) {
+          editableRef.current.innerText = safeValue;
+        }
+        setIsEditing(false);
+      }
+    };
+
+    const safeValue = value || "";
+    const displayValue =
+      hasKeywordHighlights && !isEditing
+        ? highlightKeywords(safeValue)
+        : safeValue;
+
+    const commonStyles = {
+      ...style,
+      wordWrap: "break-word" as const,
+      whiteSpace: multiline ? ("pre-wrap" as const) : ("nowrap" as const),
+      overflow: multiline ? ("hidden" as const) : ("visible" as const),
+      lineHeight: multiline ? "1.5" : "inherit",
+    };
+
+    const commonClassName = `${className} outline-none transition-all duration-200 group relative
+      ${
+        isEditing
+          ? "bg-white ring-2 ring-blue-400 ring-opacity-50 shadow-sm rounded-md px-2 py-1"
+          : "cursor-text hover:bg-gray-50 hover:bg-opacity-70 rounded px-1 py-0.5"
+      }
+      ${isHighlighted(field) ? "bg-yellow-100 border border-yellow-300" : ""}
+      ${multiline ? "min-h-[1.5rem]" : ""}
+    `;
+
+    if (!isEditing && hasKeywordHighlights) {
+      return (
+        <div className="relative group">
+          <div
+            ref={editableRef}
+            contentEditable={isEditing}
+            suppressContentEditableWarning={true}
+            className={commonClassName}
+            style={commonStyles}
+            onClick={handleClick}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            title={t("clickToEdit")}
+            role="textbox"
+            aria-label={`Edit ${field}`}
+            dangerouslySetInnerHTML={{ __html: displayValue }}
+          />
+          <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
+          {isHighlighted(field) && (
+            <Badge
+              variant="secondary"
+              className="absolute -top-2 -right-2 text-xs pointer-events-none"
+            >
+              AI Added
+            </Badge>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={editableRef}
+        contentEditable={isEditing}
+        suppressContentEditableWarning={true}
+        className={commonClassName}
+        style={commonStyles}
+        onClick={handleClick}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        title={isEditing ? "" : t("clickToEdit")}
+        role="textbox"
+        aria-label={`Edit ${field}`}
+      >
+        {isEditing ? (
+          safeValue
+        ) : (
+          <>
+            {safeValue}
+            <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
+            {isHighlighted(field) && (
+              <Badge
+                variant="secondary"
+                className="absolute -top-2 -right-2 text-xs pointer-events-none"
+              >
+                AI Added
+              </Badge>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  if (!resumeData || !resumeData.personalInfo) {
+    return (
+      <div className="bg-white p-8 text-center">
+        <p className="text-gray-500">{t("resume.loadingData")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white shadow-xl w-full mx-auto min-h-[297mm] relative border border-gray-200 max-w-4xl overflow-hidden">
+      <div className="grid grid-cols-3 gap-0 min-h-full">
+        {/* Left Sidebar */}
+        <div className="bg-gray-50 p-6 border-r border-gray-200">
+          {/* Contact Info */}
+          <div className="mb-6">
+            <EditableText
+              field="personalInfo.name"
+              value={resumeData.personalInfo.name}
+              className="text-xl font-bold text-black mb-3"
+              style={{ minHeight: "40px", wordWrap: "break-word" }}
+            />
+            <div className="space-y-2 text-sm text-gray-700">
+              <EditableText
+                field="personalInfo.email"
+                value={resumeData.personalInfo.email}
+                className="text-sm block break-all"
+              />
+              <EditableText
+                field="personalInfo.phone"
+                value={resumeData.personalInfo.phone}
+                className="text-sm block"
+              />
+              <EditableText
+                field="personalInfo.location"
+                value={resumeData.personalInfo.location}
+                className="text-sm block break-words"
+              />
+              {resumeData.personalInfo.linkedin && (
+                <EditableText
+                  field="personalInfo.linkedin"
+                  value={resumeData.personalInfo.linkedin}
+                  className="text-sm block break-all"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Skills */}
+          {resumeData.skills && (
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-black mb-3 uppercase tracking-wide border-b border-gray-300 pb-1">
+                SKILLS
+              </h3>
+              <div className="space-y-3">
+                {resumeData.skills.technical &&
+                  resumeData.skills.technical.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-2">
+                        Technical
+                      </p>
+                      <div className="text-xs text-gray-700 space-y-1">
+                        {resumeData.skills.technical.map((skill, index) => (
+                          <div key={index}>• {skill}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                {resumeData.skills.certifications &&
+                  resumeData.skills.certifications.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-2">
+                        Certifications
+                      </p>
+                      <div className="text-xs text-gray-700 space-y-1">
+                        {resumeData.skills.certifications.map((cert, index) => (
+                          <div key={index}>• {cert}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
+          )}
+
+          {/* Education */}
+          {resumeData.education && resumeData.education.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-black mb-3 uppercase tracking-wide border-b border-gray-300 pb-1">
+                EDUCATION
+              </h3>
+              <div className="space-y-3">
+                {resumeData.education.map((edu, index) => (
+                  <div key={`edu-${index}-${edu.institution}-${edu.degree}`}>
+                    <EditableText
+                      field={`education.${index}.degree`}
+                      value={edu.degree}
+                      className="text-xs font-semibold text-black"
+                    />
+                    <EditableText
+                      field={`education.${index}.institution`}
+                      value={edu.institution}
+                      className="text-xs text-gray-700 mt-1"
+                    />
+                    <EditableText
+                      field={`education.${index}.year`}
+                      value={edu.year}
+                      className="text-xs text-gray-500"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Main Content */}
+        <div className="col-span-2 p-6">
+          {/* Professional Summary */}
+          {resumeData.professionalSummary && (
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-black mb-3 uppercase tracking-wide border-b-2 border-black pb-1">
+                PROFESSIONAL SUMMARY
+              </h3>
+              <EditableText
+                field="professionalSummary"
+                value={resumeData.professionalSummary}
+                className="text-sm text-gray-700 leading-relaxed break-words"
+                multiline
+                style={{
+                  minHeight: "60px",
+                  wordWrap: "break-word",
+                  whiteSpace: "pre-wrap",
+                }}
+              />
+            </div>
+          )}
+
+          {/* Experience */}
+          {resumeData.experience && resumeData.experience.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-black mb-4 uppercase tracking-wide border-b-2 border-black pb-1">
+                EXPERIENCE
+              </h3>
+              <div className="space-y-5">
+                {resumeData.experience.map((exp, index) => (
+                  <div key={`exp-${index}-${exp.company}-${exp.title}`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <EditableText
+                          field={`experience.${index}.title`}
+                          value={exp.title}
+                          className="text-base font-bold text-black"
+                        />
+                        <EditableText
+                          field={`experience.${index}.company`}
+                          value={exp.company}
+                          className="text-sm font-semibold text-gray-700"
+                        />
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <EditableText
+                          field={`experience.${index}.startDate`}
+                          value={exp.startDate}
+                          className="text-sm"
+                        />
+                        {" - "}
+                        <EditableText
+                          field={`experience.${index}.endDate`}
+                          value={exp.endDate}
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
+                    <ul className="space-y-1 ml-4">
+                      {exp.achievements.map((achievement, achIndex) => (
+                        <li
+                          key={achIndex}
+                          className="text-sm text-gray-700 list-disc"
+                        >
+                          <EditableText
+                            field={`experience.${index}.achievements.${achIndex}`}
+                            value={achievement}
+                            className="text-sm leading-relaxed break-words"
+                            multiline
+                            style={{
+                              minHeight: "20px",
+                              wordWrap: "break-word",
+                              whiteSpace: "pre-wrap",
+                            }}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Projects */}
+          {resumeData.projects && resumeData.projects.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-black mb-4 uppercase tracking-wide border-b-2 border-black pb-1">
+                PROJECTS
+              </h3>
+              <div className="space-y-4">
+                {resumeData.projects.map((project, index) => (
+                  <div key={index}>
+                    <EditableText
+                      field={`projects.${index}.name`}
+                      value={project.name}
+                      className="text-base font-bold text-black"
+                    />
+                    <EditableText
+                      field={`projects.${index}.description`}
+                      value={project.description || ""}
+                      className="text-sm text-gray-600 mt-1"
+                      multiline
+                    />
+                    {project.achievements && (
+                      <ul className="space-y-1 mt-2 ml-4">
+                        {project.achievements.map((achievement, achIndex) => (
+                          <li
+                            key={achIndex}
+                            className="text-sm text-gray-700 list-disc"
+                          >
+                            <EditableText
+                              field={`projects.${index}.achievements.${achIndex}`}
+                              value={achievement}
+                              className="text-sm leading-relaxed"
+                              multiline
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Modern Template
+function ModernTemplate({
+  resumeData,
+  onEdit,
+  highlightedFields = [],
+}: {
+  resumeData: StreamingImprovedResumeData;
+  onEdit: (field: string, value: any) => void;
+  highlightedFields: string[];
+}) {
+  const t = useTranslations("improvedResume");
+
+  const isHighlighted = (field: string) => {
+    return highlightedFields.some((highlightedField) => {
+      if (highlightedField.startsWith("keyword:")) return false;
+      if (highlightedField === field) return true;
+      if (
+        highlightedField === "experience.achievements" &&
+        field.includes("experience.") &&
+        field.includes(".achievements.")
+      ) {
+        return true;
+      }
+      if (
+        highlightedField === "professionalSummary" &&
+        field === "professionalSummary"
+      ) {
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const highlightKeywords = (text: string) => {
+    if (!text || typeof text !== "string") {
+      return text || "";
+    }
+
+    const keywords = highlightedFields
+      .filter((field) => field.startsWith("keyword:"))
+      .map((field) => field.replace("keyword:", ""));
+
+    if (keywords.length === 0) return text;
+
+    let highlightedText = text;
+    keywords.forEach((keyword) => {
+      if (!keyword || !highlightedText) return;
+
+      const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`\\b(${escapedKeyword})\\b`, "gi");
+      highlightedText = highlightedText.replace(
+        regex,
+        '<span class="bg-green-200 text-green-800 px-1 rounded font-medium">$1</span>'
+      );
+    });
+    return highlightedText || "";
+  };
+
+  const EditableText = ({
+    field,
+    value,
+    className = "",
+    multiline = false,
+    style = {},
+  }: {
+    field: string;
+    value: string;
+    className?: string;
+    multiline?: boolean;
+    style?: React.CSSProperties;
+  }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const editableRef = useRef<HTMLDivElement>(null);
+    const hasKeywordHighlights = highlightedFields.some((field) =>
+      field.startsWith("keyword:")
+    );
+
+    const handleClick = () => {
+      setIsEditing(true);
+      setTimeout(() => {
+        if (editableRef.current) {
+          editableRef.current.focus();
+          const range = document.createRange();
+          const selection = window.getSelection();
+          if (editableRef.current.childNodes.length > 0) {
+            range.selectNodeContents(editableRef.current);
+            range.collapse(false);
+          } else {
+            range.setStart(editableRef.current, 0);
+            range.setEnd(editableRef.current, 0);
+          }
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }, 0);
+    };
+
+    const handleBlur = () => {
+      if (editableRef.current) {
+        const newValue = editableRef.current.innerText;
+        if (newValue !== safeValue) {
+          onEdit(field, newValue);
+        }
+      }
+      setIsEditing(false);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey && !multiline) {
+        e.preventDefault();
+        handleBlur();
+      }
+      if (e.key === "Escape") {
+        if (editableRef.current) {
+          editableRef.current.innerText = safeValue;
+        }
+        setIsEditing(false);
+      }
+    };
+
+    const safeValue = value || "";
+    const displayValue =
+      hasKeywordHighlights && !isEditing
+        ? highlightKeywords(safeValue)
+        : safeValue;
+
+    const commonStyles = {
+      ...style,
+      wordWrap: "break-word" as const,
+      whiteSpace: multiline ? ("pre-wrap" as const) : ("nowrap" as const),
+      overflow: multiline ? ("hidden" as const) : ("visible" as const),
+      lineHeight: multiline ? "1.5" : "inherit",
+    };
+
+    const commonClassName = `${className} outline-none transition-all duration-200 group relative
+      ${
+        isEditing
+          ? "bg-white ring-2 ring-blue-400 ring-opacity-50 shadow-sm rounded-md px-2 py-1"
+          : "cursor-text hover:bg-gray-50 hover:bg-opacity-70 rounded px-1 py-0.5"
+      }
+      ${isHighlighted(field) ? "bg-yellow-100 border border-yellow-300" : ""}
+      ${multiline ? "min-h-[1.5rem]" : ""}
+    `;
+
+    if (!isEditing && hasKeywordHighlights) {
+      return (
+        <div className="relative group">
+          <div
+            ref={editableRef}
+            contentEditable={isEditing}
+            suppressContentEditableWarning={true}
+            className={commonClassName}
+            style={commonStyles}
+            onClick={handleClick}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            title={t("clickToEdit")}
+            role="textbox"
+            aria-label={`Edit ${field}`}
+            dangerouslySetInnerHTML={{ __html: displayValue }}
+          />
+          <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
+          {isHighlighted(field) && (
+            <Badge
+              variant="secondary"
+              className="absolute -top-2 -right-2 text-xs pointer-events-none"
+            >
+              AI Added
+            </Badge>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={editableRef}
+        contentEditable={isEditing}
+        suppressContentEditableWarning={true}
+        className={commonClassName}
+        style={commonStyles}
+        onClick={handleClick}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        title={isEditing ? "" : t("clickToEdit")}
+        role="textbox"
+        aria-label={`Edit ${field}`}
+      >
+        {isEditing ? (
+          safeValue
+        ) : (
+          <>
+            {safeValue}
+            <Edit3 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity pointer-events-none" />
+            {isHighlighted(field) && (
+              <Badge
+                variant="secondary"
+                className="absolute -top-2 -right-2 text-xs pointer-events-none"
+              >
+                AI Added
+              </Badge>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  if (!resumeData || !resumeData.personalInfo) {
+    return (
+      <div className="bg-white p-8 text-center">
+        <p className="text-gray-500">{t("resume.loadingData")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white shadow-xl w-full mx-auto min-h-[297mm] relative border border-gray-200 max-w-3xl p-8 overflow-hidden">
+      {/* Modern Header with accent line */}
+      <div className="relative mb-8">
+        <div className="absolute top-0 left-0 w-16 h-2 bg-black"></div>
+        <div className="pt-6">
+          <EditableText
+            field="personalInfo.name"
+            value={resumeData.personalInfo.name}
+            className="text-3xl font-bold text-black mb-2"
+            style={{ minHeight: "40px", wordWrap: "break-word" }}
+          />
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
+            <EditableText
+              field="personalInfo.email"
+              value={resumeData.personalInfo.email}
+              className="text-sm break-all"
+            />
+            <EditableText
+              field="personalInfo.phone"
+              value={resumeData.personalInfo.phone}
+              className="text-sm"
+            />
+            <EditableText
+              field="personalInfo.location"
+              value={resumeData.personalInfo.location}
+              className="text-sm break-words"
+            />
+          </div>
+          {resumeData.personalInfo.linkedin && (
+            <div className="text-sm text-gray-600">
+              <EditableText
+                field="personalInfo.linkedin"
+                value={resumeData.personalInfo.linkedin}
+                className="text-sm break-all"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Professional Summary */}
+      {resumeData.professionalSummary && (
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-black mb-4 relative">
+            <span className="bg-black text-white px-4 py-1 text-sm uppercase tracking-wider">
+              Profile
+            </span>
+          </h3>
+          <EditableText
+            field="professionalSummary"
+            value={resumeData.professionalSummary}
+            className="text-sm text-gray-700 leading-relaxed break-words ml-4"
+            multiline
+            style={{
+              minHeight: "60px",
+              wordWrap: "break-word",
+              whiteSpace: "pre-wrap",
+            }}
+          />
+        </div>
+      )}
+
+      {/* Skills First (Modern approach) */}
+      {resumeData.skills && (
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-black mb-4 relative">
+            <span className="bg-black text-white px-4 py-1 text-sm uppercase tracking-wider">
+              Core Competencies
+            </span>
+          </h3>
+          <div className="ml-4 grid grid-cols-2 gap-4">
+            {resumeData.skills.technical &&
+              resumeData.skills.technical.length > 0 && (
+                <div>
+                  <div className="flex flex-wrap gap-2">
+                    {resumeData.skills.technical.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            {resumeData.skills.certifications &&
+              resumeData.skills.certifications.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-600 mb-2">
+                    Certifications
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {resumeData.skills.certifications.map((cert, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full"
+                      >
+                        {cert}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
+
+      {/* Experience */}
+      {resumeData.experience && resumeData.experience.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-black mb-4 relative">
+            <span className="bg-black text-white px-4 py-1 text-sm uppercase tracking-wider">
+              Professional Experience
+            </span>
+          </h3>
+          <div className="ml-4 space-y-6">
+            {resumeData.experience.map((exp, index) => (
+              <div
+                key={`exp-${index}-${exp.company}-${exp.title}`}
+                className="relative"
+              >
+                <div className="absolute left-[-20px] top-3 w-3 h-3 bg-black rounded-full"></div>
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <EditableText
+                      field={`experience.${index}.title`}
+                      value={exp.title}
+                      className="text-base font-bold text-black"
+                    />
+                    <EditableText
+                      field={`experience.${index}.company`}
+                      value={exp.company}
+                      className="text-sm font-semibold text-gray-700"
+                    />
+                    <EditableText
+                      field={`experience.${index}.location`}
+                      value={exp.location}
+                      className="text-sm text-gray-500"
+                    />
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">
+                    <EditableText
+                      field={`experience.${index}.startDate`}
+                      value={exp.startDate}
+                      className="text-sm"
+                    />
+                    {" - "}
+                    <EditableText
+                      field={`experience.${index}.endDate`}
+                      value={exp.endDate}
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+                <ul className="space-y-2">
+                  {exp.achievements.map((achievement, achIndex) => (
+                    <li
+                      key={achIndex}
+                      className="text-sm text-gray-700 flex items-start"
+                    >
+                      <span className="text-black mr-3 mt-1 text-xs">▸</span>
+                      <EditableText
+                        field={`experience.${index}.achievements.${achIndex}`}
+                        value={achievement}
+                        className="flex-1 text-sm leading-relaxed break-words"
+                        multiline
+                        style={{
+                          minHeight: "20px",
+                          wordWrap: "break-word",
+                          whiteSpace: "pre-wrap",
+                        }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Education */}
+      {resumeData.education && resumeData.education.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-black mb-4 relative">
+            <span className="bg-black text-white px-4 py-1 text-sm uppercase tracking-wider">
+              Education
+            </span>
+          </h3>
+          <div className="ml-4 space-y-3">
+            {resumeData.education.map((edu, index) => (
+              <div
+                key={`edu-${index}-${edu.institution}-${edu.degree}`}
+                className="flex justify-between items-start"
+              >
+                <div className="flex-1">
+                  <EditableText
+                    field={`education.${index}.degree`}
+                    value={edu.degree}
+                    className="text-base font-semibold text-black"
+                  />
+                  <EditableText
+                    field={`education.${index}.institution`}
+                    value={edu.institution}
+                    className="text-sm text-gray-700"
+                  />
+                </div>
+                <EditableText
+                  field={`education.${index}.year`}
+                  value={edu.year}
+                  className="text-sm text-gray-600 font-medium"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Projects */}
+      {resumeData.projects && resumeData.projects.length > 0 && (
+        <div>
+          <h3 className="text-lg font-bold text-black mb-4 relative">
+            <span className="bg-black text-white px-4 py-1 text-sm uppercase tracking-wider">
+              Key Projects
+            </span>
+          </h3>
+          <div className="ml-4 space-y-4">
+            {resumeData.projects.map((project, index) => (
+              <div key={index}>
+                <EditableText
+                  field={`projects.${index}.name`}
+                  value={project.name}
+                  className="text-base font-bold text-black"
+                />
+                <EditableText
+                  field={`projects.${index}.description`}
+                  value={project.description || ""}
+                  className="text-sm text-gray-600 mt-1"
+                  multiline
+                />
+                {project.achievements && (
+                  <ul className="space-y-1 mt-2">
+                    {project.achievements.map((achievement, achIndex) => (
+                      <li
+                        key={achIndex}
+                        className="text-sm text-gray-700 flex items-start"
+                      >
+                        <span className="text-black mr-3 mt-1 text-xs">▸</span>
+                        <EditableText
+                          field={`projects.${index}.achievements.${achIndex}`}
+                          value={achievement}
+                          className="flex-1 text-sm leading-relaxed"
+                          multiline
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Resume Preview Component (Wrapper)
+function ResumePreview({
+  resumeData,
+  onEdit,
+  highlightedFields = [],
+  selectedTemplate = "classic",
+}: {
+  resumeData: StreamingImprovedResumeData;
+  onEdit: (field: string, value: any) => void;
+  highlightedFields: string[];
+  selectedTemplate: TemplateType;
+}) {
+  switch (selectedTemplate) {
+    case "minimalist":
+      return (
+        <MinimalistTemplate
+          resumeData={resumeData}
+          onEdit={onEdit}
+          highlightedFields={highlightedFields}
+        />
+      );
+    case "two-column":
+      return (
+        <TwoColumnTemplate
+          resumeData={resumeData}
+          onEdit={onEdit}
+          highlightedFields={highlightedFields}
+        />
+      );
+    case "modern":
+      return (
+        <ModernTemplate
+          resumeData={resumeData}
+          onEdit={onEdit}
+          highlightedFields={highlightedFields}
+        />
+      );
+    case "classic":
+    default:
+      return (
+        <ClassicTemplate
+          resumeData={resumeData}
+          onEdit={onEdit}
+          highlightedFields={highlightedFields}
+        />
+      );
+  }
+}
+
 export default function StreamingImprovedResumePage() {
   const router = useRouter();
   const t = useTranslations("improvedResume");
@@ -567,6 +2025,8 @@ export default function StreamingImprovedResumePage() {
   const [tailoringAnalysis, setTailoringAnalysis] = useState<any>(null);
   const [isTailoring, setIsTailoring] = useState(false);
   const [showTailoring, setShowTailoring] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<TemplateType>("classic");
   const [tailoringResult, setTailoringResult] = useState<any>(() => {
     if (typeof window === "undefined") return null;
     const saved = sessionStorage.getItem("tailoringResult");
@@ -660,7 +2120,7 @@ export default function StreamingImprovedResumePage() {
         const a = document.createElement("a");
         a.style.display = "none";
         a.href = url;
-        a.download = `${streamingData.targetRole}-cover-letter.txt`;
+        a.download = `${streamingData.targetRole}-cover-letter-${selectedTemplate}.txt`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -677,7 +2137,7 @@ export default function StreamingImprovedResumePage() {
         body: JSON.stringify({
           resumeData: editableResume,
           format: format,
-          fileName: `${streamingData.targetRole}-resume`,
+          fileName: `${streamingData.targetRole}-resume-${selectedTemplate}`,
         }),
       });
 
@@ -690,7 +2150,7 @@ export default function StreamingImprovedResumePage() {
       const a = document.createElement("a");
       a.style.display = "none";
       a.href = url;
-      a.download = `${streamingData.targetRole}-resume.${format}`;
+      a.download = `${streamingData.targetRole}-resume-${selectedTemplate}.${format}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -877,6 +2337,7 @@ export default function StreamingImprovedResumePage() {
                         resumeData={editableResume}
                         onEdit={handleEditResume}
                         highlightedFields={highlightedFields}
+                        selectedTemplate={selectedTemplate}
                       />
                     </div>
                     {isTailoring && (
@@ -937,6 +2398,12 @@ export default function StreamingImprovedResumePage() {
 
           {/* Right Column - Improvement Stats & Tools */}
           <div className="lg:col-span-1 space-y-4 mt-4 lg:mt-0">
+            {/* Template Selector */}
+            <TemplateSelector
+              selectedTemplate={selectedTemplate}
+              onTemplateChange={setSelectedTemplate}
+            />
+
             {/* Score Improvement */}
             <Card>
               <CardHeader>

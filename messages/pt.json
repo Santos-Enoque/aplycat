@@ -237,7 +237,20 @@
         ],
         "buttonText": "Obter Pacote Pro"
       }
-    ]
+    ],
+    "credits": {
+      "packages": {
+        "analyses": "{count} Análises de Currículo",
+        "improvements": "Melhorias de Currículo",
+        "jobTailoring": "Currículo Personalizado + Carta de Apresentação",
+        "customImprovements": "Melhorias Personalizadas",
+        "freeAnalysis": "Análise Ilimitada de Currículo e LinkedIn",
+        "emailSupport": "Suporte por Email",
+        "prioritySupport": "Suporte Prioritário",
+        "premiumSupport": "Suporte Premium",
+        "careerOptimization": "Otimização para Mudança de Carreira"
+      }
+    }
   },
   "finalCTA": {
     "title": "Você já foi rejeitado o suficiente.",
@@ -295,6 +308,11 @@
   "HomePage": {
     "title": "Análise Brutalmente Honesta de Currículo",
     "about": "Ir para a página sobre"
+  },
+  "systemBanner": {
+    "title": "Aviso do Sistema",
+    "message": "Estamos enfrentando dificuldades técnicas devido ao alto tráfego de usuários. Nossa equipe está trabalhando diligentemente para resolver todos os problemas e restaurar o serviço completo. Obrigado pela sua paciência.",
+    "dismiss": "Dispensar"
   },
   "analysisCards": {
     "readyToFix": "🚀 Pronto para Consertar Tudo?",

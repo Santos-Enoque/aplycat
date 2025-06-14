@@ -32,6 +32,7 @@ import {
 } from "./feature-previews";
 import { useTranslations } from "next-intl";
 import { PricingTestPanel } from "@/components/pricing-test-panel";
+import { SystemBanner } from "@/components/ui/system-banner";
 
 // Trial Popup Component
 const TrialPopup = ({
@@ -965,6 +966,48 @@ const HowItWorksSection = () => {
   );
 };
 
+// Get package features based on credits
+const getPackageFeatures = (credits: number, t: any) => {
+  const analysisCredits = Math.floor(credits / 1);
+  const improvementCredits = Math.floor(credits / 2);
+  const jobTailoringCredits = Math.floor(credits / 3);
+
+  return [
+    `<span class="font-bold text-foreground">${improvementCredits}x</span> ${t(
+      "credits.packages.improvements",
+      { count: improvementCredits }
+    )} (2 credits each)`,
+    `<span class="font-bold text-foreground">${jobTailoringCredits}x</span> ${t(
+      "credits.packages.jobTailoring",
+      { count: jobTailoringCredits }
+    )} (3 credits each)`,
+    `<span class="font-bold text-foreground">${analysisCredits}x</span> ${t(
+      "credits.packages.customImprovements",
+      { count: analysisCredits }
+    )} (1 credit each)`,
+    `<span class="font-bold text-foreground">FREE</span> ${t(
+      "credits.packages.freeAnalysis"
+    )}`,
+    credits >= 30
+      ? `<span class="font-bold text-foreground">${t(
+          "credits.packages.prioritySupport"
+        )}</span>`
+      : `<span class="font-bold text-foreground">${t(
+          "credits.packages.emailSupport"
+        )}</span>`,
+    ...(credits >= 70
+      ? [
+          `<span class="font-bold text-foreground">${t(
+            "credits.packages.premiumSupport"
+          )}</span>`,
+          `<span class="font-bold text-foreground">${t(
+            "credits.packages.careerOptimization"
+          )}</span>`,
+        ]
+      : []),
+  ];
+};
+
 // Pricing Section
 const PricingSection = () => {
   const t = useTranslations("pricing");
@@ -984,34 +1027,32 @@ const PricingSection = () => {
         setCurrency(data.pricing.currency);
 
         const formattedPackages = regularPackages.map((pkg: any) => {
-          const features =
-            t.raw("packages").find((p: any) => p.name === pkg.name)?.features ||
-            [];
+          // Calculate features dynamically based on credits
+          const features = getPackageFeatures(pkg.credits, t);
+
           return {
             ...pkg,
             formattedPrice: `${pkg.price} MZN`,
             features,
-            buttonText:
-              t.raw("packages").find((p: any) => p.name === pkg.name)
-                ?.buttonText || "Get Started",
+            buttonText: t("packages.0.buttonText"),
+            isPopular: pkg.id === "pro",
           };
         });
 
         setPackages(formattedPackages);
       } catch (error) {
         console.error("Failed to load packages:", error);
-        // Fallback for UI display
-        setPackages([
-          {
-            name: "Pro Pack",
-            price: 200,
-            credits: 44,
-            formattedPrice: "200 MZN",
-            features: t.raw("packages.0.features"),
-            buttonText: t.raw("packages.0.buttonText"),
-            isPopular: true,
-          },
-        ]);
+        // Fallback for UI display with dynamic features
+        const fallbackPackage = {
+          name: "Pro Pack",
+          price: 200,
+          credits: 44,
+          formattedPrice: "200 MZN",
+          features: getPackageFeatures(44, t),
+          buttonText: t("packages.0.buttonText"),
+          isPopular: true,
+        };
+        setPackages([fallbackPackage]);
       } finally {
         setIsLoading(false);
       }
@@ -1192,6 +1233,9 @@ export function LandingPage() {
 
   return (
     <>
+      {/* System Banner */}
+      <SystemBanner />
+
       {/* Trial Banner */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3">
         <div className="container mx-auto px-4 text-center">

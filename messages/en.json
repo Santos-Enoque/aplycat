@@ -230,16 +230,22 @@
         "price": "200 MZN",
         "credits": "44 Credits",
         "isPopular": true,
-        "features": [
-          "<span class=\"font-bold text-foreground\">22x</span> Resume Improvements (2 credits each)",
-          "<span class=\"font-bold text-foreground\">14x</span> Job-Tailored Resume + Cover Letter (3 credits each)",
-          "<span class=\"font-bold text-foreground\">44x</span> Custom Improvements (1 credit each)",
-          "<span class=\"font-bold text-foreground\">FREE</span> Unlimited Resume & LinkedIn Analysis",
-          "<span class=\"font-bold text-foreground\">Email</span> Support"
-        ],
         "buttonText": "Get Pro Pack"
       }
-    ]
+    ],
+    "credits": {
+      "packages": {
+        "analyses": "{count} Resume Analyses",
+        "improvements": "Resume Improvements",
+        "jobTailoring": "Job-Tailored Resume + Cover Letter combos",
+        "customImprovements": "Custom Improvements",
+        "freeAnalysis": "Unlimited Resume & LinkedIn Analysis",
+        "emailSupport": "Email Support",
+        "prioritySupport": "Priority Support",
+        "premiumSupport": "Premium Support",
+        "careerOptimization": "Career Change Optimization"
+      }
+    }
   },
   "finalCTA": {
     "title": "You've been rejected enough.",
@@ -298,6 +304,11 @@
     "title": "Brutally Honest Resume Analysis",
     "about": "Go to the about page"
   },
+  "systemBanner": {
+    "title": "Service Notice",
+    "message": "We are currently experiencing technical difficulties due to high user traffic. Our team is working diligently to resolve all issues and restore full service. Thank you for your patience.",
+    "dismiss": "Dismiss"
+  },
   "analysisCards": {
     "readyToFix": "🚀 Ready to Fix Everything?",
     "transformResume": "Let our AI transform your resume into an ATS-optimized masterpiece",
@@ -338,7 +349,10 @@
     "unknown": "Unknown"
   },
   "dashboard": {
-    "welcome": "Welcome back!",
+    "welcome": {
+      "title": "Welcome back!",
+      "subtitle": "Let's make your resume even better today"
+    },
     "credits": "{count} Credits",
     "analyses": "Analyses",
     "improvements": "Improvements",
@@ -349,7 +363,6 @@
     "uploadHistory": "Upload History",
     "creditHistory": "Credit History",
     "buyCredits": "Buy Credits",
-    "recentActivity": "Recent Activity",
     "noActivity": "No activity yet",
     "analysisComplete": "Analysis completed",
     "improvementGenerated": "Improvement generated",
