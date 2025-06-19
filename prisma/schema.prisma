@@ -12,12 +12,13 @@ datasource db {
 
 // ===== USER MANAGEMENT (Clerk Integration) =====
 model User {
-    id        String  @id @default(cuid())
-    clerkId   String  @unique // Clerk user ID
-    email     String  @unique
-    firstName String?
-    lastName  String?
-    imageUrl  String?
+    id          String  @id @default(cuid())
+    clerkId     String  @unique // Clerk user ID
+    email       String  @unique
+    firstName   String?
+    lastName    String?
+    imageUrl    String?
+    phoneNumber String? // User's phone number for MPesa payments
 
     // Account status
     isActive  Boolean @default(true)
@@ -42,54 +43,54 @@ model User {
     subscriptions      Subscription[]
     usageEvents        UsageEvent[]
     feedback           Feedback[]
-    paysuitePayments PaysuitePayment[]
+    paysuitePayments   PaysuitePayment[]
+    mpesaPayments      MpesaPayment[]
 
     // Add indexes for dashboard performance
     @@index([clerkId])
     @@index([email])
+    @@index([phoneNumber])
     @@index([lastActiveAt])
     @@map("users")
 }
 
-
-
 model PaysuitePayment {
-  id             String    @id // PaySuite payment ID
-  userId         String    // Internal database user ID
-  clerkUserId    String    // Clerk user ID for reference
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Package and payment details
-  packageType    String
-  credits        Int
-  amount         Float     // Amount in MZN
-  currency       String    @default("MZN")
-  status         String    @default("pending") // pending, completed, failed
-  
-  // Payment method and reference
-  paymentMethod  String    // mpesa, emola
-  reference      String    // PaySuite reference
-  
-  // Metadata and timestamps
-  metadata       Json?
-  createdAt      DateTime  @default(now())
-  completedAt    DateTime?
-  
-  @@map("paysuite_payments")
+    id          String @id // PaySuite payment ID
+    userId      String // Internal database user ID
+    clerkUserId String // Clerk user ID for reference
+    user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // Package and payment details
+    packageType String
+    credits     Int
+    amount      Float // Amount in MZN
+    currency    String @default("MZN")
+    status      String @default("pending") // pending, completed, failed
+
+    // Payment method and reference
+    paymentMethod String // mpesa, emola
+    reference     String // PaySuite reference
+
+    // Metadata and timestamps
+    metadata    Json?
+    createdAt   DateTime  @default(now())
+    completedAt DateTime?
+
+    @@map("paysuite_payments")
 }
 
 model WebhookEvent {
-  id          String   @id @default(cuid())
-  provider    String   // 'stripe' | 'paysuite'
-  eventId     String   // Webhook event ID for idempotency
-  eventType   String   // Event type (payment.success, checkout.session.completed, etc.)
-  processed   Boolean  @default(false)
-  data        Json     // Full webhook payload
-  receivedAt  DateTime @default(now())
-  processedAt DateTime?
-  
-  @@unique([provider, eventId], name: "provider_eventId")
-  @@map("webhook_events")
+    id          String    @id @default(cuid())
+    provider    String // 'stripe' | 'paysuite'
+    eventId     String // Webhook event ID for idempotency
+    eventType   String // Event type (payment.success, checkout.session.completed, etc.)
+    processed   Boolean   @default(false)
+    data        Json // Full webhook payload
+    receivedAt  DateTime  @default(now())
+    processedAt DateTime?
+
+    @@unique([provider, eventId], name: "provider_eventId")
+    @@map("webhook_events")
 }
 
 // ===== CREDIT SYSTEM =====
@@ -607,4 +608,44 @@ enum PromptType {
     SYSTEM
     USER
     TEMPLATE
+}
+
+// ===== MPESA PAYMENT SYSTEM =====
+model MpesaPayment {
+    id     String @id @default(cuid())
+    userId String // Internal database user ID
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // Package details (same as Stripe)
+    packageType String // 'pro', 'trial', etc.
+    credits     Int // Number of credits to award
+
+    // Payment details
+    amount               Float // Amount in MZN
+    customerMsisdn       String // Customer's phone number
+    transactionReference String @unique // Our transaction reference
+    thirdPartyReference  String @unique // Our unique third party reference
+
+    // MPesa tracking
+    mpesaConversationId      String? @unique // MPesa conversation ID from C2B response
+    mpesaTransactionId       String? @unique // MPesa transaction ID when completed
+    mpesaResponseCode        String? // MPesa response code
+    mpesaResponseDescription String? // MPesa response description
+
+    // Status and timestamps
+    status    PaymentStatus @default(PENDING)
+    createdAt DateTime      @default(now())
+    updatedAt DateTime      @updatedAt
+
+    @@index([userId, createdAt(sort: Desc)])
+    @@index([status])
+    @@map("mpesa_payments")
+}
+
+enum PaymentStatus {
+    PENDING // Payment initiated, waiting for user confirmation
+    COMPLETED // Payment successfully completed
+    FAILED // Payment failed
+    EXPIRED // Payment expired (user didn't confirm in time)
+    CANCELLED // Payment cancelled by user
 }

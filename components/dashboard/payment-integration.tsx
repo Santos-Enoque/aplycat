@@ -20,6 +20,9 @@ import {
   DollarSign,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslations } from "next-intl";
+import { useUserCredits } from "@/hooks/use-user-credits";
+import { useRouter, usePathname } from "next/navigation";
 
 interface PaymentIntegrationProps {
   userCredits: number;
@@ -41,6 +44,10 @@ export function PaymentIntegration({
   const { user } = useUser();
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const { pendingPurchase, clearPendingPurchase } = usePendingPurchase();
+  const t = useTranslations("dashboard.paymentIntegration");
+  const { credits, isLoading: isLoadingCredits } = useUserCredits();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Handle payment success
   usePaymentSuccess({
@@ -87,6 +94,14 @@ export function PaymentIntegration({
     if (credits <= 5) return "Consider buying more credits";
     return "Good credit balance";
   };
+
+  const handleBuyCredits = () => {
+    router.push(`/purchase?redirect=${pathname}`);
+  };
+
+  if (isLoadingCredits) {
+    // ... existing code ...
+  }
 
   return (
     <>
@@ -151,12 +166,11 @@ export function PaymentIntegration({
             {/* Action Buttons */}
             <div className="space-y-2">
               <Button
-                onClick={() => setShowCreditsModal(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={!!pendingPurchase}
+                onClick={handleBuyCredits}
+                className="w-full bg-purple-600 text-white hover:bg-purple-700"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                {pendingPurchase ? "Purchase in Progress..." : "Buy Credits"}
+                <Zap className="h-4 w-4 mr-2" />
+                {t("credits.buyButton")}
               </Button>
 
               {userCredits > 0 && (
@@ -251,12 +265,12 @@ export function PaymentIntegration({
                   Your credit activity will appear here
                 </p>
                 <Button
-                  onClick={() => setShowCreditsModal(true)}
+                  onClick={handleBuyCredits}
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-purple-600 text-white hover:bg-purple-700"
                 >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Buy Your First Credits
+                  <Zap className="h-3 w-3 mr-1" />
+                  {t("credits.buyButton")}
                 </Button>
               </div>
             )}

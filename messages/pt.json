@@ -261,7 +261,7 @@
   "navbar": {
     "languageSelector": "Idioma",
     "signIn": "Entrar",
-    "tryFree": "Testar Grátis",
+    "tryFree": "Experimente Grátis",
     "buyCredits": "Comprar Créditos",
     "credits": "Créditos",
     "dashboard": "Painel",
@@ -526,45 +526,93 @@
     "improvementPlan": "Plano de Melhoria"
   },
   "creditsModal": {
-    "title": "Comprar Créditos",
-    "subtitle": "Escolha o pacote de créditos que melhor se adapta às suas necessidades. Os créditos nunca expiram!",
-    "requiredCredits": "Você precisa de pelo menos {credits} créditos para esta ação.",
-    "securityBadge": "Processamento seguro de pagamentos pela Stripe & PaySuite",
-    "paymentMethodsTitle": "Métodos de Pagamento Disponíveis",
-    "creditCardPayment": "Cartões de Crédito/Débito: Visa, Mastercard, Amex",
-    "mobileMoneyPayment": "Mobile Money: Emola (processamento instantâneo)",
-    "paymentMethodInfo": "A seleção do método de pagamento acontece após escolher seu pacote",
-    "selected": "Selecionado",
-    "mostPopular": "Mais Popular",
-    "perCredit": "por crédito",
-    "selectPackage": "Selecionar Este Pacote",
+    "title": "Faça Upgrade para Desbloquear Mais Funcionalidades",
+    "subtitle": "Escolha um pacote de créditos que atenda às suas necessidades. Mais créditos, mais oportunidades!",
+    "loading": "A carregar pacotes de crédito...",
+    "requiredCredits": "Você precisa de pelo menos {credits} créditos para realizar esta ação.",
+    "selectPackage": "Selecionar Pacote",
     "packageSelected": "Pacote Selecionado",
-    "choosePaymentMethod": "Escolha o Método de Pagamento:",
-    "payWith": "Pagar com {method}",
-    "processing": "Processando...",
-    "credits": {
-      "features": {
-        "title": "Para que são usados os créditos?",
-        "analysis": "1 análise abrangente de currículo",
-        "improvement": "1 melhoria de currículo com IA",
-        "jobTailored": "1 currículo personalizado + carta de apresentação",
-        "neverExpire": "Os créditos nunca expiram e podem ser usados a qualquer momento",
-        "allFeatures": "Todos os recursos incluídos independentemente do tamanho do pacote"
+    "cardTab": "Cartão",
+    "mpesaTab": "M-Pesa",
+    "cardDescription": "Pague de forma segura com seu cartão de crédito ou débito via Stripe.",
+    "phoneNumber": "Número de Telefone M-Pesa",
+    "phonePlaceholder": "ex: 841234567",
+    "savedPhoneNumber": "Usando número salvo: {number}",
+    "phoneValidPrefixes": "Prefixos válidos: 82, 83, 84, 85, 86, 87.",
+    "processing": "A processar...",
+    "securityBadge": "Pagamentos seguros processados por Stripe e M-Pesa.",
+    "testMode": "(TESTE)",
+    "selectedBadge": "Selecionado",
+    "popularBadge": "Mais Popular",
+    "creditsAmount": "{count, plural, one {{count} crédito} other {{count} créditos}}",
+    "mpesaDescription": "{packageName} - {credits, plural, one {{credits} crédito} other {{credits} créditos}}",
+    "paymentDetails": "Valor: {amount} MZN • Estado: {status}",
+    "buttons": {
+      "payWithCard": "Pagar {amount} com Cartão",
+      "payWithMpesa": "Pagar {amount} com M-Pesa",
+      "initiatingPayment": "A iniciar pagamento..."
+    },
+    "errors": {
+      "signInRequired": "Você deve estar logado para comprar créditos.",
+      "selectPackage": "Por favor, selecione um pacote de crédito primeiro.",
+      "packageNotFound": "Pacote selecionado não encontrado. Por favor, tente novamente.",
+      "enterPhone": "Por favor, insira o seu número de telefone M-Pesa.",
+      "validPhone": "Por favor, insira um número de telefone moçambicano válido (ex: 841234567).",
+      "paymentFailed": "O pagamento falhou. Por favor, tente novamente ou contacte o suporte.",
+      "paymentFailedWithReason": "O pagamento falhou: {reason}",
+      "offlinePricing": "A usar preços offline. Algumas funcionalidades podem ser limitadas."
+    },
+    "success": {
+      "title": "Compra Efetuada com Sucesso!",
+      "description": "Os seus créditos foram adicionados à sua conta."
+    },
+    "payments": {
+      "steps": {
+        "initiated": "Iniciado",
+        "pending": "Pendente",
+        "processing": "A processar",
+        "completed": "Concluído",
+        "failed": "Falhou"
       },
-      "packages": {
-        "analyses": "{count} Análises de Currículo",
-        "improvements": "{count} Melhorias de Currículo",
-        "jobTailoring": "{count} combos de Currículo Personalizado + Carta de Apresentação",
-        "emailSupport": "Suporte por Email",
-        "prioritySupport": "Suporte Prioritário",
-        "premiumSupport": "Suporte Premium",
-        "careerOptimization": "Otimização para mudança de carreira"
+      "status": {
+        "initiated": "Pagamento iniciado. Por favor, verifique o seu telemóvel para aprovar a transação.",
+        "pending": "A aguardar confirmação de pagamento do seu telemóvel.",
+        "processing": "Pagamento aprovado. A processar a transação.",
+        "completed": "A sua compra está completa! Os seus créditos foram adicionados.",
+        "failed": "Não foi possível concluir o pagamento.",
+        "timeout": "O pagamento expirou. Por favor, tente novamente."
       }
     },
-    "guarantees": "Processamento seguro de pagamentos • Garantia de 30 dias • Entrega instantânea de créditos",
-    "redirectingPayment": "Redirecionando para pagamento seguro...",
-    "redirectingMobile": "Redirecionando para pagamento mobile money...",
-    "paymentSuccess": "Pagamento bem-sucedido! Seus créditos foram adicionados à sua conta."
+    "credits": {
+      "packages": {
+        "analyses": "{count, plural, one {{count} análise de currículo} other {{count} análises de currículo}}",
+        "improvements": "{count, plural, one {{count} melhoria de currículo} other {{count} melhorias de currículo}}",
+        "jobTailoring": "{count, plural, one {{count} adaptação a vaga} other {{count} adaptações a vagas}}",
+        "prioritySupport": "Suporte prioritário",
+        "emailSupport": "Suporte por email",
+        "premiumSupport": "Integração e suporte premium",
+        "careerOptimization": "Plano personalizado de otimização de carreira"
+      }
+    },
+    "fallbackPackage": {
+      "pro": {
+        "name": "🥇 Pacote Pro",
+        "description": "Melhor valor para quem procura emprego a sério"
+      }
+    },
+    "priceFormats": {
+      "usd": "${price}",
+      "mznTest": "{price} MZN (TESTE)"
+    },
+    "paymentMethods": {
+      "card": "💳 Cartão",
+      "mpesa": "📱 MPesa"
+    }
+  },
+  "thankYouModal": {
+    "title": "Pagamento Bem-sucedido!",
+    "description": "O seu {packageName} foi adicionado à sua conta. Já pode usar os seus créditos.",
+    "buttonText": "Continuar"
   },
   "analyze": {
     "title": "Análise de Currículo com IA",
@@ -861,5 +909,11 @@
       "bothFieldsRequired": "Ambos os campos são obrigatórios.",
       "pleaseSpecify": "Por favor, especifique sua função alvo e setor."
     }
-  }
+  },
+  "invalidUrl": "Por favor, insira um URL de perfil do LinkedIn válido.",
+  "unsupportedUrl": "O URL fornecido não é do linkedin.com.",
+  "analysisInProgress": "Análise em andamento, por favor aguarde...",
+  "analysisSuccess": "Análise bem-sucedida! Redirecionando para os resultados...",
+  "analysisFailed": "Falha ao iniciar a análise. Por favor, tente novamente.",
+  "serverError": "Erro no servidor. Por favor, tente novamente mais tarde."
 }

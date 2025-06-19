@@ -9,9 +9,10 @@ import type {
 import { CreditTransactionType } from '@prisma/client';
 import type Stripe from 'stripe';
 import crypto from 'crypto';
+import { mpesaService } from '@/lib/mpesa-service';
 
-// PaySuite types
-export type PaymentProvider = 'stripe' | 'paysuite';
+// Payment provider types
+export type PaymentProvider = 'stripe' | 'paysuite' | 'mpesa';
 export type PaymentMethod = 'credit_card' | 'mobile_money';
 
 interface PaySuitePaymentRequest {
@@ -118,12 +119,26 @@ class PaymentService {
       console.log('[PAYMENT_SERVICE] Creating Stripe checkout');
       checkoutResult = await this.createStripeCheckout(params, user, packageDetails);
     } else if (paymentMethod === 'mobile_money') {
-      console.log('[PAYMENT_SERVICE] Creating PaySuite checkout');
-      try {
-        checkoutResult = await this.createPaySuiteCheckout(params, user, packageDetails, paymentMethod);
-      } catch (paysuiteError) {
-        console.error('[PAYMENT_SERVICE] PaySuite checkout failed:', paysuiteError);
-        throw paysuiteError; // Don't fall back to Stripe, show the actual error
+      // Check if user prefers MPesa or PaySuite (default to MPesa for Mozambique)
+      const preferMpesa = process.env.PREFER_MPESA === 'true' || process.env.NODE_ENV === 'production';
+      
+      if (preferMpesa && process.env.MPESA_API_KEY) {
+        console.log('[PAYMENT_SERVICE] Creating MPesa checkout');
+        try {
+          checkoutResult = await this.createMpesaCheckout(params, user, packageDetails);
+        } catch (mpesaError) {
+          console.error('[PAYMENT_SERVICE] MPesa checkout failed, falling back to PaySuite:', mpesaError);
+          // Fall back to PaySuite if MPesa fails
+          checkoutResult = await this.createPaySuiteCheckout(params, user, packageDetails, paymentMethod);
+        }
+      } else {
+        console.log('[PAYMENT_SERVICE] Creating PaySuite checkout');
+        try {
+          checkoutResult = await this.createPaySuiteCheckout(params, user, packageDetails, paymentMethod);
+        } catch (paysuiteError) {
+          console.error('[PAYMENT_SERVICE] PaySuite checkout failed:', paysuiteError);
+          throw paysuiteError; // Don't fall back to Stripe, show the actual error
+        }
       }
     } else {
       throw new Error(`Unsupported payment method: ${paymentMethod}`);
@@ -227,6 +242,59 @@ class PaymentService {
   private validateTransactionLimits(amountMzn: number, paymentMethod: PaymentMethod): void {
     // No limits for mobile money (Emola) - removing previous limitation
     // PaySuite supports transactions without specific limits for Emola
+  }
+
+  /**
+   * Create MPesa checkout
+   */
+  private async createMpesaCheckout(
+    params: CreateCheckoutParams, 
+    user: any, 
+    packageDetails: any
+  ) {
+    const { userId, packageType, pricing } = params;
+
+    console.log('[PAYMENT_SERVICE] Creating MPesa checkout for user:', userId);
+    
+    // Use regional pricing if provided, otherwise convert USD to MZN
+    let amountMzn: number;
+    if (pricing && pricing.currency === 'MZN') {
+      amountMzn = pricing.amount;
+    } else {
+      // Convert USD to MZN (fallback for legacy)
+      const exchangeRate = await this.getUsdToMznRate();
+      const usdAmount = pricing ? pricing.amount : packageDetails.price;
+      amountMzn = Math.round(usdAmount * exchangeRate * 100) / 100;
+    }
+
+    // Get user's saved phone number
+    const savedPhoneNumber = await mpesaService.getUserPhoneNumber(userId);
+    
+    if (!savedPhoneNumber) {
+      throw new Error('Phone number required for MPesa payment. Please provide your phone number.');
+    }
+
+    // Create MPesa payment using package system
+    const paymentResult = await mpesaService.createPayment({
+      userId: user.id,
+      packageType: packageType,
+      phoneNumber: savedPhoneNumber
+    });
+
+    if (!paymentResult.success) {
+      throw new Error(paymentResult.message);
+    }
+
+    return {
+      checkoutId: paymentResult.paymentId,
+      checkoutUrl: '', // MPesa doesn't use checkout URLs
+      provider: 'mpesa' as PaymentProvider,
+      paymentMethod: 'mobile_money' as PaymentMethod,
+      packageDetails,
+      requiresUserAction: paymentResult.requiresUserAction,
+      conversationId: paymentResult.conversationId,
+      message: paymentResult.message
+    };
   }
 
   /**
@@ -674,7 +742,7 @@ class PaymentService {
   }
 
   /**
-   * Get payment history for a user (existing functionality)
+   * Get payment history for a user (enhanced with all providers)
    */
   async getPaymentHistory(userId: string) {
     try {
@@ -687,7 +755,8 @@ class PaymentService {
         throw new Error('User not found');
       }
 
-      const transactions = await db.creditTransaction.findMany({
+      // Get Stripe credit transactions
+      const creditTransactions = await db.creditTransaction.findMany({
         where: { 
           userId: user.id,
           type: CreditTransactionType.PURCHASE,
@@ -696,13 +765,76 @@ class PaymentService {
         take: 50,
       });
 
-      return transactions.map(transaction => ({
-        id: transaction.id,
-        amount: transaction.amount,
-        description: transaction.description,
-        createdAt: transaction.createdAt,
-        type: transaction.type,
-      }));
+      // Get PaySuite payments
+      const paysuitePayments = await db.paysuitePayment.findMany({
+        where: { clerkUserId: userId },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      });
+
+      // Get MPesa payments
+      const mpesaPayments = await db.mpesaPayment.findMany({
+        where: { clerkUserId: userId },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      });
+
+      // Combine all transactions
+      const allTransactions = [
+        // Stripe transactions
+        ...creditTransactions.map(tx => ({
+          id: tx.id,
+          type: 'credit_purchase',
+          provider: 'stripe' as PaymentProvider,
+          amount: Math.abs(tx.amount),
+          description: tx.description,
+          status: 'completed',
+          createdAt: tx.createdAt,
+          completedAt: tx.createdAt,
+        })),
+        
+        // PaySuite transactions
+        ...paysuitePayments.map(payment => ({
+          id: payment.id,
+          type: 'credit_purchase',
+          provider: 'paysuite' as PaymentProvider,
+          packageType: payment.packageType,
+          credits: payment.credits,
+          amount: payment.amount,
+          currency: payment.currency,
+          status: payment.status,
+          paymentMethod: payment.paymentMethod,
+          reference: payment.reference,
+          createdAt: payment.createdAt,
+          completedAt: payment.completedAt,
+        })),
+
+        // MPesa transactions
+        ...mpesaPayments.map(payment => ({
+          id: payment.id,
+          type: 'credit_purchase',
+          provider: 'mpesa' as PaymentProvider,
+          packageType: payment.packageType,
+          credits: payment.credits,
+          amount: payment.amount,
+          currency: 'MZN',
+          status: payment.status.toLowerCase(),
+          paymentMethod: 'mpesa',
+          phoneNumber: payment.customerMsisdn,
+          reference: payment.transactionReference,
+          mpesaTransactionId: payment.mpesaTransactionId,
+          conversationId: payment.mpesaConversationId,
+          createdAt: payment.createdAt,
+          completedAt: null, // MPesa doesn't have separate completedAt field
+          errorMessage: payment.mpesaResponseDescription,
+        }))
+      ];
+
+      // Sort by creation date and return
+      return allTransactions
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 50);
+
     } catch (error) {
       console.error('[PAYMENT_SERVICE] Failed to get payment history:', error);
       throw error;
