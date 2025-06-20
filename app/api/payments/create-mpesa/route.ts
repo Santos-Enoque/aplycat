@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
                 paymentId: paymentResult.paymentId,
                 conversationId: paymentResult.conversationId,
                 requiresUserAction: paymentResult.requiresUserAction,
+                immediateResult: paymentResult.immediateResult,
+                shouldRetryPolling: paymentResult.shouldRetryPolling,
                 package: {
                     id: packageType,
                     name: packageDetails.name,
@@ -93,7 +95,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({
                 success: false,
                 message: paymentResult.message,
-                paymentId: paymentResult.paymentId
+                paymentId: paymentResult.paymentId,
+                immediateResult: paymentResult.immediateResult,
+                shouldRetryPolling: paymentResult.shouldRetryPolling
             }, { status: 400 });
         }
 

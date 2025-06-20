@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { ThankYouModal } from "@/components/thank-you-modal";
 
 interface CreditPackage {
   id: string;
@@ -50,7 +49,197 @@ interface PaymentStep {
   status: "waiting" | "active" | "completed" | "failed";
 }
 
-export default function PurchasePage() {
+interface PaymentProcessingModalProps {
+  isOpen: boolean;
+  phoneNumber: string;
+  packageName: string;
+  amount: string;
+  timeRemaining: number;
+  currentStep: string;
+  paymentStatus: PaymentStatus | null;
+  onClose: () => void;
+  onRetry: () => void;
+}
+
+function PaymentProcessingModal({
+  isOpen,
+  phoneNumber,
+  packageName,
+  amount,
+  timeRemaining,
+  currentStep,
+  paymentStatus,
+  onClose,
+  onRetry,
+}: PaymentProcessingModalProps) {
+  const t = useTranslations("creditsModal");
+
+  if (!isOpen) return null;
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const getStatusColor = () => {
+    if (paymentStatus?.status === "COMPLETED") return "text-green-600";
+    if (
+      paymentStatus?.status === "FAILED" ||
+      paymentStatus?.status === "CANCELLED"
+    )
+      return "text-red-600";
+    return "text-blue-600";
+  };
+
+  const getStatusIcon = () => {
+    if (paymentStatus?.status === "COMPLETED") {
+      return <Check className="h-8 w-8 text-green-600" />;
+    }
+    if (
+      paymentStatus?.status === "FAILED" ||
+      paymentStatus?.status === "CANCELLED"
+    ) {
+      return <AlertCircle className="h-8 w-8 text-red-600" />;
+    }
+    return <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />;
+  };
+
+  const isProcessing = !paymentStatus || paymentStatus.status === "PENDING";
+  const isSuccess = paymentStatus?.status === "COMPLETED";
+  const isFailed =
+    paymentStatus?.status === "FAILED" || paymentStatus?.status === "CANCELLED";
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-center mb-4">
+            {getStatusIcon()}
+          </div>
+          <h2
+            className={`text-xl font-semibold text-center ${getStatusColor()}`}
+          >
+            {isSuccess
+              ? t("payments.status.completed")
+              : isFailed
+              ? t("payments.status.failed")
+              : t("payments.processing.title")}
+          </h2>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {isProcessing && (
+            <>
+              {/* Timer */}
+              <div className="text-center mb-6">
+                <div className="text-3xl font-mono font-bold text-blue-600 mb-2">
+                  {formatTime(timeRemaining)}
+                </div>
+                <p className="text-sm text-gray-600">
+                  {t("payments.processing.timeRemaining")}
+                </p>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <Smartphone className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-medium text-blue-900 mb-2">
+                      {t("payments.processing.instructions.title")}
+                    </h3>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• {t("payments.processing.instructions.step1")}</li>
+                      <li>• {t("payments.processing.instructions.step2")}</li>
+                      <li>• {t("payments.processing.instructions.step3")}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">{t("phoneNumber")}:</span>
+                  <span className="font-medium">{phoneNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">{t("package")}:</span>
+                  <span className="font-medium">{packageName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">{t("amount")}:</span>
+                  <span className="font-medium">{amount}</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {isSuccess && (
+            <div className="text-center space-y-4">
+              <div className="text-green-600 mb-4">
+                <Check className="h-16 w-16 mx-auto mb-2" />
+                <h3 className="text-lg font-semibold">
+                  {t("payments.success.title")}
+                </h3>
+                <p className="text-sm text-gray-600 mt-2">
+                  {t("payments.success.message", { packageName, amount })}
+                </p>
+              </div>
+              <Button
+                onClick={onClose}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                {t("payments.success.continue")}
+              </Button>
+            </div>
+          )}
+
+          {isFailed && (
+            <div className="text-center space-y-4">
+              <div className="text-red-600 mb-4">
+                <AlertCircle className="h-16 w-16 mx-auto mb-2" />
+                <h3 className="text-lg font-semibold">
+                  {t("payments.failed.title")}
+                </h3>
+                <p className="text-sm text-gray-600 mt-2">
+                  {paymentStatus?.mpesaResponseDescription ||
+                    t("payments.failed.defaultMessage")}
+                </p>
+              </div>
+              <div className="space-y-3">
+                <Button
+                  onClick={onRetry}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {t("payments.failed.retry")}
+                </Button>
+                <Button onClick={onClose} variant="outline" className="w-full">
+                  {t("payments.failed.cancel")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Close button for non-processing states */}
+        {!isProcessing && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          >
+            <AlertCircle className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PurchasePageContent() {
   const { user } = useUser();
   const t = useTranslations("creditsModal");
   const router = useRouter();
@@ -70,8 +259,9 @@ export default function PurchasePage() {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "mpesa">("mpesa");
   const [paymentSteps, setPaymentSteps] = useState<PaymentStep[]>([]);
   const [currentStep, setCurrentStep] = useState<string>("");
-  const [showThankYouModal, setShowThankYouModal] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(80); // 80 seconds max polling time
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const requiredCredits = searchParams.get("required");
   const redirectUrl = searchParams.get("redirect") || "/dashboard";
 
@@ -82,8 +272,32 @@ export default function PurchasePage() {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
       }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
   }, []);
+
+  // Timer for payment processing
+  useEffect(() => {
+    if (isProcessingPayment && timeRemaining > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            setIsProcessingPayment(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isProcessingPayment, timeRemaining]);
 
   const initializePaymentSteps = () => {
     const steps: PaymentStep[] = [
@@ -274,57 +488,127 @@ export default function PurchasePage() {
 
   const handleSuccessfulPayment = async () => {
     await queryClient.invalidateQueries({ queryKey: ["userCredits"] });
-    setShowThankYouModal(true);
+    // Payment modal will handle the success state
   };
 
-  const pollPaymentStatus = async (paymentId: string, maxAttempts = 30) => {
+  const resetPaymentState = () => {
+    // Clear all payment-related state
+    setPaymentStatus(null);
+    setCurrentStep("");
+    setTimeRemaining(80);
+    setPaymentSteps([]);
+    setIsProcessingPayment(false);
+    setIsLoading(false);
+
+    // Clear any ongoing timers
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const handlePaymentComplete = async () => {
+    resetPaymentState();
+
+    // Small delay to ensure credits are updated before redirecting
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    router.push(redirectUrl);
+  };
+
+  const handlePaymentRetry = () => {
+    resetPaymentState();
+    // User can try payment again - resetPaymentState clears all states
+  };
+
+  const pollPaymentStatus = async (paymentId: string, maxAttempts = 20) => {
     let attempts = 0;
-    const poll = setInterval(async () => {
-      attempts++;
-      try {
-        const response = await fetch(
-          `/api/payments/mpesa-status?paymentId=${paymentId}`
-        );
-        const result = await response.json();
-        if (result.success && result.payment) {
-          setPaymentStatus(result.payment);
-          if (result.payment.status === "PENDING") {
-            updatePaymentStep("pending", "active");
-          } else if (result.payment.status === "COMPLETED") {
-            updatePaymentStep("processing", "completed");
-            updatePaymentStep("completed", "completed");
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-            setIsProcessingPayment(false);
-            handleSuccessfulPayment();
-          } else if (result.payment.status === "FAILED") {
-            updatePaymentStep("pending", "failed");
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-            setIsProcessingPayment(false);
-            toast.error(
-              t("errors.paymentFailedWithReason", {
-                reason:
-                  result.payment.mpesaResponseDescription ||
-                  t("payments.status.failed"),
-              })
-            );
+
+    // Smart polling with exponential backoff
+    const getPollingInterval = (attempt: number) => {
+      if (attempt <= 3) return 2000; // First 3 attempts: 2 seconds (fast initial checks)
+      if (attempt <= 8) return 4000; // Next 5 attempts: 4 seconds
+      return 6000; // Remaining attempts: 6 seconds
+    };
+
+    const poll = () => {
+      setTimeout(async () => {
+        attempts++;
+        try {
+          const response = await fetch(
+            `/api/payments/mpesa-status?paymentId=${paymentId}`
+          );
+          const result = await response.json();
+
+          if (result.success && result.payment) {
+            setPaymentStatus(result.payment);
+
+            if (result.payment.status === "PENDING") {
+              updatePaymentStep("pending", "active");
+
+              // Continue polling if not exceeded max attempts and payment still processing
+              if (attempts < maxAttempts && isProcessingPayment) {
+                poll(); // Schedule next poll
+              } else if (attempts >= maxAttempts) {
+                // Timeout reached
+                updatePaymentStep("pending", "failed");
+                setPaymentStatus({
+                  ...result.payment,
+                  status: "FAILED",
+                  mpesaResponseDescription: t("payments.status.timeout"),
+                });
+              }
+            } else if (result.payment.status === "COMPLETED") {
+              updatePaymentStep("processing", "completed");
+              updatePaymentStep("completed", "completed");
+              handleSuccessfulPayment();
+            } else if (
+              result.payment.status === "FAILED" ||
+              result.payment.status === "CANCELLED"
+            ) {
+              updatePaymentStep("pending", "failed");
+              // Payment status is already set, modal will show failure
+            }
+          } else {
+            // API error, retry if not max attempts
+            if (attempts < maxAttempts && isProcessingPayment) {
+              poll();
+            } else {
+              updatePaymentStep(currentStep, "failed");
+              setPaymentStatus({
+                id: paymentId,
+                status: "FAILED",
+                amount: 0,
+                createdAt: new Date().toISOString(),
+                mpesaResponseDescription: t("errors.paymentFailed"),
+              });
+            }
           }
-          if (attempts >= maxAttempts && result.payment.status === "PENDING") {
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-            setIsProcessingPayment(false);
-            toast.warning(t("payments.status.timeout"));
+        } catch (error) {
+          console.error("Status check failed:", error);
+
+          // Retry on error if not max attempts
+          if (attempts < maxAttempts && isProcessingPayment) {
+            poll();
+          } else {
+            updatePaymentStep(currentStep, "failed");
+            setPaymentStatus({
+              id: paymentId,
+              status: "FAILED",
+              amount: 0,
+              createdAt: new Date().toISOString(),
+              mpesaResponseDescription: t("errors.paymentFailed"),
+            });
           }
         }
-      } catch (error) {
-        console.error("Status check failed:", error);
-        if (attempts >= maxAttempts) {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsProcessingPayment(false);
-          updatePaymentStep(currentStep, "failed");
-          toast.error(t("errors.paymentFailed"));
-        }
-      }
-    }, 3000);
-    pollIntervalRef.current = poll;
+      }, getPollingInterval(attempts));
+    };
+
+    // Start polling
+    poll();
   };
 
   const handleCardPayment = async () => {
@@ -372,11 +656,14 @@ export default function PurchasePage() {
       return toast.error(t("errors.validPhone"));
     const selectedPkg = packages.find((pkg) => pkg.id === selectedPackage);
     if (!selectedPkg) return toast.error(t("errors.packageNotFound"));
+
     setIsLoading(true);
     setIsProcessingPayment(true);
     setPaymentStatus(null);
+    setTimeRemaining(80); // Reset timer to 80 seconds
     initializePaymentSteps();
     updatePaymentStep("initiated", "active");
+
     try {
       const response = await fetch("/api/payments/create-mpesa", {
         method: "POST",
@@ -390,26 +677,74 @@ export default function PurchasePage() {
           }),
         }),
       });
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || t("errors.paymentFailed"));
+        let errorMessage = t("errors.paymentFailed");
+
+        if (response.status === 429) {
+          errorMessage = t("errors.tooManyRequests");
+        } else if (response.status >= 500) {
+          errorMessage = t("errors.serverError");
+        } else {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || t("errors.paymentFailed");
+          } catch (jsonError) {
+            // If JSON parsing fails, use the response text or default message
+            errorMessage = t("errors.paymentFailed");
+          }
+        }
+        throw new Error(errorMessage);
       }
+
       const data = await response.json();
+
       if (!data.success) {
         throw new Error(data.message || t("errors.paymentFailed"));
       }
+
+      // Handle enhanced C2B response
+      if (data.immediateResult) {
+        // Payment failed immediately, show in modal
+        updatePaymentStep("initiated", "failed");
+        setPaymentStatus({
+          id: "immediate-failure",
+          status: "FAILED",
+          amount: TEST_MPESA_PRICE,
+          createdAt: new Date().toISOString(),
+          mpesaResponseDescription: data.message || t("errors.paymentFailed"),
+        });
+        return;
+      }
+
+      // Payment initiated successfully, start polling
       updatePaymentStep("initiated", "completed");
-      toast.success(t("payments.status.initiated"));
-      pollPaymentStatus(data.paymentId);
+
+      // Only start polling for successful initiations
+      if (data.paymentId) {
+        pollPaymentStatus(data.paymentId);
+      } else {
+        // Fallback: no payment ID but should poll (edge case)
+        updatePaymentStep("initiated", "failed");
+        setPaymentStatus({
+          id: "no-payment-id",
+          status: "FAILED",
+          amount: TEST_MPESA_PRICE,
+          createdAt: new Date().toISOString(),
+          mpesaResponseDescription: t("errors.paymentFailed"),
+        });
+      }
     } catch (error) {
       console.error("MPesa payment failed:", error);
-      setIsProcessingPayment(false);
       updatePaymentStep("initiated", "failed");
-      toast.error(
-        error instanceof Error
-          ? t("errors.paymentFailedWithReason", { reason: error.message })
-          : t("errors.paymentFailed")
-      );
+      setPaymentStatus({
+        id: "api-error",
+        status: "FAILED",
+        amount: TEST_MPESA_PRICE,
+        createdAt: new Date().toISOString(),
+        mpesaResponseDescription:
+          error instanceof Error ? error.message : t("errors.paymentFailed"),
+      });
     } finally {
       setIsLoading(false);
     }
@@ -435,133 +770,29 @@ export default function PurchasePage() {
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-gray-50">
       <div className="w-full max-w-4xl mx-auto px-3 py-4 sm:px-6 sm:py-6">
-        <ThankYouModal
-          isOpen={showThankYouModal}
-          onClose={() => {
-            setShowThankYouModal(false);
-            router.push(redirectUrl);
-          }}
-          packageName={
-            packages.find((p) => p.id === selectedPackage)?.name || ""
-          }
-        />
-
         {requiredCredits && (
           <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3 mb-4 text-center">
             {t("requiredCredits", { credits: requiredCredits })}
           </div>
         )}
 
-        {isProcessingPayment && paymentMethod === "mpesa" && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-            {paymentSteps.length > 0 && (
-              <div className="mb-4">
-                <div className="flex items-center justify-between overflow-x-auto pb-2">
-                  {paymentSteps.map((step, index) => (
-                    <div
-                      key={step.key}
-                      className="flex items-center flex-shrink-0"
-                    >
-                      <div
-                        className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full text-xs sm:text-sm font-medium ${
-                          step.status === "completed"
-                            ? "bg-green-600 text-white"
-                            : step.status === "active"
-                            ? "bg-blue-600 text-white"
-                            : step.status === "failed"
-                            ? "bg-red-600 text-white"
-                            : "bg-gray-300 text-gray-600"
-                        }`}
-                      >
-                        {step.status === "completed" ? (
-                          <Check className="h-3 w-3 sm:h-4 sm:w-4" />
-                        ) : step.status === "failed" ? (
-                          <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                        ) : step.status === "active" ? (
-                          <Clock className="h-3 w-3 sm:h-4 sm:w-4 animate-pulse" />
-                        ) : (
-                          index + 1
-                        )}
-                      </div>
-                      {index < paymentSteps.length - 1 && (
-                        <div
-                          className={`h-1 w-4 sm:w-8 mx-1 sm:mx-2 ${
-                            step.status === "completed"
-                              ? "bg-green-600"
-                              : "bg-gray-300"
-                          }`}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-4 gap-1 mt-2">
-                  {paymentSteps.map((step) => (
-                    <div key={step.key} className="text-xs text-center">
-                      <p
-                        className={`truncate ${
-                          step.status === "active"
-                            ? "text-blue-600 font-medium"
-                            : step.status === "completed"
-                            ? "text-green-600"
-                            : step.status === "failed"
-                            ? "text-red-600"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {step.title}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                {paymentStatus?.status === "COMPLETED" ? (
-                  <Check className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
-                ) : paymentStatus?.status === "FAILED" ? (
-                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
-                ) : (
-                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 animate-pulse" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-gray-900 truncate">
-                  {paymentStatus?.status === "COMPLETED"
-                    ? t("payments.steps.completed")
-                    : paymentStatus?.status === "FAILED"
-                    ? t("payments.steps.failed")
-                    : currentStep === "initiated"
-                    ? t("payments.steps.initiated")
-                    : currentStep === "pending"
-                    ? t("payments.steps.pending")
-                    : t("payments.steps.processing")}
-                </h4>
-                <p className="text-sm text-gray-600 mt-1">
-                  {paymentStatus?.status === "COMPLETED"
-                    ? t("payments.status.completed")
-                    : paymentStatus?.status === "FAILED"
-                    ? paymentStatus.mpesaResponseDescription ||
-                      t("payments.status.failed")
-                    : currentStep === "initiated"
-                    ? t("payments.status.initiated")
-                    : currentStep === "pending"
-                    ? t("payments.status.pending")
-                    : t("payments.status.processing")}
-                </p>
-                {paymentStatus && (
-                  <p className="text-xs text-gray-500 mt-1 truncate">
-                    {t("paymentDetails", {
-                      amount: paymentStatus.amount,
-                      status: paymentStatus.status,
-                    })}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Payment Processing Modal */}
+        <PaymentProcessingModal
+          isOpen={isProcessingPayment}
+          phoneNumber={phoneNumber}
+          packageName={
+            packages.find((p) => p.id === selectedPackage)?.name || ""
+          }
+          amount={
+            packages.find((p) => p.id === selectedPackage)
+              ?.formattedMpesaPrice || ""
+          }
+          timeRemaining={timeRemaining}
+          currentStep={currentStep}
+          paymentStatus={paymentStatus}
+          onClose={handlePaymentComplete}
+          onRetry={handlePaymentRetry}
+        />
 
         <div className="w-full">
           <div
@@ -790,5 +1021,19 @@ export default function PurchasePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PurchasePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+        </div>
+      }
+    >
+      <PurchasePageContent />
+    </Suspense>
   );
 }

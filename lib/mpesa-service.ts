@@ -42,6 +42,8 @@ export interface MpesaPaymentResult {
     conversationId?: string;
     message: string;
     requiresUserAction?: boolean;
+    immediateResult: boolean;
+    shouldRetryPolling?: boolean;
 }
 
 // ===== HELPER FUNCTIONS =====
@@ -206,8 +208,10 @@ export class MpesaService {
                 }
             });
 
-            // Check if payment was initiated successfully
-            if (mpesaResponse.output_ResponseCode === 'INS-0') {
+            // Enhanced response code handling with immediate feedback
+            const responseCode = mpesaResponse.output_ResponseCode;
+            
+            if (responseCode === 'INS-0') {
                 console.log(`[MPESA_SERVICE] Payment initiated successfully: ${payment.id}`);
                 
                 return {
@@ -215,22 +219,70 @@ export class MpesaService {
                     paymentId: payment.id,
                     conversationId: mpesaResponse.output_ConversationID,
                     message: 'Payment initiated. Please check your phone for MPesa prompt.',
-                    requiresUserAction: true
+                    requiresUserAction: true,
+                    immediateResult: false // Requires polling
                 };
             } else {
-                // Mark payment as failed
+                // Handle specific error codes immediately
+                let status: PaymentStatus = PaymentStatus.FAILED;
+                let userMessage = mpesaResponse.output_ResponseDesc;
+                let requiresPolling = false;
+
+                switch (responseCode) {
+                    case 'INS-5':
+                        userMessage = 'Transaction was cancelled by customer';
+                        status = PaymentStatus.CANCELLED;
+                        break;
+                    case 'INS-6':
+                        userMessage = 'Transaction failed';
+                        break;
+                    case 'INS-2006':
+                        userMessage = 'Insufficient balance in your M-Pesa account';
+                        break;
+                    case 'INS-2051':
+                        userMessage = 'Invalid phone number provided';
+                        break;
+                    case 'INS-9':
+                        userMessage = 'Request timeout - please try again';
+                        break;
+                    case 'INS-10':
+                        userMessage = 'Duplicate transaction - payment may already be processing';
+                        // For duplicates, we might want to check status
+                        requiresPolling = true;
+                        status = PaymentStatus.PENDING;
+                        break;
+                    case 'INS-13':
+                        userMessage = 'Invalid service provider code';
+                        break;
+                    case 'INS-15':
+                        userMessage = 'Invalid amount specified';
+                        break;
+                    case 'INS-996':
+                        userMessage = 'Your M-Pesa account is not active';
+                        break;
+                    case 'INS-997':
+                        userMessage = 'Account linking issue - please contact support';
+                        break;
+                    default:
+                        userMessage = mpesaResponse.output_ResponseDesc || 'Payment initiation failed';
+                }
+
+                // Update payment status
                 await db.mpesaPayment.update({
                     where: { id: payment.id },
                     data: {
-                        status: PaymentStatus.FAILED,
-                        mpesaResponseDescription: mpesaResponse.output_ResponseDesc,
+                        status,
+                        mpesaResponseDescription: userMessage,
                     }
                 });
 
                 return {
                     success: false,
                     paymentId: payment.id,
-                    message: `Payment failed: ${mpesaResponse.output_ResponseDesc}`
+                    message: userMessage,
+                    requiresUserAction: false,
+                    immediateResult: true, // No polling needed
+                    shouldRetryPolling: requiresPolling // Only for specific cases like duplicates
                 };
             }
 
@@ -240,7 +292,8 @@ export class MpesaService {
             return {
                 success: false,
                 paymentId: '',
-                message: error instanceof Error ? error.message : 'Payment creation failed'
+                message: error instanceof Error ? error.message : 'Payment creation failed',
+                immediateResult: true // No polling needed for errors
             };
         }
     }

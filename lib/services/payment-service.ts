@@ -774,7 +774,7 @@ class PaymentService {
 
       // Get MPesa payments
       const mpesaPayments = await db.mpesaPayment.findMany({
-        where: { clerkUserId: userId },
+        where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
         take: 50,
       });

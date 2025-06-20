@@ -539,6 +539,8 @@
     "phonePlaceholder": "ex: 841234567",
     "savedPhoneNumber": "Usando número salvo: {number}",
     "phoneValidPrefixes": "Prefixos válidos: 82, 83, 84, 85, 86, 87.",
+    "package": "Pacote",
+    "amount": "Valor",
     "processing": "A processar...",
     "securityBadge": "Pagamentos seguros processados por Stripe e M-Pesa.",
     "testMode": "(TESTE)",
@@ -560,13 +562,36 @@
       "validPhone": "Por favor, insira um número de telefone moçambicano válido (ex: 841234567).",
       "paymentFailed": "O pagamento falhou. Por favor, tente novamente ou contacte o suporte.",
       "paymentFailedWithReason": "O pagamento falhou: {reason}",
-      "offlinePricing": "A usar preços offline. Algumas funcionalidades podem ser limitadas."
+      "offlinePricing": "A usar preços offline. Algumas funcionalidades podem ser limitadas.",
+      "tooManyRequests": "Muitas solicitações de pagamento. Aguarde um momento e tente novamente.",
+      "serverError": "Erro do servidor ocorrido. Tente novamente mais tarde."
     },
     "success": {
       "title": "Compra Efetuada com Sucesso!",
       "description": "Os seus créditos foram adicionados à sua conta."
     },
     "payments": {
+      "processing": {
+        "title": "A Processar Pagamento M-Pesa",
+        "timeRemaining": "Tempo restante",
+        "instructions": {
+          "title": "Complete o pagamento no seu telemóvel:",
+          "step1": "Verifique o seu telemóvel para notificação M-Pesa",
+          "step2": "Insira o seu PIN M-Pesa para confirmar",
+          "step3": "Aguarde a mensagem de confirmação"
+        }
+      },
+      "success": {
+        "title": "Pagamento Bem-sucedido!",
+        "message": "A sua compra {packageName} de {amount} foi concluída com sucesso.",
+        "continue": "Continuar para o Dashboard"
+      },
+      "failed": {
+        "title": "Pagamento Falhou",
+        "defaultMessage": "Não foi possível concluir o pagamento. Por favor, tente novamente.",
+        "retry": "Tentar Novamente",
+        "cancel": "Cancelar"
+      },
       "steps": {
         "initiated": "Iniciado",
         "pending": "Pendente",

@@ -552,6 +552,8 @@
     "phonePlaceholder": "e.g., 841234567",
     "savedPhoneNumber": "Using saved number: {number}",
     "phoneValidPrefixes": "Valid prefixes: 82, 83, 84, 85, 86, 87.",
+    "package": "Package",
+    "amount": "Amount",
     "processing": "Processing...",
     "securityBadge": "Secure payments processed by Stripe and M-Pesa.",
     "testMode": "(TEST)",
@@ -573,13 +575,36 @@
       "validPhone": "Please enter a valid Mozambican phone number (e.g., 841234567).",
       "paymentFailed": "Payment failed. Please try again or contact support.",
       "paymentFailedWithReason": "Payment failed: {reason}",
-      "offlinePricing": "Using offline pricing. Some features may be limited."
+      "offlinePricing": "Using offline pricing. Some features may be limited.",
+      "tooManyRequests": "Too many payment requests. Please wait a moment and try again.",
+      "serverError": "Server error occurred. Please try again later."
     },
     "success": {
       "title": "Purchase Successful!",
       "description": "Your credits have been added to your account."
     },
     "payments": {
+      "processing": {
+        "title": "Processing M-Pesa Payment",
+        "timeRemaining": "Time remaining",
+        "instructions": {
+          "title": "Complete payment on your phone:",
+          "step1": "Check your phone for M-Pesa notification",
+          "step2": "Enter your M-Pesa PIN to confirm",
+          "step3": "Wait for confirmation message"
+        }
+      },
+      "success": {
+        "title": "Payment Successful!",
+        "message": "Your {packageName} purchase of {amount} has been completed successfully.",
+        "continue": "Continue to Dashboard"
+      },
+      "failed": {
+        "title": "Payment Failed",
+        "defaultMessage": "Payment could not be completed. Please try again.",
+        "retry": "Try Again",
+        "cancel": "Cancel"
+      },
       "steps": {
         "initiated": "Initiated",
         "pending": "Pending",
