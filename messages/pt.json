@@ -266,7 +266,8 @@
     "credits": "Créditos",
     "dashboard": "Painel",
     "settings": "Configurações",
-    "help": "Ajuda"
+    "help": "Ajuda",
+    "myAccount": "Minha Conta"
   },
   "banner": {
     "trial": "🚀 TEMPO LIMITADO: Experimente TODOS os Recursos de IA por Apenas 100 MZN • 22 Créditos no Valor de 1,100 MZN"
@@ -517,6 +518,9 @@
         "REFUND": "Reembolso",
         "BONUS": "Bônus"
       }
+    },
+    "footer": {
+      "requestFeature": "Solicitar funcionalidade / Reportar um erro"
     }
   },
   "footer": {
@@ -540,7 +544,9 @@
       "helpCenter": "Central de Ajuda",
       "privacy": "Política de Privacidade",
       "terms": "Termos de Serviço",
-      "status": "Status"
+      "status": "Status",
+      "reportBug": "Reportar Erro",
+      "requestFeature": "Solicitar funcionalidade / Reportar um erro"
     },
     "overallAnalysis": "Análise Geral",
     "sectionAnalysis": "Análise de Seções",
@@ -963,5 +969,8 @@
   "analysisInProgress": "Análise em andamento, por favor aguarde...",
   "analysisSuccess": "Análise bem-sucedida! Redirecionando para os resultados...",
   "analysisFailed": "Falha ao iniciar a análise. Por favor, tente novamente.",
-  "serverError": "Erro no servidor. Por favor, tente novamente mais tarde."
+  "serverError": "Erro no servidor. Por favor, tente novamente mais tarde.",
+  "user": {
+    "title": "Perfil do Utilizador"
+  }
 }
