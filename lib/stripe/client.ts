@@ -82,7 +82,7 @@ class StripeClient {
       ] : [
         {
           price_data: {
-            currency: 'usd',
+            currency: 'mzn',
             product_data: {
               name: packageDetails.name,
               description: packageDetails.description,

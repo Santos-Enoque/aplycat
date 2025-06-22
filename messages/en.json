@@ -422,6 +422,28 @@
       "ats": "ATS",
       "viewAll": "View All"
     },
+    "transactions": {
+      "title": "Recent Transactions",
+      "credits": "credits",
+      "showAll": "Show All ({count})",
+      "showLess": "Show Less",
+      "status": {
+        "completed": "Completed",
+        "failed": "Failed",
+        "pending": "Pending"
+      },
+      "description": {
+        "creditPurchase": "+{credits} credits via {provider}",
+        "payment": "Payment via {provider}"
+      },
+      "empty": {
+        "title": "No transactions yet",
+        "description": "Your payment history will appear here once you make your first purchase."
+      },
+      "error": {
+        "title": "Failed to load transactions"
+      }
+    },
     "footer": {
       "requestFeature": "Request feature / Report bug",
       "linkedin": "LinkedIn",
@@ -539,45 +561,114 @@
     }
   },
   "creditsModal": {
-    "title": "Buy Credits",
-    "subtitle": "Choose the credit pack that best fits your needs. Credits never expire!",
-    "requiredCredits": "You need at least {credits} credits for this action.",
-    "securityBadge": "Secure payment processing by Stripe & PaySuite",
-    "paymentMethodsTitle": "Available Payment Methods",
-    "creditCardPayment": "Credit/Debit Cards: Visa, Mastercard, Amex",
-    "mobileMoneyPayment": "Mobile Money: Emola (instant processing)",
-    "paymentMethodInfo": "Payment method selection happens after choosing your package",
-    "selected": "Selected",
-    "mostPopular": "Most Popular",
-    "perCredit": "per credit",
-    "selectPackage": "Select This Package",
+    "title": "Upgrade to Unlock More Features",
+    "subtitle": "Choose a credit package that suits your needs. More credits, more opportunities!",
+    "loading": "Loading credit packages...",
+    "requiredCredits": "You need at least {credits} credits to perform this action.",
+    "selectPackage": "Select Package",
     "packageSelected": "Package Selected",
-    "choosePaymentMethod": "Choose Payment Method:",
-    "payWith": "Pay with {method}",
+    "cardTab": "Card",
+    "mpesaTab": "M-Pesa",
+    "cardDescription": "Pay securely with your credit or debit card via Stripe.",
+    "phoneNumber": "M-Pesa Phone Number",
+    "phonePlaceholder": "e.g., 841234567",
+    "savedPhoneNumber": "Using saved number: {number}",
+    "phoneValidPrefixes": "Valid prefixes: 82, 83, 84, 85, 86, 87.",
+    "package": "Package",
+    "amount": "Amount",
     "processing": "Processing...",
-    "credits": {
-      "features": {
-        "title": "What are credits used for?",
-        "analysis": "1 comprehensive resume analysis",
-        "improvement": "1 AI-powered resume improvement",
-        "jobTailored": "1 job-tailored resume + cover letter",
-        "neverExpire": "Credits never expire and can be used anytime",
-        "allFeatures": "All features included regardless of pack size"
+    "securityBadge": "Secure payments processed by Stripe and M-Pesa.",
+    "testMode": "(TEST)",
+    "selectedBadge": "Selected",
+    "popularBadge": "Most Popular",
+    "creditsAmount": "{count, plural, one {{count} credit} other {{count} credits}}",
+    "mpesaDescription": "{packageName} - {credits, plural, one {{credits} credit} other {{credits} credits}}",
+    "paymentDetails": "Amount: {amount} MZN • Status: {status}",
+    "buttons": {
+      "payWithCard": "Pay {amount} with Card",
+      "payWithMpesa": "Pay {amount} with M-Pesa",
+      "initiatingPayment": "Initiating Payment..."
+    },
+    "errors": {
+      "signInRequired": "You must be signed in to purchase credits.",
+      "selectPackage": "Please select a credit package first.",
+      "packageNotFound": "Selected package not found. Please try again.",
+      "enterPhone": "Please enter your M-Pesa phone number.",
+      "validPhone": "Please enter a valid Mozambican phone number (e.g., 841234567).",
+      "paymentFailed": "Payment failed. Please try again or contact support.",
+      "paymentFailedWithReason": "Payment failed: {reason}",
+      "offlinePricing": "Using offline pricing. Some features may be limited.",
+      "tooManyRequests": "Too many payment requests. Please wait a moment and try again.",
+      "serverError": "Server error occurred. Please try again later."
+    },
+    "success": {
+      "title": "Purchase Successful!",
+      "description": "Your credits have been added to your account."
+    },
+    "payments": {
+      "processing": {
+        "title": "Processing M-Pesa Payment",
+        "timeRemaining": "Time remaining",
+        "instructions": {
+          "title": "Complete payment on your phone:",
+          "step1": "Check your phone for M-Pesa notification",
+          "step2": "Enter your M-Pesa PIN to confirm",
+          "step3": "Wait for confirmation message"
+        }
       },
-      "packages": {
-        "analyses": "{count} Resume Analyses",
-        "improvements": "{count} Resume Improvements",
-        "jobTailoring": "{count} Job-Tailored Resume + Cover Letter combos",
-        "emailSupport": "Email Support",
-        "prioritySupport": "Priority Support",
-        "premiumSupport": "Premium Support",
-        "careerOptimization": "Career change optimization"
+      "success": {
+        "title": "Payment Successful!",
+        "message": "Your {packageName} purchase of {amount} has been completed successfully.",
+        "continue": "Continue to Dashboard"
+      },
+      "failed": {
+        "title": "Payment Failed",
+        "defaultMessage": "Payment could not be completed. Please try again.",
+        "retry": "Try Again",
+        "cancel": "Cancel"
+      },
+      "steps": {
+        "initiated": "Initiated",
+        "pending": "Pending",
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed"
+      },
+      "status": {
+        "initiated": "Payment initiated. Please check your phone to approve the transaction.",
+        "pending": "Awaiting payment confirmation from your phone.",
+        "processing": "Payment approved. Processing the transaction.",
+        "completed": "Your purchase is complete! Your credits have been added.",
+        "failed": "The payment could not be completed.",
+        "timeout": "Payment timed out. Please try again."
       }
     },
-    "guarantees": "Secure payment processing • 30-day money-back guarantee • Instant credit delivery",
-    "redirectingPayment": "Redirecting to secure payment...",
-    "redirectingMobile": "Redirecting to mobile money payment...",
-    "paymentSuccess": "Payment successful! Your credits have been added to your account."
+    "credits": {
+      "packages": {
+        "analyses": "{count, plural, one {{count} resume analysis} other {{count} resume analyses}}",
+        "improvements": "{count, plural, one {{count} resume improvement} other {{count} resume improvements}}",
+        "jobTailoring": "{count, plural, one {{count} job tailoring} other {{count} job tailorings}}",
+        "prioritySupport": "Priority support",
+        "emailSupport": "Email support",
+        "premiumSupport": "Premium onboarding & support",
+        "careerOptimization": "Personalized career optimization plan"
+      }
+    },
+    "fallbackPackage": {
+      "pro": {
+        "name": "🥇 Pro Pack",
+        "description": "Best value for serious job seekers"
+      }
+    },
+    "priceFormats": {
+      "usd": "${price}",
+      "mzn": "{price} MZN",
+      "mznTest": "{price} MZN (TEST)"
+    },
+    "paymentMethods": {
+      "card": "💳 Card",
+      "mpesa": "📱 MPesa"
+    }
   },
   "analyze": {
     "title": "AI Resume Analysis",
@@ -820,7 +911,13 @@
     "finalizing": "Finalizing tailored resume...",
     "provideJobDescription": "Please provide a job description",
     "optional": "(Optional)",
-    "required": "*"
+    "required": "*",
+    "invalidUrl": "Please enter a valid LinkedIn profile URL.",
+    "unsupportedUrl": "The provided URL is not from linkedin.com.",
+    "analysisInProgress": "Analysis in progress, please wait...",
+    "analysisSuccess": "Analysis successful! Redirecting to results...",
+    "analysisFailed": "Failed to start analysis. Please try again.",
+    "serverError": "Server error. Please try again later."
   },
   "tailoredResults": {
     "title": "Tailored Resume Results",
@@ -874,5 +971,10 @@
       "bothFieldsRequired": "Both fields are required.",
       "pleaseSpecify": "Please specify your target role and industry."
     }
+  },
+  "thankYouModal": {
+    "title": "Payment Successful!",
+    "description": "Your {packageName} has been added to your account. You can now use your credits.",
+    "buttonText": "Continue"
   }
 }

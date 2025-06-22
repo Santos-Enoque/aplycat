@@ -9,11 +9,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUser, SignInButton, UserButton, useClerk } from "@clerk/nextjs";
-import { EnhancedCreditsModal } from "@/components/enhanced-credits-modal";
 import { useUserCredits } from "@/hooks/use-user-credits";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useTranslations } from "next-intl";
@@ -37,7 +37,6 @@ import {
 
 export function UnifiedNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { user, isSignedIn, isLoaded } = useUser();
@@ -101,11 +100,10 @@ export function UnifiedNavbar() {
                 {/* Buy Credits Button - Compact on mobile */}
                 <Button
                   size="sm"
-                  onClick={() => setIsCreditsModalOpen(true)}
-                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+                  className="bg-purple-600 text-white hover:bg-purple-700"
+                  onClick={() => router.push(`/purchase?redirect=${pathname}`)}
                 >
-                  <Zap className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">{t("buyCredits")}</span>
+                  {t("buyCredits")}
                 </Button>
 
                 {/* Custom User Dropdown */}
@@ -124,42 +122,21 @@ export function UnifiedNavbar() {
                       <ChevronDown className="h-3 w-3 text-gray-500" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    {/* User Info */}
-                    <div className="px-3 py-2 border-b">
-                      <p className="text-sm font-medium truncate">
-                        {user?.firstName ||
-                          user?.emailAddresses[0]?.emailAddress}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        {user?.emailAddresses[0]?.emailAddress}
-                      </p>
-                    </div>
-
-                    {/* Credits Info - Mobile only */}
-                    <div className="sm:hidden px-3 py-2 border-b">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
-                          {t("credits")}
-                        </span>
-                        <Badge className="bg-purple-100 text-purple-800 px-2 py-1 text-xs">
-                          <CreditCard className="h-3 w-3 mr-1" />
-                          {creditsLoading ? "..." : userCredits}
-                        </Badge>
-                      </div>
-                    </div>
-
+                  <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuLabel>{t("myAccount")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-
-                    {/* Dashboard Link */}
-                    <DropdownMenuItem onClick={() => router.push("/dashboard")}>
-                      <Home className="h-4 w-4 mr-2" />
-                      {t("dashboard")}
+                    <DropdownMenuItem
+                      onClick={() =>
+                        router.push(`/purchase?redirect=${pathname}`)
+                      }
+                    >
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      <span>{t("buyCredits")}</span>
                     </DropdownMenuItem>
-
-                    <DropdownMenuSeparator />
-
-                    {/* Sign Out */}
+                    <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+                      <Home className="mr-2 h-4 w-4" />
+                      <span>{t("dashboard")}</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleSignOut}
                       className="text-red-600"
@@ -196,16 +173,6 @@ export function UnifiedNavbar() {
           </div>
         </div>
       </div>
-
-      {/* Enhanced Credits Modal */}
-      <EnhancedCreditsModal
-        isOpen={isCreditsModalOpen}
-        onClose={() => setIsCreditsModalOpen(false)}
-        onCreditsUpdated={async () => {
-          // Refresh user credits after purchase
-          await refetchCredits();
-        }}
-      />
     </nav>
   );
 }

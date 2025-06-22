@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SystemBanner } from "@/components/ui/system-banner";
+import { RecentTransactions } from "./recent-transactions";
 
 interface DashboardUser {
   id: string;
@@ -550,6 +551,9 @@ export function DashboardContent({ user }: DashboardContentProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Recent Transactions Section */}
+      <RecentTransactions />
 
       {/* Feedback and Social Section */}
       <div className="flex items-center justify-between pt-8 border-t">

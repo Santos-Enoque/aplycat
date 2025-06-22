@@ -9,9 +9,10 @@ import type {
 import { CreditTransactionType } from '@prisma/client';
 import type Stripe from 'stripe';
 import crypto from 'crypto';
+import { mpesaService } from '@/lib/mpesa-service';
 
-// PaySuite types
-export type PaymentProvider = 'stripe' | 'paysuite';
+// Payment provider types
+export type PaymentProvider = 'stripe' | 'paysuite' | 'mpesa';
 export type PaymentMethod = 'credit_card' | 'mobile_money';
 
 interface PaySuitePaymentRequest {
@@ -70,6 +71,7 @@ export interface ProcessPaymentParams {
   userId: string;
   packageType: CreditPackageType;
   amount: number;
+  currency: string;
   credits: number;
   provider?: PaymentProvider;
   reference?: string;
@@ -118,12 +120,26 @@ class PaymentService {
       console.log('[PAYMENT_SERVICE] Creating Stripe checkout');
       checkoutResult = await this.createStripeCheckout(params, user, packageDetails);
     } else if (paymentMethod === 'mobile_money') {
-      console.log('[PAYMENT_SERVICE] Creating PaySuite checkout');
-      try {
-        checkoutResult = await this.createPaySuiteCheckout(params, user, packageDetails, paymentMethod);
-      } catch (paysuiteError) {
-        console.error('[PAYMENT_SERVICE] PaySuite checkout failed:', paysuiteError);
-        throw paysuiteError; // Don't fall back to Stripe, show the actual error
+      // Check if user prefers MPesa or PaySuite (default to MPesa for Mozambique)
+      const preferMpesa = process.env.PREFER_MPESA === 'true' || process.env.NODE_ENV === 'production';
+      
+      if (preferMpesa && process.env.MPESA_API_KEY) {
+        console.log('[PAYMENT_SERVICE] Creating MPesa checkout');
+        try {
+          checkoutResult = await this.createMpesaCheckout(params, user, packageDetails);
+        } catch (mpesaError) {
+          console.error('[PAYMENT_SERVICE] MPesa checkout failed, falling back to PaySuite:', mpesaError);
+          // Fall back to PaySuite if MPesa fails
+          checkoutResult = await this.createPaySuiteCheckout(params, user, packageDetails, paymentMethod);
+        }
+      } else {
+        console.log('[PAYMENT_SERVICE] Creating PaySuite checkout');
+        try {
+          checkoutResult = await this.createPaySuiteCheckout(params, user, packageDetails, paymentMethod);
+        } catch (paysuiteError) {
+          console.error('[PAYMENT_SERVICE] PaySuite checkout failed:', paysuiteError);
+          throw paysuiteError; // Don't fall back to Stripe, show the actual error
+        }
       }
     } else {
       throw new Error(`Unsupported payment method: ${paymentMethod}`);
@@ -199,6 +215,16 @@ class PaymentService {
   private async createStripeCheckout(params: CreateCheckoutParams, user: any, packageDetails: any) {
     const { userId, packageType, userEmail, returnUrl, pricing } = params;
 
+    // Ensure we always use MZN pricing for consistency
+    let mznPricing: { amount: number; currency: string };
+    
+    if (pricing && pricing.currency === 'MZN') {
+      mznPricing = { amount: pricing.amount, currency: 'MZN' };
+    } else {
+      // Use the package price directly as it's already in MZN from config
+      mznPricing = { amount: packageDetails.price, currency: 'MZN' };
+    }
+
     const checkout = await stripeClient.createCheckout(
       packageType,
       userEmail,
@@ -211,7 +237,7 @@ class PaymentService {
           : user.firstName || user.email,
       },
       returnUrl,
-      pricing ? { amount: pricing.amount, currency: pricing.currency } : undefined
+      mznPricing // Always pass MZN pricing
     );
 
     return {
@@ -230,6 +256,51 @@ class PaymentService {
   }
 
   /**
+   * Create MPesa checkout
+   */
+  private async createMpesaCheckout(
+    params: CreateCheckoutParams, 
+    user: any, 
+    packageDetails: any
+  ) {
+    const { userId, packageType } = params;
+
+    console.log('[PAYMENT_SERVICE] Creating MPesa checkout for user:', userId);
+    
+    // MPesa payments are always 200 MZN - no currency conversion needed
+    // This ensures consistency with our Mozambique-focused pricing
+    
+    // Get user's saved phone number
+    const savedPhoneNumber = await mpesaService.getUserPhoneNumber(userId);
+    
+    if (!savedPhoneNumber) {
+      throw new Error('Phone number required for MPesa payment. Please provide your phone number.');
+    }
+
+    // Create MPesa payment using package system
+    const paymentResult = await mpesaService.createPayment({
+      userId: user.id,
+      packageType: packageType,
+      phoneNumber: savedPhoneNumber
+    });
+
+    if (!paymentResult.success) {
+      throw new Error(paymentResult.message);
+    }
+
+    return {
+      checkoutId: paymentResult.paymentId,
+      checkoutUrl: '', // MPesa doesn't use checkout URLs
+      provider: 'mpesa' as PaymentProvider,
+      paymentMethod: 'mobile_money' as PaymentMethod,
+      packageDetails,
+      requiresUserAction: paymentResult.requiresUserAction,
+      conversationId: paymentResult.conversationId,
+      message: paymentResult.message
+    };
+  }
+
+  /**
    * Create PaySuite checkout (new functionality)
    */
   private async createPaySuiteCheckout(
@@ -238,7 +309,7 @@ class PaymentService {
     packageDetails: any, 
     paymentMethod: PaymentMethod
   ) {
-    const { userId, packageType, returnUrl, pricing } = params;
+    const { userId, packageType, returnUrl } = params;
 
     console.log('[PAYMENT_SERVICE] PaySuite token configured:', !!this.paysuiteToken);
     console.log('[PAYMENT_SERVICE] Payment method received:', paymentMethod);
@@ -248,16 +319,8 @@ class PaymentService {
       throw new Error('PaySuite API token not configured');
     }
 
-    // Use regional pricing if provided, otherwise convert USD to MZN
-    let amountMzn: number;
-    if (pricing && pricing.currency === 'MZN') {
-      amountMzn = pricing.amount;
-    } else {
-      // Convert USD to MZN (fallback for legacy)
-      const exchangeRate = await this.getUsdToMznRate();
-      const usdAmount = pricing ? pricing.amount : packageDetails.price;
-      amountMzn = Math.round(usdAmount * exchangeRate * 100) / 100;
-    }
+    // PaySuite payments are always 200 MZN - consistent with our Mozambique-focused pricing
+    const amountMzn = packageDetails.price; // This is already 200 MZN from config
 
     // Check PaySuite transaction limits for mobile money
     this.validateTransactionLimits(amountMzn, paymentMethod);
@@ -354,24 +417,10 @@ class PaymentService {
   }
 
   /**
-   * Get USD to MZN exchange rate
-   */
-  private async getUsdToMznRate(): Promise<number> {
-    try {
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-      const data = await response.json();
-      return data.rates.MZN || 64; // Fallback rate
-    } catch (error) {
-      console.warn('Failed to fetch exchange rate, using fallback');
-      return 64; // Fallback MZN rate
-    }
-  }
-
-  /**
    * Process successful payment and add credits (enhanced for multi-provider)
    */
   async processPayment(params: ProcessPaymentParams) {
-    const { sessionId, userId, packageType, amount, credits, provider = 'stripe', reference, transactionId } = params;
+    const { sessionId, userId, packageType, amount, currency, credits, provider = 'stripe', reference, transactionId } = params;
 
     try {
       console.log('[PAYMENT_SERVICE] Processing payment:', params);
@@ -419,6 +468,7 @@ class PaymentService {
               packageType,
               credits,
               amount,
+              currency,
               provider,
               reference,
               transactionId,
@@ -569,6 +619,7 @@ class PaymentService {
       userId: payment.clerkUserId,
       packageType: payment.packageType as CreditPackageType,
       amount: payment.amount,
+      currency: 'MZN',
       credits: payment.credits,
       provider: 'paysuite',
       reference: payment.reference,
@@ -629,6 +680,7 @@ class PaymentService {
       // Convert credits back to number
       const creditsNumber = parseInt(credits);
       const amount = session.amount_total ? session.amount_total / 100 : 0; // Convert from cents
+      const currency = session.currency || 'mzn'; // Get currency from session, fallback to mzn
 
       // Process the payment
       await this.processPayment({
@@ -636,6 +688,7 @@ class PaymentService {
         userId,
         packageType: packageType as CreditPackageType,
         amount,
+        currency, // Pass the currency
         credits: creditsNumber,
         provider: 'stripe',
       });
@@ -674,35 +727,113 @@ class PaymentService {
   }
 
   /**
-   * Get payment history for a user (existing functionality)
+   * Get payment history for a user (enhanced with all providers)
    */
-  async getPaymentHistory(userId: string) {
+  async getPaymentHistory(userId?: string) {
     try {
-      const user = await db.user.findUnique({
-        where: { clerkId: userId },
-        select: { id: true },
-      });
-
-      if (!user) {
-        throw new Error('User not found');
+      const userWhere = userId ? { clerkId: userId } : undefined;
+      
+      if (userWhere) {
+        const user = await db.user.findUnique({ where: userWhere, select: { id: true } });
+        if (!user) throw new Error('User not found');
       }
 
-      const transactions = await db.creditTransaction.findMany({
-        where: { 
-          userId: user.id,
-          type: CreditTransactionType.PURCHASE,
+      // Get Stripe transactions from UsageEvent to access payment metadata
+      const stripeTransactions = await db.usageEvent.findMany({
+        where: {
+          user: userWhere,
+          eventType: 'CREDIT_PURCHASE',
+          metadata: {
+            path: ['provider'],
+            equals: 'stripe'
+          }
+        },
+        include: {
+          user: true // Include the full user object
         },
         orderBy: { createdAt: 'desc' },
-        take: 50,
+        take: 100, // Increased limit for admin view
       });
 
-      return transactions.map(transaction => ({
-        id: transaction.id,
-        amount: transaction.amount,
-        description: transaction.description,
-        createdAt: transaction.createdAt,
-        type: transaction.type,
-      }));
+      // Get PaySuite payments
+      const paysuitePayments = await db.paysuitePayment.findMany({
+        where: { user: userWhere ? { clerkId: userId } : undefined },
+        include: { user: true },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      });
+
+      // Get MPesa payments
+      const mpesaPayments = await db.mpesaPayment.findMany({
+        where: { user: userWhere ? { clerkId: userId } : undefined },
+        include: { user: true },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      });
+
+      // Combine all transactions
+      const allTransactions = [
+        // Stripe transactions
+        ...stripeTransactions.map(event => {
+          const meta = event.metadata as any;
+          return {
+            id: event.id,
+            type: 'credit_purchase',
+            provider: 'stripe' as PaymentProvider,
+            description: event.description,
+            amount: meta.amount,
+            currency: meta.currency?.toUpperCase() || 'MZN',
+            status: 'completed',
+            createdAt: event.createdAt,
+            completedAt: event.createdAt,
+            user: event.user, // Now the user object is included
+          };
+        }),
+        
+        // PaySuite transactions
+        ...paysuitePayments.map(payment => ({
+          id: payment.id,
+          type: 'credit_purchase',
+          provider: 'paysuite' as PaymentProvider,
+          packageType: payment.packageType,
+          credits: payment.credits,
+          amount: payment.amount,
+          currency: payment.currency,
+          status: payment.status,
+          paymentMethod: payment.paymentMethod,
+          reference: payment.reference,
+          createdAt: payment.createdAt,
+          completedAt: payment.completedAt,
+          user: payment.user,
+        })),
+
+        // MPesa transactions
+        ...mpesaPayments.map(payment => ({
+          id: payment.id,
+          type: 'credit_purchase',
+          provider: 'mpesa' as PaymentProvider,
+          packageType: payment.packageType,
+          credits: payment.credits,
+          amount: payment.amount,
+          currency: 'MZN',
+          status: payment.status.toLowerCase(),
+          paymentMethod: 'mpesa',
+          phoneNumber: payment.customerMsisdn,
+          reference: payment.transactionReference,
+          mpesaTransactionId: payment.mpesaTransactionId,
+          conversationId: payment.mpesaConversationId,
+          createdAt: payment.createdAt,
+          completedAt: null, // MPesa doesn't have separate completedAt field
+          errorMessage: payment.mpesaResponseDescription,
+          user: payment.user,
+        }))
+      ];
+
+      // Sort by creation date and return
+      return allTransactions
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 50);
+
     } catch (error) {
       console.error('[PAYMENT_SERVICE] Failed to get payment history:', error);
       throw error;
