@@ -139,17 +139,23 @@ export function RecentTransactions() {
   };
 
   const formatAmount = (transaction: Transaction) => {
-    const { amount, currency = "USD", provider } = transaction;
+    const { amount, currency, provider } = transaction;
 
-    if (provider === "mpesa" || provider === "paysuite" || currency === "MZN") {
+    // Use a unified format for MZN, regardless of provider
+    if (currency === "MZN") {
       return `${amount.toFixed(2)} MZN`;
     }
 
-    if (provider === "stripe" || currency === "USD") {
-      return `$${(amount / 100).toFixed(2)}`;
+    // Fallback for any other currencies (like USD, if ever used)
+    if (currency === "USD") {
+      // Note: This assumes the 'amount' for USD is in dollars, not cents,
+      // based on the original logic. If Stripe sends USD in cents,
+      // this would need to be amount / 100.
+      return `$${amount.toFixed(2)}`;
     }
 
-    return `${amount} ${currency}`;
+    // Default fallback
+    return `${amount} ${currency || ''}`;
   };
 
   const getTransactionDescription = (transaction: Transaction) => {

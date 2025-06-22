@@ -71,6 +71,7 @@ export interface ProcessPaymentParams {
   userId: string;
   packageType: CreditPackageType;
   amount: number;
+  currency: string;
   credits: number;
   provider?: PaymentProvider;
   reference?: string;
@@ -415,13 +416,11 @@ class PaymentService {
     });
   }
 
-
-
   /**
    * Process successful payment and add credits (enhanced for multi-provider)
    */
   async processPayment(params: ProcessPaymentParams) {
-    const { sessionId, userId, packageType, amount, credits, provider = 'stripe', reference, transactionId } = params;
+    const { sessionId, userId, packageType, amount, currency, credits, provider = 'stripe', reference, transactionId } = params;
 
     try {
       console.log('[PAYMENT_SERVICE] Processing payment:', params);
@@ -469,6 +468,7 @@ class PaymentService {
               packageType,
               credits,
               amount,
+              currency,
               provider,
               reference,
               transactionId,
@@ -619,6 +619,7 @@ class PaymentService {
       userId: payment.clerkUserId,
       packageType: payment.packageType as CreditPackageType,
       amount: payment.amount,
+      currency: 'MZN',
       credits: payment.credits,
       provider: 'paysuite',
       reference: payment.reference,
@@ -679,6 +680,7 @@ class PaymentService {
       // Convert credits back to number
       const creditsNumber = parseInt(credits);
       const amount = session.amount_total ? session.amount_total / 100 : 0; // Convert from cents
+      const currency = session.currency || 'mzn'; // Get currency from session, fallback to mzn
 
       // Process the payment
       await this.processPayment({
@@ -686,6 +688,7 @@ class PaymentService {
         userId,
         packageType: packageType as CreditPackageType,
         amount,
+        currency, // Pass the currency
         credits: creditsNumber,
         provider: 'stripe',
       });
@@ -726,59 +729,66 @@ class PaymentService {
   /**
    * Get payment history for a user (enhanced with all providers)
    */
-  async getPaymentHistory(userId: string) {
+  async getPaymentHistory(userId?: string) {
     try {
-      const user = await db.user.findUnique({
-        where: { clerkId: userId },
-        select: { id: true },
-      });
-
-      if (!user) {
-        throw new Error('User not found');
+      const userWhere = userId ? { clerkId: userId } : undefined;
+      
+      if (userWhere) {
+        const user = await db.user.findUnique({ where: userWhere, select: { id: true } });
+        if (!user) throw new Error('User not found');
       }
 
-      // Get Stripe credit transactions (exclude M-Pesa and PaySuite to avoid duplicates)
-      const creditTransactions = await db.creditTransaction.findMany({
-        where: { 
-          userId: user.id,
-          type: CreditTransactionType.PURCHASE,
-          // Only include Stripe transactions (exclude M-Pesa and PaySuite duplicates)
-          AND: [
-            { NOT: { description: { contains: "MPESA", mode: 'insensitive' } } },
-            { NOT: { description: { contains: "PAYSUITE", mode: 'insensitive' } } },
-          ],
+      // Get Stripe transactions from UsageEvent to access payment metadata
+      const stripeTransactions = await db.usageEvent.findMany({
+        where: {
+          user: userWhere,
+          eventType: 'CREDIT_PURCHASE',
+          metadata: {
+            path: ['provider'],
+            equals: 'stripe'
+          }
+        },
+        include: {
+          user: true // Include the full user object
         },
         orderBy: { createdAt: 'desc' },
-        take: 50,
+        take: 100, // Increased limit for admin view
       });
 
       // Get PaySuite payments
       const paysuitePayments = await db.paysuitePayment.findMany({
-        where: { clerkUserId: userId },
+        where: { user: userWhere ? { clerkId: userId } : undefined },
+        include: { user: true },
         orderBy: { createdAt: 'desc' },
-        take: 50,
+        take: 100,
       });
 
       // Get MPesa payments
       const mpesaPayments = await db.mpesaPayment.findMany({
-        where: { userId: user.id },
+        where: { user: userWhere ? { clerkId: userId } : undefined },
+        include: { user: true },
         orderBy: { createdAt: 'desc' },
-        take: 50,
+        take: 100,
       });
 
       // Combine all transactions
       const allTransactions = [
         // Stripe transactions
-        ...creditTransactions.map(tx => ({
-          id: tx.id,
-          type: 'credit_purchase',
-          provider: 'stripe' as PaymentProvider,
-          amount: Math.abs(tx.amount),
-          description: tx.description,
-          status: 'completed',
-          createdAt: tx.createdAt,
-          completedAt: tx.createdAt,
-        })),
+        ...stripeTransactions.map(event => {
+          const meta = event.metadata as any;
+          return {
+            id: event.id,
+            type: 'credit_purchase',
+            provider: 'stripe' as PaymentProvider,
+            description: event.description,
+            amount: meta.amount,
+            currency: meta.currency?.toUpperCase() || 'MZN',
+            status: 'completed',
+            createdAt: event.createdAt,
+            completedAt: event.createdAt,
+            user: event.user, // Now the user object is included
+          };
+        }),
         
         // PaySuite transactions
         ...paysuitePayments.map(payment => ({
@@ -794,6 +804,7 @@ class PaymentService {
           reference: payment.reference,
           createdAt: payment.createdAt,
           completedAt: payment.completedAt,
+          user: payment.user,
         })),
 
         // MPesa transactions
@@ -814,6 +825,7 @@ class PaymentService {
           createdAt: payment.createdAt,
           completedAt: null, // MPesa doesn't have separate completedAt field
           errorMessage: payment.mpesaResponseDescription,
+          user: payment.user,
         }))
       ];
 

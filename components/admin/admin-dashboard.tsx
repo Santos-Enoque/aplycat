@@ -229,17 +229,23 @@ export function AdminDashboard() {
   };
 
   const formatAmount = (transaction: Transaction) => {
-    const { amount, currency = "USD", provider } = transaction;
+    const { amount, currency = "USD" } = transaction;
+    const formatter = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
-    if (provider === "mpesa" || currency === "MZN") {
-      return `${amount.toFixed(2)} MZN`;
+    const formattedAmount = formatter.format(amount || 0);
+
+    if (currency === "MZN") {
+      return `${formattedAmount} MZN`;
     }
 
-    if (provider === "stripe" || currency === "USD") {
-      return `$${(amount / 100).toFixed(2)}`;
+    if (currency === "USD") {
+      return `$${formattedAmount}`;
     }
 
-    return `${amount} ${currency}`;
+    return `${formattedAmount} ${currency}`;
   };
 
   const formatUserName = (user: User) => {
