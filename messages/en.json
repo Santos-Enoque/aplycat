@@ -422,6 +422,28 @@
       "ats": "ATS",
       "viewAll": "View All"
     },
+    "transactions": {
+      "title": "Recent Transactions",
+      "credits": "credits",
+      "showAll": "Show All ({count})",
+      "showLess": "Show Less",
+      "status": {
+        "completed": "Completed",
+        "failed": "Failed",
+        "pending": "Pending"
+      },
+      "description": {
+        "creditPurchase": "+{credits} credits via {provider}",
+        "payment": "Payment via {provider}"
+      },
+      "empty": {
+        "title": "No transactions yet",
+        "description": "Your payment history will appear here once you make your first purchase."
+      },
+      "error": {
+        "title": "Failed to load transactions"
+      }
+    },
     "footer": {
       "requestFeature": "Request feature / Report bug",
       "linkedin": "LinkedIn",

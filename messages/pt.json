@@ -414,6 +414,28 @@
       "ats": "ATS",
       "viewAll": "Ver Tudo"
     },
+    "transactions": {
+      "title": "Transações Recentes",
+      "credits": "créditos",
+      "showAll": "Mostrar Todas ({count})",
+      "showLess": "Mostrar Menos",
+      "status": {
+        "completed": "Concluída",
+        "failed": "Falhada",
+        "pending": "Pendente"
+      },
+      "description": {
+        "creditPurchase": "+{credits} créditos via {provider}",
+        "payment": "Pagamento via {provider}"
+      },
+      "empty": {
+        "title": "Ainda sem transações",
+        "description": "O seu histórico de pagamentos aparecerá aqui após a sua primeira compra."
+      },
+      "error": {
+        "title": "Falha ao carregar transações"
+      }
+    },
     "errors": {
       "invalidFileType": "Tipo de arquivo inválido",
       "invalidFileTypeDesc": "Por favor, envie um arquivo PDF, DOC ou DOCX.",

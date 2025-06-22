@@ -755,11 +755,16 @@ class PaymentService {
         throw new Error('User not found');
       }
 
-      // Get Stripe credit transactions
+      // Get Stripe credit transactions (exclude M-Pesa and PaySuite to avoid duplicates)
       const creditTransactions = await db.creditTransaction.findMany({
         where: { 
           userId: user.id,
           type: CreditTransactionType.PURCHASE,
+          // Only include Stripe transactions (exclude M-Pesa and PaySuite duplicates)
+          AND: [
+            { NOT: { description: { contains: "MPESA", mode: 'insensitive' } } },
+            { NOT: { description: { contains: "PAYSUITE", mode: 'insensitive' } } },
+          ],
         },
         orderBy: { createdAt: 'desc' },
         take: 50,
