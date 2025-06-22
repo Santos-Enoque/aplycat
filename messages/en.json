@@ -662,6 +662,7 @@
     },
     "priceFormats": {
       "usd": "${price}",
+      "mzn": "{price} MZN",
       "mznTest": "{price} MZN (TEST)"
     },
     "paymentMethods": {

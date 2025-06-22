@@ -214,6 +214,16 @@ class PaymentService {
   private async createStripeCheckout(params: CreateCheckoutParams, user: any, packageDetails: any) {
     const { userId, packageType, userEmail, returnUrl, pricing } = params;
 
+    // Ensure we always use MZN pricing for consistency
+    let mznPricing: { amount: number; currency: string };
+    
+    if (pricing && pricing.currency === 'MZN') {
+      mznPricing = { amount: pricing.amount, currency: 'MZN' };
+    } else {
+      // Use the package price directly as it's already in MZN from config
+      mznPricing = { amount: packageDetails.price, currency: 'MZN' };
+    }
+
     const checkout = await stripeClient.createCheckout(
       packageType,
       userEmail,
@@ -226,7 +236,7 @@ class PaymentService {
           : user.firstName || user.email,
       },
       returnUrl,
-      pricing ? { amount: pricing.amount, currency: pricing.currency } : undefined
+      mznPricing // Always pass MZN pricing
     );
 
     return {
@@ -252,21 +262,13 @@ class PaymentService {
     user: any, 
     packageDetails: any
   ) {
-    const { userId, packageType, pricing } = params;
+    const { userId, packageType } = params;
 
     console.log('[PAYMENT_SERVICE] Creating MPesa checkout for user:', userId);
     
-    // Use regional pricing if provided, otherwise convert USD to MZN
-    let amountMzn: number;
-    if (pricing && pricing.currency === 'MZN') {
-      amountMzn = pricing.amount;
-    } else {
-      // Convert USD to MZN (fallback for legacy)
-      const exchangeRate = await this.getUsdToMznRate();
-      const usdAmount = pricing ? pricing.amount : packageDetails.price;
-      amountMzn = Math.round(usdAmount * exchangeRate * 100) / 100;
-    }
-
+    // MPesa payments are always 200 MZN - no currency conversion needed
+    // This ensures consistency with our Mozambique-focused pricing
+    
     // Get user's saved phone number
     const savedPhoneNumber = await mpesaService.getUserPhoneNumber(userId);
     
@@ -306,7 +308,7 @@ class PaymentService {
     packageDetails: any, 
     paymentMethod: PaymentMethod
   ) {
-    const { userId, packageType, returnUrl, pricing } = params;
+    const { userId, packageType, returnUrl } = params;
 
     console.log('[PAYMENT_SERVICE] PaySuite token configured:', !!this.paysuiteToken);
     console.log('[PAYMENT_SERVICE] Payment method received:', paymentMethod);
@@ -316,16 +318,8 @@ class PaymentService {
       throw new Error('PaySuite API token not configured');
     }
 
-    // Use regional pricing if provided, otherwise convert USD to MZN
-    let amountMzn: number;
-    if (pricing && pricing.currency === 'MZN') {
-      amountMzn = pricing.amount;
-    } else {
-      // Convert USD to MZN (fallback for legacy)
-      const exchangeRate = await this.getUsdToMznRate();
-      const usdAmount = pricing ? pricing.amount : packageDetails.price;
-      amountMzn = Math.round(usdAmount * exchangeRate * 100) / 100;
-    }
+    // PaySuite payments are always 200 MZN - consistent with our Mozambique-focused pricing
+    const amountMzn = packageDetails.price; // This is already 200 MZN from config
 
     // Check PaySuite transaction limits for mobile money
     this.validateTransactionLimits(amountMzn, paymentMethod);
@@ -421,19 +415,7 @@ class PaymentService {
     });
   }
 
-  /**
-   * Get USD to MZN exchange rate
-   */
-  private async getUsdToMznRate(): Promise<number> {
-    try {
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-      const data = await response.json();
-      return data.rates.MZN || 64; // Fallback rate
-    } catch (error) {
-      console.warn('Failed to fetch exchange rate, using fallback');
-      return 64; // Fallback MZN rate
-    }
-  }
+
 
   /**
    * Process successful payment and add credits (enhanced for multi-provider)

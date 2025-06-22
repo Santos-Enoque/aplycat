@@ -167,8 +167,8 @@ export class MpesaService {
             // Get package details from Stripe config (same system)
             const packageDetails = stripeClient.getCreditPackage(data.packageType);
             
-            // Use test pricing for MPesa (5 MZN)
-            const TEST_MPESA_PRICE = 5;
+            // Use production pricing for MPesa (200 MZN)
+            const MPESA_PRICE = 200;
             
             // Validate and format phone number
             const formattedPhone = validateAndFormatPhoneNumber(data.phoneNumber);
@@ -182,7 +182,7 @@ export class MpesaService {
                     userId: data.userId,
                     packageType: data.packageType,
                     credits: packageDetails.credits,
-                    amount: TEST_MPESA_PRICE, // Use test price instead of package price
+                    amount: MPESA_PRICE, // Use production price for MPesa
                     customerMsisdn: formattedPhone,
                     transactionReference,
                     thirdPartyReference,
@@ -193,7 +193,7 @@ export class MpesaService {
             // Initiate C2B payment with MPesa using test price
             const mpesaResponse = await this.initiateC2BPayment({
                 customerNumber: formattedPhone,
-                amount: TEST_MPESA_PRICE.toString(),
+                amount: MPESA_PRICE.toString(),
                 transactionReference,
                 thirdPartyReference
             });

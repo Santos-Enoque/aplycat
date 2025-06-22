@@ -265,7 +265,7 @@ function PurchasePageContent() {
   const requiredCredits = searchParams.get("required");
   const redirectUrl = searchParams.get("redirect") || "/dashboard";
 
-  const TEST_MPESA_PRICE = 5;
+  const MPESA_PRICE = 200;
 
   useEffect(() => {
     return () => {
@@ -373,12 +373,12 @@ function PurchasePageContent() {
           .map((pkg: any) => ({
             ...pkg,
             cardPrice: pkg.price,
-            mpesaPrice: TEST_MPESA_PRICE,
-            formattedCardPrice: t("priceFormats.usd", {
-              price: (pkg.price / 100).toFixed(2),
+            mpesaPrice: MPESA_PRICE,
+            formattedCardPrice: t("priceFormats.mzn", {
+              price: pkg.price,
             }),
-            formattedMpesaPrice: t("priceFormats.mznTest", {
-              price: TEST_MPESA_PRICE,
+            formattedMpesaPrice: t("priceFormats.mzn", {
+              price: MPESA_PRICE,
             }),
           }));
 
@@ -392,13 +392,13 @@ function PurchasePageContent() {
               credits: 44,
               price: 200,
               cardPrice: 200,
-              mpesaPrice: TEST_MPESA_PRICE,
-              formattedCardPrice: t("priceFormats.usd", { price: "2.00" }),
-              formattedMpesaPrice: t("priceFormats.mznTest", {
-                price: TEST_MPESA_PRICE,
+              mpesaPrice: MPESA_PRICE,
+              formattedCardPrice: t("priceFormats.mzn", { price: 200 }),
+              formattedMpesaPrice: t("priceFormats.mzn", {
+                price: MPESA_PRICE,
               }),
               description: t("fallbackPackage.pro.description"),
-              pricePerCredit: "5",
+              pricePerCredit: (MPESA_PRICE / 44).toFixed(2),
             },
           ];
           setPackages(fallbackPackages);
@@ -425,13 +425,13 @@ function PurchasePageContent() {
             credits: 44,
             price: 200,
             cardPrice: 200,
-            mpesaPrice: TEST_MPESA_PRICE,
-            formattedCardPrice: t("priceFormats.usd", { price: "2.00" }),
-            formattedMpesaPrice: t("priceFormats.mznTest", {
-              price: TEST_MPESA_PRICE,
+            mpesaPrice: MPESA_PRICE,
+            formattedCardPrice: t("priceFormats.mzn", { price: 200 }),
+            formattedMpesaPrice: t("priceFormats.mzn", {
+              price: MPESA_PRICE,
             }),
             description: t("fallbackPackage.pro.description"),
-            pricePerCredit: "5",
+            pricePerCredit: (MPESA_PRICE / 44).toFixed(2),
           },
         ];
         setPackages(fallbackPackages);
@@ -623,8 +623,8 @@ function PurchasePageContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           packageType: selectedPackage,
-          successUrl: `${window.location.origin}/dashboard?payment=success`,
-          cancelUrl: `${window.location.origin}/dashboard?payment=cancelled`,
+          paymentMethod: "credit_card",
+          returnUrl: `${window.location.origin}/dashboard?payment=success`,
         }),
       });
       if (!response.ok) {
@@ -632,10 +632,10 @@ function PurchasePageContent() {
         throw new Error(errorData.message || t("errors.paymentFailed"));
       }
       const data = await response.json();
-      if (!data.success || !data.url) {
+      if (!data.success || !data.checkoutUrl) {
         throw new Error(data.message || t("errors.paymentFailed"));
       }
-      window.location.href = data.url;
+      window.location.href = data.checkoutUrl;
     } catch (error) {
       console.error("Card payment failed:", error);
       toast.error(
@@ -710,7 +710,7 @@ function PurchasePageContent() {
         setPaymentStatus({
           id: "immediate-failure",
           status: "FAILED",
-          amount: TEST_MPESA_PRICE,
+          amount: MPESA_PRICE,
           createdAt: new Date().toISOString(),
           mpesaResponseDescription: data.message || t("errors.paymentFailed"),
         });
@@ -729,7 +729,7 @@ function PurchasePageContent() {
         setPaymentStatus({
           id: "no-payment-id",
           status: "FAILED",
-          amount: TEST_MPESA_PRICE,
+          amount: MPESA_PRICE,
           createdAt: new Date().toISOString(),
           mpesaResponseDescription: t("errors.paymentFailed"),
         });
@@ -740,7 +740,7 @@ function PurchasePageContent() {
       setPaymentStatus({
         id: "api-error",
         status: "FAILED",
-        amount: TEST_MPESA_PRICE,
+        amount: MPESA_PRICE,
         createdAt: new Date().toISOString(),
         mpesaResponseDescription:
           error instanceof Error ? error.message : t("errors.paymentFailed"),
