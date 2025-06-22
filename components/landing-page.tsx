@@ -1233,9 +1233,6 @@ export function LandingPage() {
 
   return (
     <>
-      {/* System Banner */}
-      <SystemBanner />
-
       {/* Trial Banner */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3">
         <div className="container mx-auto px-4 text-center">

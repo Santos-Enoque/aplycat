@@ -3,55 +3,15 @@ import { db } from '@/lib/db';
 import { stripeClient } from '@/lib/stripe/client';
 import { STRIPE_CONFIG, STRIPE_WEBHOOK_EVENTS } from '@/lib/stripe/config';
 import type { 
-  CreditPackageType, 
-  StripeWebhookPayload 
+  CreditPackageType
 } from '@/lib/stripe/config';
 import { CreditTransactionType } from '@prisma/client';
 import type Stripe from 'stripe';
-import crypto from 'crypto';
 import { mpesaService } from '@/lib/mpesa-service';
 
 // Payment provider types
-export type PaymentProvider = 'stripe' | 'paysuite' | 'mpesa';
+export type PaymentProvider = 'stripe' | 'mpesa';
 export type PaymentMethod = 'credit_card' | 'mobile_money';
-
-interface PaySuitePaymentRequest {
-  amount: string;
-  reference: string;
-  description: string;
-  return_url: string;
-  callback_url: string;
-  method: 'mobile_money'; // PaySuite API method type
-}
-
-interface PaySuitePaymentResponse {
-  status: 'success' | 'error';
-  data?: {
-    id: string;
-    amount: number;
-    reference: string;
-    status: 'pending' | 'paid' | 'failed';
-    checkout_url: string;
-  };
-  message?: string;
-}
-
-interface PaySuiteWebhookEvent {
-  event: 'payment.success' | 'payment.failed';
-  data: {
-    id: string;
-    amount: number;
-    reference: string;
-    transaction?: {
-      id: string;
-      method: string;
-      paid_at: string;
-    };
-    error?: string;
-  };
-  created_at: number;
-  request_id: string;
-}
 
 export interface CreateCheckoutParams {
   userId: string;
@@ -79,26 +39,16 @@ export interface ProcessPaymentParams {
 }
 
 class PaymentService {
-  private paysuiteApiUrl: string;
-  private paysuiteToken: string;
-  private paysuiteWebhookSecret: string;
 
   constructor() {
-    this.paysuiteApiUrl = process.env.PAYSUITE_API_URL || 'https://paysuite.tech/api/v1';
-    this.paysuiteToken = process.env.PAYSUITE_API_TOKEN || '';
-    this.paysuiteWebhookSecret = process.env.PAYSUITE_WEBHOOK_SECRET || '';
   }
 
-  /**
-   * Create a checkout session for credit purchase (enhanced with payment method support)
-   */
   async createCheckout(params: CreateCheckoutParams) {
-    const { userId, packageType, userEmail, paymentMethod = 'credit_card', returnUrl } = params;
+    const { userId, packageType, userEmail, paymentMethod = 'credit_card' } = params;
 
     try {
       console.log('[PAYMENT_SERVICE] Creating checkout:', params);
 
-      // Get user to verify they exist
       const user = await db.user.findUnique({
         where: { clerkId: userId },
         select: { id: true, email: true, firstName: true, lastName: true },
@@ -108,44 +58,22 @@ class PaymentService {
         throw new Error('User not found');
       }
 
-      // Get package details
       const packageDetails = stripeClient.getCreditPackage(packageType);
 
       let checkoutResult;
 
-          // Route to appropriate payment provider
       console.log('[PAYMENT_SERVICE] Routing payment method:', paymentMethod);
       
-    if (paymentMethod === 'credit_card') {
-      console.log('[PAYMENT_SERVICE] Creating Stripe checkout');
-      checkoutResult = await this.createStripeCheckout(params, user, packageDetails);
-    } else if (paymentMethod === 'mobile_money') {
-      // Check if user prefers MPesa or PaySuite (default to MPesa for Mozambique)
-      const preferMpesa = process.env.PREFER_MPESA === 'true' || process.env.NODE_ENV === 'production';
-      
-      if (preferMpesa && process.env.MPESA_API_KEY) {
+      if (paymentMethod === 'credit_card') {
+        console.log('[PAYMENT_SERVICE] Creating Stripe checkout');
+        checkoutResult = await this.createStripeCheckout(params, user, packageDetails);
+      } else if (paymentMethod === 'mobile_money') {
         console.log('[PAYMENT_SERVICE] Creating MPesa checkout');
-        try {
-          checkoutResult = await this.createMpesaCheckout(params, user, packageDetails);
-        } catch (mpesaError) {
-          console.error('[PAYMENT_SERVICE] MPesa checkout failed, falling back to PaySuite:', mpesaError);
-          // Fall back to PaySuite if MPesa fails
-          checkoutResult = await this.createPaySuiteCheckout(params, user, packageDetails, paymentMethod);
-        }
+        checkoutResult = await this.createMpesaCheckout(params, user, packageDetails);
       } else {
-        console.log('[PAYMENT_SERVICE] Creating PaySuite checkout');
-        try {
-          checkoutResult = await this.createPaySuiteCheckout(params, user, packageDetails, paymentMethod);
-        } catch (paysuiteError) {
-          console.error('[PAYMENT_SERVICE] PaySuite checkout failed:', paysuiteError);
-          throw paysuiteError; // Don't fall back to Stripe, show the actual error
-        }
+        throw new Error(`Unsupported payment method: ${paymentMethod}`);
       }
-    } else {
-      throw new Error(`Unsupported payment method: ${paymentMethod}`);
-    }
 
-      // Log the checkout creation
       await db.usageEvent.create({
         data: {
           userId: user.id,
@@ -180,7 +108,6 @@ class PaymentService {
     } catch (error) {
       console.error('[PAYMENT_SERVICE] Checkout creation failed:', error);
       
-      // Log error
       try {
         const user = await db.user.findUnique({
           where: { clerkId: userId },
@@ -209,19 +136,14 @@ class PaymentService {
     }
   }
 
-  /**
-   * Create Stripe checkout (existing functionality)
-   */
   private async createStripeCheckout(params: CreateCheckoutParams, user: any, packageDetails: any) {
     const { userId, packageType, userEmail, returnUrl, pricing } = params;
 
-    // Ensure we always use MZN pricing for consistency
     let mznPricing: { amount: number; currency: string };
     
     if (pricing && pricing.currency === 'MZN') {
       mznPricing = { amount: pricing.amount, currency: 'MZN' };
     } else {
-      // Use the package price directly as it's already in MZN from config
       mznPricing = { amount: packageDetails.price, currency: 'MZN' };
     }
 
@@ -237,7 +159,7 @@ class PaymentService {
           : user.firstName || user.email,
       },
       returnUrl,
-      mznPricing // Always pass MZN pricing
+      mznPricing
     );
 
     return {
@@ -247,17 +169,6 @@ class PaymentService {
     };
   }
 
-  /**
-   * Validate transaction limits for PaySuite mobile money
-   */
-  private validateTransactionLimits(amountMzn: number, paymentMethod: PaymentMethod): void {
-    // No limits for mobile money (Emola) - removing previous limitation
-    // PaySuite supports transactions without specific limits for Emola
-  }
-
-  /**
-   * Create MPesa checkout
-   */
   private async createMpesaCheckout(
     params: CreateCheckoutParams, 
     user: any, 
@@ -267,17 +178,12 @@ class PaymentService {
 
     console.log('[PAYMENT_SERVICE] Creating MPesa checkout for user:', userId);
     
-    // MPesa payments are always 200 MZN - no currency conversion needed
-    // This ensures consistency with our Mozambique-focused pricing
-    
-    // Get user's saved phone number
     const savedPhoneNumber = await mpesaService.getUserPhoneNumber(userId);
     
     if (!savedPhoneNumber) {
       throw new Error('Phone number required for MPesa payment. Please provide your phone number.');
     }
 
-    // Create MPesa payment using package system
     const paymentResult = await mpesaService.createPayment({
       userId: user.id,
       packageType: packageType,
@@ -290,7 +196,7 @@ class PaymentService {
 
     return {
       checkoutId: paymentResult.paymentId,
-      checkoutUrl: '', // MPesa doesn't use checkout URLs
+      checkoutUrl: '',
       provider: 'mpesa' as PaymentProvider,
       paymentMethod: 'mobile_money' as PaymentMethod,
       packageDetails,
@@ -300,134 +206,13 @@ class PaymentService {
     };
   }
 
-  /**
-   * Create PaySuite checkout (new functionality)
-   */
-  private async createPaySuiteCheckout(
-    params: CreateCheckoutParams, 
-    user: any, 
-    packageDetails: any, 
-    paymentMethod: PaymentMethod
-  ) {
-    const { userId, packageType, returnUrl } = params;
-
-    console.log('[PAYMENT_SERVICE] PaySuite token configured:', !!this.paysuiteToken);
-    console.log('[PAYMENT_SERVICE] Payment method received:', paymentMethod);
-    
-    if (!this.paysuiteToken) {
-      console.error('[PAYMENT_SERVICE] PaySuite API token not configured - falling back to Stripe');
-      throw new Error('PaySuite API token not configured');
-    }
-
-    // PaySuite payments are always 200 MZN - consistent with our Mozambique-focused pricing
-    const amountMzn = packageDetails.price; // This is already 200 MZN from config
-
-    // Check PaySuite transaction limits for mobile money
-    this.validateTransactionLimits(amountMzn, paymentMethod);
-
-    // Generate unique reference
-    const reference = `APLYCAT_${packageType.toUpperCase()}_${userId.slice(-8)}_${Date.now()}`;
-
-    const paymentData: PaySuitePaymentRequest = {
-      amount: amountMzn.toString(),
-      reference,
-      description: `${packageDetails.name} - ${packageDetails.credits} AI Credits - ${params.userEmail}`,
-      return_url: `${returnUrl}?payment=success&provider=paysuite`,
-      callback_url: `${process.env.WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/paysuite`,
-      method: 'mobile_money', // PaySuite mobile money (Emola)
-    };
-
-    console.log('[PAYMENT_SERVICE] Sending PaySuite payment request:', {
-      ...paymentData,
-      callback_url: paymentData.callback_url,
-    });
-
-    const response = await fetch(`${this.paysuiteApiUrl}/payments`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.paysuiteToken}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(paymentData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `PaySuite API error: ${response.status}`);
-    }
-
-    const result: PaySuitePaymentResponse = await response.json();
-
-    if (result.status !== 'success' || !result.data) {
-      throw new Error(result.message || 'PaySuite payment creation failed');
-    }
-
-    // Store payment record for webhook processing
-    await this.storePaySuitePayment({
-      paysuiteId: result.data.id,
-      userId: user.id,
-      clerkUserId: userId,
-      packageType,
-      credits: packageDetails.credits,
-      amount: amountMzn,
-      reference,
-      status: 'pending',
-      paymentMethod,
-    });
-
-    return {
-      checkoutId: result.data.id,
-      checkoutUrl: result.data.checkout_url,
-      provider: 'paysuite' as PaymentProvider,
-    };
-  }
-
-  /**
-   * Store PaySuite payment record
-   */
-  private async storePaySuitePayment(data: {
-    paysuiteId: string;
-    userId: string;
-    clerkUserId: string;
-    packageType: string;
-    credits: number;
-    amount: number;
-    reference: string;
-    status: string;
-    paymentMethod: PaymentMethod;
-  }) {
-    await db.paysuitePayment.create({
-      data: {
-        id: data.paysuiteId,
-        userId: data.userId,
-        clerkUserId: data.clerkUserId,
-        packageType: data.packageType,
-        credits: data.credits,
-        amount: data.amount,
-        currency: 'MZN',
-        status: data.status,
-        reference: data.reference,
-        paymentMethod: data.paymentMethod,
-        metadata: {
-          reference: data.reference,
-        },
-      },
-    });
-  }
-
-  /**
-   * Process successful payment and add credits (enhanced for multi-provider)
-   */
   async processPayment(params: ProcessPaymentParams) {
     const { sessionId, userId, packageType, amount, currency, credits, provider = 'stripe', reference, transactionId } = params;
 
     try {
       console.log('[PAYMENT_SERVICE] Processing payment:', params);
 
-      // Use transaction to ensure atomicity
       const result = await db.$transaction(async (tx) => {
-        // Get current user
         const user = await tx.user.findUnique({
           where: { clerkId: userId },
           select: { id: true, credits: true, email: true },
@@ -437,7 +222,6 @@ class PaymentService {
           throw new Error('User not found during payment processing');
         }
 
-        // Add credits to user account
         const updatedUser = await tx.user.update({
           where: { id: user.id },
           data: { 
@@ -445,7 +229,6 @@ class PaymentService {
           },
         });
 
-        // Create credit transaction record
         const transaction = await tx.creditTransaction.create({
           data: {
             userId: user.id,
@@ -457,7 +240,6 @@ class PaymentService {
           },
         });
 
-        // Log successful purchase event
         await tx.usageEvent.create({
           data: {
             userId: user.id,
@@ -499,7 +281,6 @@ class PaymentService {
     } catch (error) {
       console.error('[PAYMENT_SERVICE] Payment processing failed:', error);
       
-      // Log error
       try {
         const user = await db.user.findUnique({
           where: { clerkId: userId },
@@ -529,9 +310,6 @@ class PaymentService {
     }
   }
 
-  /**
-   * Handle Stripe webhook events (existing functionality)
-   */
   async handleWebhook(event: Stripe.Event) {
     try {
       console.log('[PAYMENT_SERVICE] Processing Stripe webhook:', event.type);
@@ -557,138 +335,31 @@ class PaymentService {
     }
   }
 
-  /**
-   * Handle PaySuite webhook events (new functionality)
-   */
-  async handlePaySuiteWebhook(event: PaySuiteWebhookEvent): Promise<{ success: boolean; message: string }> {
-    console.log('[PAYMENT_SERVICE] Processing PaySuite webhook:', event.event);
-
-    try {
-      switch (event.event) {
-        case 'payment.success':
-          await this.handlePaySuitePaymentSuccess(event.data);
-          break;
-        case 'payment.failed':
-          await this.handlePaySuitePaymentFailed(event.data);
-          break;
-        default:
-          console.log(`[PAYMENT_SERVICE] Unhandled PaySuite webhook event: ${event.event}`);
-      }
-
-      return { success: true, message: 'PaySuite webhook processed successfully' };
-    } catch (error) {
-      console.error('[PAYMENT_SERVICE] PaySuite webhook processing failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Handle PaySuite payment success
-   */
-  private async handlePaySuitePaymentSuccess(data: PaySuiteWebhookEvent['data']) {
-    const payment = await db.paysuitePayment.findFirst({
-      where: { id: data.id },
-    });
-
-    if (!payment) {
-      throw new Error(`PaySuite payment not found: ${data.id}`);
-    }
-
-    if (payment.status === 'completed') {
-      console.log(`[PAYMENT_SERVICE] PaySuite payment already processed: ${data.id}`);
-      return;
-    }
-
-    // Update payment status
-    await db.paysuitePayment.update({
-      where: { id: payment.id },
-      data: {
-        status: 'completed',
-        completedAt: new Date(),
-        metadata: {
-          ...payment.metadata as any,
-          transaction: data.transaction,
-          processedAt: new Date().toISOString(),
-        },
-      },
-    });
-
-    // Process the payment and add credits
-    await this.processPayment({
-      sessionId: payment.id,
-      userId: payment.clerkUserId,
-      packageType: payment.packageType as CreditPackageType,
-      amount: payment.amount,
-      currency: 'MZN',
-      credits: payment.credits,
-      provider: 'paysuite',
-      reference: payment.reference,
-      transactionId: data.transaction?.id,
-    });
-
-    console.log(`[PAYMENT_SERVICE] Successfully processed PaySuite payment ${data.id} for user ${payment.clerkUserId}: +${payment.credits} credits`);
-  }
-
-  /**
-   * Handle PaySuite payment failure
-   */
-  private async handlePaySuitePaymentFailed(data: PaySuiteWebhookEvent['data']) {
-    const payment = await db.paysuitePayment.findFirst({
-      where: { id: data.id }
-    });
-
-    if (!payment) {
-      console.warn(`[PAYMENT_SERVICE] PaySuite payment not found for failed payment: ${data.id}`);
-      return;
-    }
-
-    // Update payment status
-    await db.paysuitePayment.update({
-      where: { id: payment.id },
-      data: {
-        status: 'failed',
-        metadata: {
-          ...payment.metadata as any,
-          error: data.error,
-          failedAt: new Date().toISOString(),
-        },
-      },
-    });
-
-    console.log(`[PAYMENT_SERVICE] PaySuite payment failed: ${data.id}, error: ${data.error}`);
-  }
-
-  /**
-   * Handle successful checkout completion (existing functionality)
-   */
   private async handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     try {
       console.log('[PAYMENT_SERVICE] Processing checkout completion:', session.id);
 
-      // Get metadata from session
       const metadata = session.metadata;
       if (!metadata) {
         throw new Error('No metadata found in checkout session');
       }
 
-      const { userId, packageType, credits, userName } = metadata;
+      const { userId, packageType, credits } = metadata;
       
       if (!userId || !packageType || !credits) {
         throw new Error('Missing required metadata in checkout session');
       }
 
-      // Convert credits back to number
       const creditsNumber = parseInt(credits);
-      const amount = session.amount_total ? session.amount_total / 100 : 0; // Convert from cents
-      const currency = session.currency || 'mzn'; // Get currency from session, fallback to mzn
+      const amount = session.amount_total ? session.amount_total / 100 : 0;
+      const currency = session.currency || 'mzn';
 
-      // Process the payment
       await this.processPayment({
         sessionId: session.id,
         userId,
         packageType: packageType as CreditPackageType,
         amount,
-        currency, // Pass the currency
+        currency,
         credits: creditsNumber,
         provider: 'stripe',
       });
@@ -706,29 +377,6 @@ class PaymentService {
     }
   }
 
-  /**
-   * Validate PaySuite webhook signature
-   */
-  validatePaySuiteWebhook(body: string, signature: string): PaySuiteWebhookEvent {
-    if (!this.paysuiteWebhookSecret) {
-      throw new Error('PaySuite webhook secret not configured');
-    }
-
-    const calculatedSignature = crypto
-      .createHmac('sha256', this.paysuiteWebhookSecret)
-      .update(body)
-      .digest('hex');
-
-    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(calculatedSignature))) {
-      throw new Error('Invalid PaySuite webhook signature');
-    }
-
-    return JSON.parse(body) as PaySuiteWebhookEvent;
-  }
-
-  /**
-   * Get payment history for a user (enhanced with all providers)
-   */
   async getPaymentHistory(userId?: string) {
     try {
       const userWhere = userId ? { clerkId: userId } : undefined;
@@ -738,7 +386,6 @@ class PaymentService {
         if (!user) throw new Error('User not found');
       }
 
-      // Get Stripe transactions from UsageEvent to access payment metadata
       const stripeTransactions = await db.usageEvent.findMany({
         where: {
           user: userWhere,
@@ -748,22 +395,11 @@ class PaymentService {
             equals: 'stripe'
           }
         },
-        include: {
-          user: true // Include the full user object
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 100, // Increased limit for admin view
-      });
-
-      // Get PaySuite payments
-      const paysuitePayments = await db.paysuitePayment.findMany({
-        where: { user: userWhere ? { clerkId: userId } : undefined },
         include: { user: true },
         orderBy: { createdAt: 'desc' },
         take: 100,
       });
 
-      // Get MPesa payments
       const mpesaPayments = await db.mpesaPayment.findMany({
         where: { user: userWhere ? { clerkId: userId } : undefined },
         include: { user: true },
@@ -771,9 +407,7 @@ class PaymentService {
         take: 100,
       });
 
-      // Combine all transactions
       const allTransactions = [
-        // Stripe transactions
         ...stripeTransactions.map(event => {
           const meta = event.metadata as any;
           return {
@@ -786,28 +420,10 @@ class PaymentService {
             status: 'completed',
             createdAt: event.createdAt,
             completedAt: event.createdAt,
-            user: event.user, // Now the user object is included
+            user: event.user,
           };
         }),
         
-        // PaySuite transactions
-        ...paysuitePayments.map(payment => ({
-          id: payment.id,
-          type: 'credit_purchase',
-          provider: 'paysuite' as PaymentProvider,
-          packageType: payment.packageType,
-          credits: payment.credits,
-          amount: payment.amount,
-          currency: payment.currency,
-          status: payment.status,
-          paymentMethod: payment.paymentMethod,
-          reference: payment.reference,
-          createdAt: payment.createdAt,
-          completedAt: payment.completedAt,
-          user: payment.user,
-        })),
-
-        // MPesa transactions
         ...mpesaPayments.map(payment => ({
           id: payment.id,
           type: 'credit_purchase',
@@ -823,13 +439,12 @@ class PaymentService {
           mpesaTransactionId: payment.mpesaTransactionId,
           conversationId: payment.mpesaConversationId,
           createdAt: payment.createdAt,
-          completedAt: null, // MPesa doesn't have separate completedAt field
+          completedAt: null,
           errorMessage: payment.mpesaResponseDescription,
           user: payment.user,
         }))
       ];
 
-      // Sort by creation date and return
       return allTransactions
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 50);
@@ -840,44 +455,40 @@ class PaymentService {
     }
   }
 
-  /**
-   * Get available credit packages (existing functionality)
-   */
   getCreditPackages() {
     return stripeClient.getAllCreditPackages();
   }
 
-  /**
-   * Get available payment methods for a package
-   */
   getAvailablePaymentMethods(packageType?: CreditPackageType): PaymentMethod[] {
-    const allMethods: PaymentMethod[] = ['credit_card', 'mobile_money'];
+    const methods: PaymentMethod[] = ['credit_card'];
     
-    if (!packageType) {
-      return allMethods;
+    if (process.env.MPESA_API_KEY) {
+      methods.push('mobile_money');
     }
-
-    // Get package details to check amount limits
-    const packageDetails = stripeClient.getCreditPackage(packageType);
     
-    // Estimate MZN amount (using fallback rate for quick check)
-    const estimatedMzn = packageDetails.price * 63.25;
-    
-    // All payment methods are available (no transaction limits)
-    const availableMethods = allMethods;
-
-    return availableMethods;
+    return methods;
   }
 
-  /**
-   * Validate webhook signature (existing functionality, enhanced)
-   */
-  validateWebhookSignature(payload: string, signature: string, provider: PaymentProvider = 'stripe'): Stripe.Event | PaySuiteWebhookEvent {
+  getPricing(countryCode: string | null) {
+    if (countryCode === 'MZ') {
+        return {
+            pro: { amount: 200, currency: 'MZN' },
+            trial: { amount: 100, currency: 'MZN' }
+        };
+    }
+    const proPackage = STRIPE_CONFIG.creditPackages.pro;
+    const trialPackage = STRIPE_CONFIG.trialConfig;
+
+    return {
+        pro: { amount: proPackage.price, currency: 'USD' },
+        trial: { amount: trialPackage.price, currency: 'USD' }
+    };
+  }
+
+  validateWebhookSignature(payload: string, signature: string, provider: PaymentProvider = 'stripe'): Stripe.Event {
     try {
       if (provider === 'stripe') {
         return stripeClient.verifyWebhookSignature(payload, signature);
-      } else if (provider === 'paysuite') {
-        return this.validatePaySuiteWebhook(payload, signature);
       } else {
         throw new Error(`Unsupported payment provider: ${provider}`);
       }
@@ -888,5 +499,4 @@ class PaymentService {
   }
 }
 
-// Export singleton instance
 export const paymentService = new PaymentService();

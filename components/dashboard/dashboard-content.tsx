@@ -473,9 +473,6 @@ export function DashboardContent({ user }: DashboardContentProps) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
-      {/* System Banner */}
-      <SystemBanner />
-
       {/* Welcome Section */}
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-foreground">
