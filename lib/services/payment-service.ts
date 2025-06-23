@@ -86,6 +86,7 @@ class PaymentService {
             amount: packageDetails.price,
             paymentMethod,
             provider: checkoutResult.provider,
+            status: 'initiated',
           },
         },
       });
@@ -318,6 +319,9 @@ class PaymentService {
         case STRIPE_WEBHOOK_EVENTS.CHECKOUT_SESSION_COMPLETED:
           await this.handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
           break;
+        case STRIPE_WEBHOOK_EVENTS.CHECKOUT_SESSION_EXPIRED:
+          await this.handleCheckoutExpired(event.data.object as Stripe.Checkout.Session);
+          break;
         case STRIPE_WEBHOOK_EVENTS.PAYMENT_INTENT_SUCCEEDED:
           console.log('[PAYMENT_SERVICE] Payment intent succeeded:', event.data.object);
           break;
@@ -339,18 +343,44 @@ class PaymentService {
     try {
       console.log(`[PAYMENT_SERVICE] Processing checkout completion for session: ${session.id}, status: ${session.payment_status}`);
 
-      // Only process the payment if the charge was successful
-      if (session.payment_status === 'paid') {
-        const metadata = session.metadata;
-        if (!metadata) throw new Error('No metadata found in checkout session');
-        
-        const { userId, packageType, credits } = metadata;
-        if (!userId || !packageType || !credits) throw new Error('Missing required metadata in checkout session');
+      const metadata = session.metadata;
+      if (!metadata) throw new Error('No metadata found in checkout session');
+      
+      const { userId, packageType, credits } = metadata;
+      if (!userId || !packageType || !credits) throw new Error('Missing required metadata in checkout session');
 
+      const existingEvent = await db.usageEvent.findFirst({
+        where: {
+          metadata: {
+            path: ['checkoutId'],
+            equals: session.id,
+          }
+        }
+      });
+
+      if (!existingEvent) {
+        console.error(`[PAYMENT_SERVICE] Could not find existing usageEvent for checkout session ${session.id}`);
+        // Fallback for safety, though this shouldn't be hit with the new flow
+        if (session.payment_status === 'paid') {
+          await this.processPayment({
+            sessionId: session.id,
+            userId,
+            packageType: packageType as CreditPackageType,
+            amount: session.amount_total ? session.amount_total / 100 : 0,
+            currency: session.currency || 'mzn',
+            credits: parseInt(credits),
+            provider: 'stripe',
+          });
+        }
+        return;
+      }
+      
+      if (session.payment_status === 'paid') {
         const creditsNumber = parseInt(credits);
         const amount = session.amount_total ? session.amount_total / 100 : 0;
         const currency = session.currency || 'mzn';
 
+        // Process payment first (adds credits, creates transaction)
         await this.processPayment({
           sessionId: session.id,
           userId,
@@ -360,14 +390,113 @@ class PaymentService {
           credits: creditsNumber,
           provider: 'stripe',
         });
+        
+        // Then, update the original usage event
+        await db.usageEvent.update({
+          where: { id: existingEvent.id },
+          data: {
+            description: `Successfully purchased ${creditsNumber} credits via Stripe`,
+            metadata: {
+              ...(existingEvent.metadata as object),
+              status: 'completed',
+              paymentStatus: session.payment_status,
+              amount: amount,
+              currency: currency,
+            }
+          }
+        });
 
         console.log(`[PAYMENT_SERVICE] Successfully processed PAID checkout: ${session.id}`);
       } else {
-        console.log(`[PAYMENT_SERVICE] Checkout session completed but not paid (status: ${session.payment_status}). No credits awarded.`);
-        // Optionally, log this event as a failed or abandoned cart
+        // Handle cancelled/failed payments by updating the event
+        await db.usageEvent.update({
+          where: { id: existingEvent.id },
+          data: {
+            description: `Checkout cancelled for ${packageType} package`,
+            metadata: {
+              ...(existingEvent.metadata as object),
+              status: 'cancelled',
+              paymentStatus: session.payment_status,
+            }
+          }
+        });
+        console.log(`[PAYMENT_SERVICE] Checkout session completed but not paid (status: ${session.payment_status}). Marked as cancelled.`);
       }
     } catch (error) {
       console.error(`[PAYMENT_SERVICE] Checkout completion handling failed for session ${session.id}:`, error);
+      throw error;
+    }
+  }
+
+  private async handleCheckoutExpired(session: Stripe.Checkout.Session) {
+    try {
+      console.log(`[PAYMENT_SERVICE] Processing checkout expiration for session: ${session.id}`);
+      
+      const existingEvent = await db.usageEvent.findFirst({
+        where: {
+          metadata: {
+            path: ['checkoutId'],
+            equals: session.id,
+          }
+        }
+      });
+
+      if (existingEvent) {
+        const metadata = existingEvent.metadata as any;
+        await db.usageEvent.update({
+          where: { id: existingEvent.id },
+          data: {
+            description: `Checkout expired for ${metadata.packageType || 'unknown'} package`,
+            metadata: {
+              ...(existingEvent.metadata as object),
+              status: 'expired',
+            }
+          }
+        });
+        console.log(`[PAYMENT_SERVICE] Successfully marked checkout as expired: ${session.id}`);
+      } else {
+        console.error(`[PAYMENT_SERVICE] Could not find existing usageEvent for expired checkout session ${session.id}`);
+      }
+    } catch (error) {
+      console.error(`[PAYMENT_SERVICE] Checkout expiration handling failed for session ${session.id}:`, error);
+      throw error;
+    }
+  }
+
+  private async handleFailedCheckout(session: Stripe.Checkout.Session, reason: 'cancelled' | 'expired' | 'failed') {
+    try {
+      const metadata = session.metadata;
+      if (!metadata) return;
+      
+      const { userId, packageType } = metadata;
+      if (!userId || !packageType) return;
+
+      const user = await db.user.findUnique({
+        where: { clerkId: userId },
+        select: { id: true },
+      });
+
+      if (!user) return;
+
+      // Create a new usage event to mark the transaction as failed
+      await db.usageEvent.create({
+        data: {
+          userId: user.id,
+          eventType: 'CREDIT_PURCHASE',
+          description: `Checkout ${reason} for ${packageType} package`,
+          metadata: {
+            sessionId: session.id,
+            packageType,
+            status: reason,
+            provider: 'stripe',
+            originalPaymentStatus: session.payment_status,
+          },
+        },
+      });
+
+      console.log(`[PAYMENT_SERVICE] Marked checkout as ${reason} for session: ${session.id}`);
+    } catch (error) {
+      console.error(`[PAYMENT_SERVICE] Failed to mark checkout as ${reason} for session ${session.id}:`, error);
       throw error;
     }
   }
@@ -388,6 +517,13 @@ class PaymentService {
           metadata: {
             path: ['provider'],
             equals: 'stripe'
+          },
+          // Exclude transactions that are still in 'initiated' state
+          NOT: {
+            metadata: {
+              path: ['status'],
+              equals: 'initiated'
+            }
           }
         },
         include: { user: true },
@@ -405,17 +541,30 @@ class PaymentService {
       const allTransactions = [
         ...stripeTransactions.map(event => {
           const meta = event.metadata as any;
+          
+          // Determine status based on description and metadata
+          let status = meta.status || 'completed'; // Default to completed for legacy records
+          const description = event.description || '';
+          if (!meta.status) { // Infer for older records
+            if (description.includes('cancelled')) status = 'cancelled';
+            else if (description.includes('expired')) status = 'expired';
+            else if (description.includes('failed')) status = 'failed';
+          }
+          
           return {
             id: event.id,
             type: 'credit_purchase',
             provider: 'stripe' as PaymentProvider,
             description: event.description,
-            amount: meta.amount,
+            amount: meta.amount || 0,
             currency: meta.currency?.toUpperCase() || 'MZN',
-            status: 'completed',
+            status,
             createdAt: event.createdAt,
-            completedAt: event.createdAt,
+            completedAt: status === 'completed' ? event.createdAt : null,
             user: event.user,
+            sessionId: meta.sessionId || meta.checkoutId,
+            packageType: meta.packageType,
+            credits: meta.credits,
           };
         }),
         

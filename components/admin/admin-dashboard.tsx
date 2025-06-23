@@ -14,6 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -38,6 +46,7 @@ import {
   XCircle,
   Clock,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -113,24 +122,29 @@ export function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] =
+    useState<Transaction | null>(null);
 
   const fetchTransactions = useCallback(
     async (newFilters?: TransactionFilters, page = 1) => {
       try {
         setIsRefreshing(true);
+
+        // Merge filters and remove null/undefined values
+        const mergedFilters = { ...filters, ...newFilters };
+        const cleanFilters = Object.fromEntries(
+          Object.entries(mergedFilters).filter(
+            ([_, value]) => value != null && value !== ""
+          )
+        );
+
         const params = new URLSearchParams({
           page: page.toString(),
           limit: pagination.limit.toString(),
-          ...filters,
-          ...newFilters,
+          ...cleanFilters,
         });
-
-        // Remove empty values
-        for (const [key, value] of Array.from(params.entries())) {
-          if (!value) {
-            params.delete(key);
-          }
-        }
 
         const response = await fetch(`/api/admin/transactions?${params}`);
 
@@ -230,7 +244,7 @@ export function AdminDashboard() {
 
   const formatAmount = (transaction: Transaction) => {
     const { amount, currency = "USD" } = transaction;
-    const formatter = new Intl.NumberFormat('en-US', {
+    const formatter = new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -312,6 +326,51 @@ export function AdminDashboard() {
     const newFilters = { ...filters, dateFrom, dateTo };
     setFilters(newFilters);
     fetchTransactions(newFilters, 1);
+  };
+
+  const openDeleteDialog = (transaction: Transaction) => {
+    setTransactionToDelete(transaction);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteTransaction = async () => {
+    if (!transactionToDelete) return;
+
+    try {
+      setDeletingId(transactionToDelete.id);
+      setDeleteDialogOpen(false);
+
+      const response = await fetch(
+        `/api/admin/transactions?id=${transactionToDelete.id}&provider=${transactionToDelete.provider}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to delete transaction");
+      }
+
+      toast.success("Transaction deleted successfully", {
+        description: `Transaction ${transactionToDelete.id.substring(
+          0,
+          8
+        )}... has been removed.`,
+      });
+
+      // Refresh the transactions list
+      await fetchTransactions(filters, pagination.page);
+    } catch (error) {
+      console.error("Failed to delete transaction:", error);
+      toast.error("Failed to delete transaction", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    } finally {
+      setDeletingId(null);
+      setTransactionToDelete(null);
+    }
   };
 
   if (isLoading) {
@@ -573,13 +632,14 @@ export function AdminDashboard() {
                   <TableHead>Provider</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Details</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {transactions.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="text-center py-8 text-gray-500"
                     >
                       No transactions found
@@ -668,6 +728,21 @@ export function AdminDashboard() {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openDeleteDialog(transaction)}
+                          disabled={deletingId === transaction.id}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          {deletingId === transaction.id ? (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -708,6 +783,72 @@ export function AdminDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Transaction</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this transaction? This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          {transactionToDelete && (
+            <div className="space-y-2 py-4">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="font-medium">Transaction ID:</div>
+                <div className="font-mono">
+                  {transactionToDelete.id.substring(0, 12)}...
+                </div>
+
+                <div className="font-medium">User:</div>
+                <div>
+                  {formatUserName(transactionToDelete.user)} (
+                  {transactionToDelete.user.email})
+                </div>
+
+                <div className="font-medium">Amount:</div>
+                <div>{formatAmount(transactionToDelete)}</div>
+
+                <div className="font-medium">Provider:</div>
+                <div className="capitalize">{transactionToDelete.provider}</div>
+
+                <div className="font-medium">Status:</div>
+                <div className="capitalize">{transactionToDelete.status}</div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deletingId !== null}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteTransaction}
+              disabled={deletingId !== null}
+            >
+              {deletingId !== null ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Transaction
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

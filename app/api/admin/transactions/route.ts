@@ -51,9 +51,17 @@ export async function GET(request: NextRequest) {
         });
         transactions.push(...stripeTransactions.map(event => {
             const meta = event.metadata as any;
+            const status = meta.status || 'completed'; // Default for legacy
             return {
-                id: event.id, provider: 'stripe', amount: meta.amount, currency: meta.currency?.toUpperCase() || 'MZN',
-                status: 'completed', createdAt: event.createdAt, user: event.user, description: event.description,
+                id: event.id, 
+                provider: 'stripe', 
+                amount: meta.amount, 
+                currency: meta.currency?.toUpperCase() || 'MZN',
+                status: status, 
+                createdAt: event.createdAt, 
+                user: event.user, 
+                description: event.description,
+                credits: meta.credits,
             };
         }));
     }
@@ -107,6 +115,78 @@ export async function GET(request: NextRequest) {
     console.error('[ADMIN_TRANSACTIONS] Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch transactions' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const authResult = await requireAdminAuth();
+    if (authResult.error) {
+      return authResult.error;
+    }
+
+    const url = new URL(request.url);
+    const transactionId = url.searchParams.get('id');
+    const provider = url.searchParams.get('provider');
+
+    if (!transactionId || !provider) {
+      return NextResponse.json(
+        { success: false, error: 'Transaction ID and provider are required' },
+        { status: 400 }
+      );
+    }
+
+    console.log(`[ADMIN_DELETE] Attempting to delete ${provider} transaction: ${transactionId}`);
+
+    let deletedTransaction = null;
+
+    if (provider === 'stripe') {
+      // Delete Stripe transaction (usageEvent)
+      deletedTransaction = await db.usageEvent.delete({
+        where: { id: transactionId },
+        include: { user: true }
+      });
+      
+      console.log(`[ADMIN_DELETE] Deleted Stripe transaction: ${transactionId}`);
+    } else if (provider === 'mpesa') {
+      // Delete MPesa transaction
+      deletedTransaction = await db.mpesaPayment.delete({
+        where: { id: transactionId },
+        include: { user: true }
+      });
+      
+      console.log(`[ADMIN_DELETE] Deleted MPesa transaction: ${transactionId}`);
+    } else {
+      return NextResponse.json(
+        { success: false, error: 'Unsupported provider' },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Transaction deleted successfully',
+      deletedTransaction: {
+        id: deletedTransaction.id,
+        provider,
+        userEmail: deletedTransaction.user.email,
+      }
+    });
+
+  } catch (error) {
+    console.error('[ADMIN_DELETE] Error deleting transaction:', error);
+    
+    if (error.code === 'P2025') {
+      return NextResponse.json(
+        { success: false, error: 'Transaction not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete transaction' },
       { status: 500 }
     );
   }

@@ -28,6 +28,7 @@ export const STRIPE_CONFIG = {
 // Stripe webhook event types we care about
 export const STRIPE_WEBHOOK_EVENTS = {
   CHECKOUT_SESSION_COMPLETED: 'checkout.session.completed',
+  CHECKOUT_SESSION_EXPIRED: 'checkout.session.expired',
   PAYMENT_INTENT_SUCCEEDED: 'payment_intent.succeeded',
   PAYMENT_INTENT_PAYMENT_FAILED: 'payment_intent.payment_failed',
 } as const;
