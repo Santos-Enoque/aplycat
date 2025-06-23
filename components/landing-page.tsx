@@ -34,195 +34,11 @@ import { useTranslations } from "next-intl";
 import { PricingTestPanel } from "@/components/pricing-test-panel";
 import { SystemBanner } from "@/components/ui/system-banner";
 
-// Trial Popup Component
-const TrialPopup = ({
-  isOpen,
-  onClose,
-  onAccept,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onAccept: (paymentMethod?: "credit_card" | "mobile_money") => void;
-}) => {
-  const t = useTranslations("trialPopup");
-  const [timeLeft, setTimeLeft] = useState("23:59:42");
-  const [showPaymentMethods, setShowPaymentMethods] = useState(false);
-  const [trialPrice, setTrialPrice] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchTrialPrice = async () => {
-      try {
-        const response = await fetch("/api/payments/packages");
-        const data = await response.json();
-        const trialPackage = data.packages.find((p: any) => p.id === "trial");
-        if (trialPackage) {
-          // Always show price in MZN
-          setTrialPrice("100 MZN");
-        } else {
-          setTrialPrice("$1"); // Fallback
-        }
-      } catch (error) {
-        console.error("Failed to fetch trial price:", error);
-        setTrialPrice("$1"); // Fallback
-      }
-    };
-
-    if (isOpen) {
-      fetchTrialPrice();
-    }
-  }, [isOpen]);
-
-  React.useEffect(() => {
-    if (!isOpen) return;
-
-    const timer = setInterval(() => {
-      const now = new Date();
-      const hours = String(23 - (now.getHours() % 24)).padStart(2, "0");
-      const minutes = String(59 - now.getMinutes()).padStart(2, "0");
-      const seconds = String(59 - now.getSeconds()).padStart(2, "0");
-      setTimeLeft(`${hours}:${minutes}:${seconds}`);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-8 relative animate-in slide-in-from-bottom-4 duration-300">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <X className="h-6 w-6" />
-        </button>
-
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
-            <Sparkles className="h-4 w-4" />
-            {t("limitedTimeOffer")}
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            {trialPrice
-              ? t("title", { price: trialPrice })
-              : "Loading price..."}
-          </h2>
-          <p className="text-gray-600">{t("subtitle")}</p>
-        </div>
-
-        {/* Value Proposition */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-lg font-bold text-gray-900">
-              {t("creditsIncluded")}
-            </span>
-            <span className="text-2xl font-bold text-blue-600">
-              {t("creditsValue")}
-            </span>
-          </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-blue-500" />
-              <span>{t("resumeImprovements")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-blue-500" />
-              <span>{t("jobTailoredResumes")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-blue-500" />
-              <span>{t("linkedinAnalysis")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-blue-500" />
-              <span>{t("customEnhancement")}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Urgency */}
-        <div className="flex items-center justify-center gap-2 text-red-600 font-semibold mb-6">
-          <Clock className="h-5 w-5" />
-          <span>{t("offerExpires", { timeLeft })}</span>
-        </div>
-
-        {/* CTA Buttons */}
-        <div className="space-y-3">
-          {!showPaymentMethods ? (
-            <>
-              <Button
-                onClick={() => setShowPaymentMethods(true)}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
-              >
-                {t("startTrial")}
-              </Button>
-              <Button
-                onClick={() => {
-                  onClose();
-                  localStorage.setItem("aplycat_trial_intent", "true");
-                  window.location.href = "/signup?trial=true&intent=payment";
-                }}
-                variant="outline"
-                className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
-              >
-                {t("signUpFirst")}
-              </Button>
-              <Button
-                onClick={onClose}
-                variant="ghost"
-                className="w-full text-gray-600 hover:text-gray-800"
-              >
-                {t("maybeLater")}
-              </Button>
-            </>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-center text-gray-700 font-medium">
-                {t("choosePaymentMethod")}
-              </p>
-              <div className="grid grid-cols-1 gap-3">
-                <Button
-                  onClick={() => onAccept("credit_card")}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  {t("payWithCreditCard")}
-                </Button>
-                <Button
-                  onClick={() => onAccept("mobile_money")}
-                  variant="outline"
-                  className="w-full border-blue-300 text-blue-700 hover:bg-blue-50 py-4 text-lg font-bold rounded-xl"
-                >
-                  {t("payWithMobileMoney")}
-                </Button>
-              </div>
-              <Button
-                onClick={() => setShowPaymentMethods(false)}
-                variant="ghost"
-                className="w-full text-gray-600 hover:text-gray-800"
-              >
-                {t("backToOptions")}
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <p className="text-xs text-gray-500 text-center mt-4">
-          {t("disclaimer")}
-        </p>
-      </div>
-    </div>
-  );
-};
-
 // Free Upload Component with Streaming Analysis
 const FreeStreamingAnalysis = ({
   onRateLimitExceeded,
-  onShowTrialPopup,
 }: {
   onRateLimitExceeded: (error: any) => void;
-  onShowTrialPopup: () => void;
 }) => {
   const t = useTranslations("upload");
   const { analysis, status, error, rateLimit, startAnalysis } =
@@ -230,27 +46,8 @@ const FreeStreamingAnalysis = ({
 
   const [fileName, setFileName] = useState<string | null>(null);
 
-  // Smart trial popup timing - much less intrusive
-  useEffect(() => {
-    if (status === "completed" && analysis) {
-      // Check if user previously clicked "Maybe later"
-      const hasDeclined = localStorage.getItem("aplycat_trial_declined");
-      if (hasDeclined) {
-        return; // Don't show popup if user previously declined
-      }
-
-      // Show after 1 minute of viewing results
-      const timer = setTimeout(() => {
-        onShowTrialPopup();
-      }, 60000); // 60 seconds
-
-      return () => clearTimeout(timer);
-    }
-  }, [status, analysis, onShowTrialPopup]);
-
-  // Option 2: Show on user interaction with upgrade elements
   const handleUpgradeClick = () => {
-    onShowTrialPopup();
+    window.location.href = "/signup";
   };
 
   const onDrop = useCallback(
@@ -1158,7 +955,6 @@ const FinalCTASection = () => {
 // Main Landing Page Component
 export function LandingPage() {
   const t = useTranslations();
-  const [showTrialPopup, setShowTrialPopup] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<any>(null);
   const [currentView, setCurrentView] = useState<"upload" | "rate-limit">(
     "upload"
@@ -1169,79 +965,8 @@ export function LandingPage() {
     setCurrentView("rate-limit");
   };
 
-  const handleTrialAccept = async (
-    paymentMethod?: "credit_card" | "mobile_money"
-  ) => {
-    setShowTrialPopup(false);
-
-    // Clear any previous trial decline flag since user is actively choosing trial
-    localStorage.removeItem("aplycat_trial_declined");
-
-    // Check if user is signed in
-    // If not signed in, redirect to signup with trial
-    // If signed in, process payment directly
-    try {
-      const response = await fetch("/api/payments/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          packageType: "trial",
-          paymentMethod: paymentMethod || "credit_card", // Default to credit card
-          returnUrl: window.location.origin + "/trial-success",
-        }),
-      });
-
-      if (response.status === 401) {
-        // Not authenticated, store trial intent and redirect to signup
-        localStorage.setItem("aplycat_trial_intent", "true");
-        window.location.href = "/signup?trial=true&intent=payment";
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("Failed to create checkout");
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.checkoutUrl) {
-        // Show payment method specific message
-        if (paymentMethod === "mobile_money") {
-          console.log("Redirecting to mobile money payment...");
-        } else {
-          console.log("Redirecting to secure card payment...");
-        }
-        // Redirect to payment provider
-        window.location.href = data.checkoutUrl;
-      } else {
-        throw new Error("Invalid checkout response");
-      }
-    } catch (error) {
-      console.error("Trial payment error:", error);
-      // Fallback to signup with trial intent
-      localStorage.setItem("aplycat_trial_intent", "true");
-      window.location.href = "/signup?trial=true&intent=payment";
-    }
-  };
-
-  // Handle trial popup decline with tracking
-  const handleTrialDecline = () => {
-    setShowTrialPopup(false);
-    // Track that user declined trial to avoid showing popup again
-    localStorage.setItem("aplycat_trial_declined", "true");
-  };
-
   return (
     <>
-      {/* Trial Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3">
-        <div className="container mx-auto px-4 text-center">
-          <p className="font-semibold">
-            {t("banner.trial", { price: "100 MZN" })}
-          </p>
-        </div>
-      </div>
-
       {/* Hero Section */}
       <section className="py-16 bg-gradient-to-br from-blue-50 to-blue-50 overflow-hidden">
         <div className="container mx-auto px-4">
@@ -1261,12 +986,11 @@ export function LandingPage() {
           {currentView === "upload" ? (
             <FreeStreamingAnalysis
               onRateLimitExceeded={handleRateLimitExceeded}
-              onShowTrialPopup={() => setShowTrialPopup(true)}
             />
           ) : (
             <RateLimitError
               error={rateLimitError}
-              onUpgrade={() => setShowTrialPopup(true)}
+              onUpgrade={() => (window.location.href = "/signup")}
             />
           )}
 
@@ -1311,16 +1035,6 @@ export function LandingPage() {
 
       {/* Final CTA Section */}
       <FinalCTASection />
-
-      {/* Trial Popup */}
-      <TrialPopup
-        isOpen={showTrialPopup}
-        onClose={handleTrialDecline}
-        onAccept={handleTrialAccept}
-      />
-
-      {/* Pricing Test Panel (Development Only) */}
-      <PricingTestPanel />
     </>
   );
 }

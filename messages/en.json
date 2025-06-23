@@ -270,8 +270,8 @@
   "signup": {
     "trial": {
       "limitedTimeOffer": "LIMITED TIME OFFER",
-      "title": "$1 Trial - All AI Features",
-      "subtitle": "Get 22 credits worth $11 for just $1",
+      "title": "Start Your {price} Trial - All AI Features",
+      "subtitle": "Get 22 credits to boost your career for just {price}",
       "resumeImprovements": "11× Resume Improvements",
       "jobTailoring": "7× Job Tailoring + Cover Letter",
       "linkedinAnalysis": "FREE LinkedIn Analysis",
@@ -295,7 +295,7 @@
     "form": {
       "titleTrial": "Start Your $1 Trial",
       "titleRegular": "Create Your Account",
-      "subtitleTrial": "Get instant access to all AI features",
+      "subtitleTrial": "Get instant access to all AI features for just {price}",
       "subtitleRegular": "Join thousands improving their careers"
     },
     "freeAnalysis": "🎁 Resume analysis is now FREE - no credit card required",
@@ -384,7 +384,14 @@
       "processing": "Processing...",
       "claimTrialNow": "Claim 100 MZN Trial Now",
       "signUpBenefit": "Create account to claim your trial",
-      "limitedTime": "⏰ Limited time offer"
+      "limitedTime": "⏰ Limited time offer",
+      "claimButton": "Claim Trial Now",
+      "payWithCard": "Pay with Card",
+      "payWithMobile": "Pay with Mobile Money",
+      "processing": "Processing...",
+      "securePayment": "Secure payments via Stripe and M-Pesa.",
+      "backToOptions": "Back",
+      "oneTimePayment": "One-time payment • No subscription"
     },
     "uploadCard": {
       "title": "Upload Resume",

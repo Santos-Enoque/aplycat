@@ -102,8 +102,8 @@ class StripeClient {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        success_url: returnUrl ? `${returnUrl}?payment=success&session_id={CHECKOUT_SESSION_ID}` : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: returnUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=cancelled`,
+        success_url: `${returnUrl}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${returnUrl}?payment=cancelled`,
         customer_email: userEmail,
         metadata,
         // Additional options

@@ -624,7 +624,7 @@ function PurchasePageContent() {
         body: JSON.stringify({
           packageType: selectedPackage,
           paymentMethod: "credit_card",
-          returnUrl: `${window.location.origin}/dashboard?payment=success`,
+          returnUrl: `${window.location.origin}/dashboard`,
         }),
       });
       if (!response.ok) {

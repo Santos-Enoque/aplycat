@@ -26,20 +26,6 @@ export async function GET(request: NextRequest) {
     // Convert packages to include MZN pricing
     const packages = [];
     
-    // Always add Trial Pack for now
-    packages.push({
-      id: 'trial',
-      name: '🎁 Trial Pack',
-      credits: 22,
-      price: pricing.trialPrice,
-      currency: pricing.currency,
-      description: 'Perfect way to try all features - one-time only',
-      pricePerCredit: (pricing.trialPrice / 22).toFixed(2),
-      isTrialPackage: true,
-      availableForUser: true,
-    });
-    
-    // Add Pro Pack (always available)
     packages.push({
       id: 'pro',
       name: '🥇 Pro Pack',

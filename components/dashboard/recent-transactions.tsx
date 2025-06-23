@@ -46,6 +46,21 @@ export function RecentTransactions() {
     async function loadTransactions() {
       try {
         setIsLoading(true);
+
+        const cacheKey = "transactions_cache";
+        const cachedData = sessionStorage.getItem(cacheKey);
+        const now = new Date().getTime();
+
+        if (cachedData) {
+          const { timestamp, transactions } = JSON.parse(cachedData);
+          // Use cache if it's less than 1 minute old
+          if (now - timestamp < 60000) {
+            setTransactions(transactions);
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const response = await fetch("/api/payments/history");
 
         if (!response.ok) {
@@ -56,6 +71,14 @@ export function RecentTransactions() {
 
         if (data.success) {
           setTransactions(data.transactions || []);
+          // Cache the new data with a timestamp
+          sessionStorage.setItem(
+            cacheKey,
+            JSON.stringify({
+              timestamp: now,
+              transactions: data.transactions || [],
+            })
+          );
         } else {
           throw new Error(data.error || "Failed to load transactions");
         }
@@ -70,6 +93,11 @@ export function RecentTransactions() {
     }
 
     loadTransactions();
+
+    // Optional: Add an interval to refresh data periodically without full reloads
+    const intervalId = setInterval(loadTransactions, 300000); // every 5 minutes
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const getProviderIcon = (provider: Transaction["provider"]) => {
@@ -155,7 +183,7 @@ export function RecentTransactions() {
     }
 
     // Default fallback
-    return `${amount} ${currency || ''}`;
+    return `${amount} ${currency || ""}`;
   };
 
   const getTransactionDescription = (transaction: Transaction) => {
