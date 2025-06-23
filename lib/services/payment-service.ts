@@ -337,42 +337,37 @@ class PaymentService {
 
   private async handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     try {
-      console.log('[PAYMENT_SERVICE] Processing checkout completion:', session.id);
+      console.log(`[PAYMENT_SERVICE] Processing checkout completion for session: ${session.id}, status: ${session.payment_status}`);
 
-      const metadata = session.metadata;
-      if (!metadata) {
-        throw new Error('No metadata found in checkout session');
+      // Only process the payment if the charge was successful
+      if (session.payment_status === 'paid') {
+        const metadata = session.metadata;
+        if (!metadata) throw new Error('No metadata found in checkout session');
+        
+        const { userId, packageType, credits } = metadata;
+        if (!userId || !packageType || !credits) throw new Error('Missing required metadata in checkout session');
+
+        const creditsNumber = parseInt(credits);
+        const amount = session.amount_total ? session.amount_total / 100 : 0;
+        const currency = session.currency || 'mzn';
+
+        await this.processPayment({
+          sessionId: session.id,
+          userId,
+          packageType: packageType as CreditPackageType,
+          amount,
+          currency,
+          credits: creditsNumber,
+          provider: 'stripe',
+        });
+
+        console.log(`[PAYMENT_SERVICE] Successfully processed PAID checkout: ${session.id}`);
+      } else {
+        console.log(`[PAYMENT_SERVICE] Checkout session completed but not paid (status: ${session.payment_status}). No credits awarded.`);
+        // Optionally, log this event as a failed or abandoned cart
       }
-
-      const { userId, packageType, credits } = metadata;
-      
-      if (!userId || !packageType || !credits) {
-        throw new Error('Missing required metadata in checkout session');
-      }
-
-      const creditsNumber = parseInt(credits);
-      const amount = session.amount_total ? session.amount_total / 100 : 0;
-      const currency = session.currency || 'mzn';
-
-      await this.processPayment({
-        sessionId: session.id,
-        userId,
-        packageType: packageType as CreditPackageType,
-        amount,
-        currency,
-        credits: creditsNumber,
-        provider: 'stripe',
-      });
-
-      console.log('[PAYMENT_SERVICE] Checkout completed successfully:', {
-        sessionId: session.id,
-        userId,
-        packageType,
-        credits: creditsNumber,
-      });
-
     } catch (error) {
-      console.error('[PAYMENT_SERVICE] Checkout completion failed:', error);
+      console.error(`[PAYMENT_SERVICE] Checkout completion handling failed for session ${session.id}:`, error);
       throw error;
     }
   }

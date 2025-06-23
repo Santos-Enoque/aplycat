@@ -158,7 +158,7 @@ function TrialClaimCard() {
         body: JSON.stringify({
           packageType: "trial",
           paymentMethod: paymentMethod,
-          returnUrl: `${window.location.origin}/trial-success`,
+          returnUrl: `${window.location.origin}/dashboard`,
         }),
       });
 

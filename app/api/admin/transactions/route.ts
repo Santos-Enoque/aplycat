@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/auth/admin-middleware';
-import { paymentService } from '@/lib/services/payment-service';
+import { db } from '@/lib/db';
+import { CreditTransactionType } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,79 +18,87 @@ export async function GET(request: NextRequest) {
     const dateFrom = url.searchParams.get('dateFrom');
     const dateTo = url.searchParams.get('dateTo');
     const search = url.searchParams.get('search');
+
+    const skip = (page - 1) * limit;
+
+    const whereConditions: any = {};
+    if (dateFrom || dateTo) {
+      whereConditions.createdAt = {};
+      if (dateFrom) whereConditions.createdAt.gte = new Date(dateFrom);
+      if (dateTo) whereConditions.createdAt.lte = new Date(dateTo + 'T23:59:59.999Z');
+    }
+
+    let transactions: any[] = [];
+    let totalCount = 0;
+
+    // Fetch Stripe Transactions
+    if (!provider || provider === 'stripe') {
+        const stripeWhere: any = {
+            ...whereConditions,
+            eventType: 'CREDIT_PURCHASE',
+            metadata: { path: ['provider'], equals: 'stripe' }
+        };
+        if (search) {
+            stripeWhere.OR = [
+                { description: { contains: search, mode: 'insensitive' } },
+                { user: { email: { contains: search, mode: 'insensitive' } } }
+            ];
+        }
+        const stripeTransactions = await db.usageEvent.findMany({
+            where: stripeWhere,
+            include: { user: true },
+            orderBy: { createdAt: 'desc' },
+        });
+        transactions.push(...stripeTransactions.map(event => {
+            const meta = event.metadata as any;
+            return {
+                id: event.id, provider: 'stripe', amount: meta.amount, currency: meta.currency?.toUpperCase() || 'MZN',
+                status: 'completed', createdAt: event.createdAt, user: event.user, description: event.description,
+            };
+        }));
+    }
+
+    // Fetch MPesa Transactions
+    if (!provider || provider === 'mpesa') {
+        const mpesaWhere: any = { ...whereConditions };
+        if (status) mpesaWhere.status = status.toUpperCase();
+        if (search) {
+          mpesaWhere.OR = [
+            { customerMsisdn: { contains: search } },
+            { user: { email: { contains: search, mode: 'insensitive' } } }
+          ];
+        }
+        const mpesaTransactions = await db.mpesaPayment.findMany({
+            where: mpesaWhere,
+            include: { user: true },
+            orderBy: { createdAt: 'desc' },
+        });
+        transactions.push(...mpesaTransactions.map(p => ({
+            id: p.id, provider: 'mpesa', amount: p.amount, currency: 'MZN', status: p.status.toLowerCase(),
+            createdAt: p.createdAt, user: p.user, description: `MPesa purchase for ${p.credits} credits`,
+        })));
+    }
     
-    // Fetch all transactions from the centralized service
-    let allTransactions = await paymentService.getPaymentHistory();
+    // Sort all transactions by date
+    transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    // Apply filters on the combined data
-    if (provider) {
-      allTransactions = allTransactions.filter(tx => tx.provider === provider);
-    }
-    if (status) {
-      allTransactions = allTransactions.filter(tx => tx.status && tx.status.toLowerCase() === status.toLowerCase());
-    }
-    if (dateFrom) {
-      allTransactions = allTransactions.filter(tx => new Date(tx.createdAt) >= new Date(dateFrom));
-    }
-    if (dateTo) {
-      allTransactions = allTransactions.filter(tx => new Date(tx.createdAt) <= new Date(dateTo + 'T23:59:59.999Z'));
-    }
-    if (search) {
-      const lowercasedSearch = search.toLowerCase();
-      allTransactions = allTransactions.filter(tx => 
-        (tx.user?.firstName?.toLowerCase().includes(lowercasedSearch)) ||
-        (tx.user?.lastName?.toLowerCase().includes(lowercasedSearch)) ||
-        (tx.user?.email?.toLowerCase().includes(lowercasedSearch)) ||
-        (tx.id.includes(lowercasedSearch))
-      );
-    }
-
-    // Calculate summary statistics on the filtered data
-    const completedTransactions = allTransactions.filter(tx => tx.status === 'completed');
-    const usdToMznRate = 64; // Approximate rate for revenue calculation
-    const totalRevenue = completedTransactions.reduce((sum, tx) => {
-      if (tx.currency === 'MZN') {
-        return sum + tx.amount;
-      }
-      if (tx.currency === 'USD') {
-        return sum + (tx.amount * usdToMznRate);
-      }
-      return sum;
-    }, 0);
-
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayTransactions = completedTransactions.filter(tx => new Date(tx.createdAt) >= todayStart);
-    const todayRevenue = todayTransactions.reduce((sum, tx) => {
-        if (tx.currency === 'MZN') return sum + tx.amount;
-        if (tx.currency === 'USD') return sum + (tx.amount * usdToMznRate);
-        return sum;
-    }, 0);
-
-
-    // Apply pagination to the filtered data
-    const totalCount = allTransactions.length;
-    const paginatedTransactions = allTransactions.slice((page - 1) * limit, page * limit);
+    totalCount = transactions.length;
+    const paginatedTransactions = transactions.slice(skip, skip + limit);
 
     const summary = {
       totalTransactions: totalCount,
-      completedTransactions: completedTransactions.length,
-      pendingTransactions: allTransactions.filter(tx => tx.status === 'pending').length,
-      failedTransactions: allTransactions.filter(tx => tx.status === 'failed' || tx.status === 'cancelled').length,
-      totalRevenue,
-      todayRevenue,
-      todayTransactions: todayTransactions.length,
+      completedTransactions: transactions.filter(tx => tx.status === 'completed').length,
+      pendingTransactions: transactions.filter(tx => tx.status === 'pending').length,
+      failedTransactions: transactions.filter(tx => tx.status === 'failed' || tx.status === 'cancelled').length,
+      totalRevenue: transactions.filter(tx => tx.status === 'completed').reduce((sum, tx) => sum + (tx.currency === 'MZN' ? tx.amount : (tx.amount * 64)), 0),
+      todayRevenue: 0,
+      todayTransactions: 0,
     };
 
     return NextResponse.json({
       success: true,
       data: paginatedTransactions,
-      pagination: {
-        page,
-        limit,
-        total: totalCount,
-        pages: Math.ceil(totalCount / limit),
-      },
+      pagination: { page, limit, total: totalCount, pages: Math.ceil(totalCount / limit) },
       summary,
       filters: { status, provider, dateFrom, dateTo, search },
     });
@@ -97,11 +106,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('[ADMIN_TRANSACTIONS] Error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch transactions',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { success: false, error: 'Failed to fetch transactions' },
       { status: 500 }
     );
   }
