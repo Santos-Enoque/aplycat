@@ -171,14 +171,14 @@ export async function DELETE(request: NextRequest) {
       deletedTransaction: {
         id: deletedTransaction.id,
         provider,
-        userEmail: deletedTransaction.user.email,
+        userEmail: deletedTransaction.user?.email || 'N/A',
       }
     });
 
   } catch (error) {
     console.error('[ADMIN_DELETE] Error deleting transaction:', error);
     
-    if (error.code === 'P2025') {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
       return NextResponse.json(
         { success: false, error: 'Transaction not found' },
         { status: 404 }

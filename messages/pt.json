@@ -275,8 +275,8 @@
   "signup": {
     "trial": {
       "limitedTimeOffer": "OFERTA POR TEMPO LIMITADO",
-      "title": "Teste $1 - Todos os Recursos de IA",
-      "subtitle": "Obtenha 22 créditos no valor de $11 por apenas $1",
+      "title": "Comece o seu Teste de {price} - Todas as Funcionalidades de IA",
+      "subtitle": "Obtenha 22 créditos no valor de 1,100 MZN por apenas {price}",
       "resumeImprovements": "11× Melhorias de Currículo",
       "jobTailoring": "7× Personalização + Carta de Apresentação",
       "linkedinAnalysis": "GRÁTIS Análise do LinkedIn",
@@ -298,10 +298,10 @@
       }
     },
     "form": {
-      "titleTrial": "Inicie Seu Teste de $1",
-      "titleRegular": "Crie Sua Conta",
-      "subtitleTrial": "Obtenha acesso instantâneo a todos os recursos de IA",
-      "subtitleRegular": "Junte-se a milhares melhorando suas carreiras"
+      "titleTrial": "Comece o seu Teste de {price}",
+      "titleRegular": "Crie a sua Conta",
+      "subtitleTrial": "Obtenha acesso instantâneo a todas as funcionalidades de IA por apenas {price}",
+      "subtitleRegular": "Junte-se a milhares que estão a melhorar as suas carreiras"
     },
     "freeAnalysis": "🎁 Análise de currículo agora é GRÁTIS - sem cartão de crédito necessário",
     "loading": "Carregando..."
@@ -371,12 +371,18 @@
       "price": "$1.00",
       "oneTimePayment": "Pagamento único • Sem assinatura",
       "claimTrialNow": "Reivindique o Teste de $1 Agora",
-      "choosePaymentMethod": "Escolha seu método de pagamento:",
+      "choosePaymentMethod": "Escolha o Método de Pagamento",
       "creditCard": "Cartão de Crédito",
-      "mobileMoney": "Mobile Money",
+      "mobileMoney": "Dinheiro Móvel",
       "backToOptions": "← Voltar às opções",
       "processing": "Processando...",
-      "securePayment": "🔒 Pagamento seguro • Garantia de 30 dias"
+      "securePayment": "🔒 Pagamento seguro • Garantia de 30 dias",
+      "claimButton": "Reivindicar Teste Agora",
+      "payWithCard": "Pagar com Cartão",
+      "payWithMobile": "Pagar com Dinheiro Móvel",
+      "processing": "A processar...",
+      "securePayment": "Pagamentos seguros via Stripe e M-Pesa.",
+      "backToOptions": "Voltar"
     },
     "uploadCard": {
       "title": "Enviar Currículo",

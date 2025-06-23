@@ -385,9 +385,9 @@ export function StreamingAnalysisDisplay({
                         count: (displayedAnalysis as any).hidden_sections_count,
                       })}
                     </Button>
-                    <p className="text-sm text-gray-600">
+                    {/* <p className="text-sm text-gray-600">
                       {t("limitedAccess.trialMessage")}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
 
