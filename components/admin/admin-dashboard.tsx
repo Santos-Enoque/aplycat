@@ -57,6 +57,7 @@ interface User {
   lastName: string | null;
   email: string;
   createdAt: string;
+  phoneNumber?: string | null;
 }
 
 interface Transaction {
@@ -72,7 +73,6 @@ interface Transaction {
   credits?: number;
   currency?: string;
   paymentMethod?: string;
-  phoneNumber?: string;
   reference?: string;
   errorMessage?: string;
 }
@@ -668,9 +668,9 @@ export function AdminDashboard() {
                           <div className="text-sm text-gray-500">
                             {transaction.user.email}
                           </div>
-                          {transaction.phoneNumber && (
+                          {transaction.user.phoneNumber && (
                             <div className="text-sm text-gray-500">
-                              {transaction.phoneNumber}
+                              {transaction.user.phoneNumber}
                             </div>
                           )}
                         </div>

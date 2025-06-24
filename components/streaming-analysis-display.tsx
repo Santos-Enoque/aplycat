@@ -5,20 +5,13 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Target,
   Zap,
-  AlertCircle,
-  CheckCircle,
   TrendingUp,
-  FileText,
-  Linkedin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResumeAnalysis, ResumeSection } from "@/types/analysis";
@@ -375,57 +368,38 @@ export function StreamingAnalysisDisplay({
             (displayedAnalysis as any)?.hidden_sections_count > 0 && (
               <div className="relative">
                 {/* Blur overlay with upgrade prompt */}
-                <div className="h-40 bg-gradient-to-b from-transparent to-white absolute inset-0 z-10 flex items-end justify-center pb-4">
-                  <div className="text-center">
-                    <Button
-                      onClick={handleStartImprovementClick}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg font-semibold rounded-xl mb-2"
-                    >
-                      {t("limitedAccess.signUpButton", {
-                        count: (displayedAnalysis as any).hidden_sections_count,
-                      })}
-                    </Button>
-                    {/* <p className="text-sm text-gray-600">
-                      {t("limitedAccess.trialMessage")}
-                    </p> */}
-                  </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10 flex flex-col items-center justify-end p-6 text-center">
+                  <Button onClick={handleStartImprovementClick} size="lg">
+                    {t("upgrade.button", {
+                      count: (displayedAnalysis as any).hidden_sections_count,
+                    })}
+                  </Button>
                 </div>
-
-                {/* Blurred placeholder sections */}
-                <div className="blur-sm opacity-50 space-y-4">
-                  {Array.from({
-                    length: Math.min(
-                      (displayedAnalysis as any).hidden_sections_count,
-                      3
-                    ),
-                  }).map((_, i) => (
-                    <div
-                      key={`blurred-${i}`}
-                      className="border border-gray-200 rounded-lg overflow-hidden"
-                    >
-                      <div className="p-4 bg-gray-100 border-b flex items-center justify-between">
-                        <div className="h-5 bg-gray-300 rounded w-32"></div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 bg-gray-300 rounded w-16"></div>
-                          <div className="h-5 bg-gray-300 rounded w-12"></div>
+                <div className="blur-sm opacity-60 pointer-events-none select-none">
+                  {[...Array((displayedAnalysis as any).hidden_sections_count || 2)].map(
+                    (_, i) => (
+                      <div
+                        key={`blurred-${i}`}
+                        className="border border-gray-200 rounded-lg overflow-hidden"
+                      >
+                        <div className="p-4 bg-gray-100 border-b flex items-center justify-between">
+                          <div className="h-5 bg-gray-300 rounded w-32"></div>
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 bg-gray-300 rounded w-16"></div>
+                            <div className="h-5 bg-gray-300 rounded w-12"></div>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 rounded w-full"></div>
+                          <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                          </div>
                         </div>
                       </div>
-                      <div className="p-4 space-y-3">
-                        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                        <div className="h-3 bg-gray-200 rounded w-full"></div>
-                        <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                        <div className="space-y-1">
-                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                          <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {(displayedAnalysis as any).hidden_sections_count > 3 && (
-                    <div className="text-center py-4">
-                      <div className="h-4 bg-gray-300 rounded w-48 mx-auto"></div>
-                      <div className="h-3 bg-gray-200 rounded w-32 mx-auto mt-2"></div>
-                    </div>
+                    )
                   )}
                 </div>
               </div>
