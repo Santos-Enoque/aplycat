@@ -6,6 +6,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, X, AlertCircle } from "lucide-react";
 import { useUploadThing } from "@/lib/uploadthing";
+import { 
+  trackUploadMetrics, 
+  UploadThingError, 
+  retryUpload, 
+  monitorUploadPerformance 
+} from "@/lib/uploadthing-monitoring";
 
 interface OptimizedFileUploadProps {
   onAnalysisStarted?: () => void;
@@ -124,17 +130,36 @@ export function OptimizedFileUpload({
   };
 
   const uploadToUploadThing = async (file: File) => {
+    const startTime = Date.now();
+    
     try {
       console.log("[BACKGROUND] Starting UploadThing upload...");
 
-      // Use the real UploadThing upload
-      const uploadResult = await startUpload([file]);
-
-      if (!uploadResult || uploadResult.length === 0) {
-        throw new Error("Upload failed - no result returned");
-      }
+      // Use retry logic for better reliability
+      const uploadResult = await retryUpload(async () => {
+        const result = await startUpload([file]);
+        if (!result || result.length === 0) {
+          throw new Error("Upload failed - no result returned");
+        }
+        return result;
+      }, 3, 1000);
 
       const uploadedFile = uploadResult[0];
+      const uploadDuration = Date.now() - startTime;
+
+      // Monitor performance
+      monitorUploadPerformance(startTime, file.size, file.name);
+
+      // Track successful upload metrics
+      await trackUploadMetrics({
+        fileSize: file.size,
+        uploadDuration,
+        fileName: file.name,
+        userId: "", // Will be filled by analytics
+        success: true,
+        uploadMethod: 'uploadthing',
+      });
+
       console.log("[BACKGROUND] UploadThing upload completed:", uploadedFile);
 
       return { 
@@ -144,8 +169,24 @@ export function OptimizedFileUpload({
         resumeId: uploadedFile.serverData?.resumeId
       };
     } catch (error) {
-      console.error("[BACKGROUND] UploadThing upload failed:", error);
-      throw error;
+      const uploadDuration = Date.now() - startTime;
+      
+      // Convert to structured error
+      const structuredError = UploadThingError.fromError(error);
+      
+      // Track failed upload metrics
+      await trackUploadMetrics({
+        fileSize: file.size,
+        uploadDuration,
+        fileName: file.name,
+        userId: "", // Will be filled by analytics
+        success: false,
+        errorMessage: structuredError.message,
+        uploadMethod: 'uploadthing',
+      });
+
+      console.error("[BACKGROUND] UploadThing upload failed:", structuredError);
+      throw structuredError;
     }
   };
 
