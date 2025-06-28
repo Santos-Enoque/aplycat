@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { createSuccessResponse, handleApiError, CommonErrors } from "@/lib/utils/api-response";
 import { getCompleteDashboardData } from "@/lib/actions/dashboard-actions";
 
 export async function GET(request: NextRequest) {
@@ -6,23 +7,16 @@ export async function GET(request: NextRequest) {
     const userData = await getCompleteDashboardData();
     
     if (!userData) {
-      return NextResponse.json(
-        { error: "User not found or not authenticated" },
-        { status: 401 }
-      );
+      return CommonErrors.unauthorized();
     }
 
-    return NextResponse.json(userData, {
-      headers: {
-        // Cache for 1 minute on CDN, allow stale for 5 minutes
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-      },
-    });
+    const response = createSuccessResponse(userData);
+    
+    // Cache for 1 minute on CDN, allow stale for 5 minutes
+    response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    
+    return response;
   } catch (error) {
-    console.error("[API] Dashboard data fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch dashboard data" },
-      { status: 500 }
-    );
+    return handleApiError(error, "DASHBOARD_DATA");
   }
 } 
