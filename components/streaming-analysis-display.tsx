@@ -155,7 +155,7 @@ export function StreamingAnalysisDisplay({
     keyInsight:
       displayedAnalysis.main_roast ||
       "The analysis is still in progress, but key insights will appear here soon.",
-    sections: (analysis?.resume_sections || []).map(
+    sections: (displayedAnalysis?.resume_sections || []).map(
       (section: ResumeSection) => ({
         name: section.section_name,
         rating: section.rating || "Fair",
