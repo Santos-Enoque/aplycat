@@ -532,6 +532,158 @@
     "delete": "Delete",
     "uploadedOn": "Uploaded {timeAgo}"
   },
+  "resume": {
+    "library": {
+      "title": "Resume Library",
+      "uploadNew": "Upload Resume",
+      "selectedCount": "{count} resume selected",
+      "selectedCount_plural": "{count} resumes selected",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "statistics": {
+        "totalResumes": "Total Resumes",
+        "totalAnalyses": "Analyses",
+        "totalImprovements": "Improvements",
+        "averageScore": "Avg Score"
+      },
+      "viewMode": {
+        "grid": "Grid view",
+        "list": "List view",
+        "timeline": "Timeline view"
+      },
+      "sort": {
+        "label": "Sort by",
+        "dateUploadedDesc": "Newest first",
+        "dateUploadedAsc": "Oldest first",
+        "lastModifiedDesc": "Recently modified",
+        "lastModifiedAsc": "Least recently modified",
+        "titleAsc": "Title (A-Z)",
+        "titleDesc": "Title (Z-A)",
+        "analysisScoreDesc": "Highest score",
+        "analysisScoreAsc": "Lowest score",
+        "mostAnalyzedDesc": "Most analyzed",
+        "mostImprovedDesc": "Most improved"
+      },
+      "filters": {
+        "toggle": "Filters",
+        "active": "Active",
+        "search": {
+          "placeholder": "Search resumes, roles, or content..."
+        },
+        "status": {
+          "label": "Status",
+          "pending": "Pending",
+          "in_progress": "In Progress",
+          "completed": "Completed",
+          "error": "Error",
+          "cancelled": "Cancelled"
+        },
+        "dateRange": {
+          "label": "Date Range",
+          "placeholder": "Select date range"
+        },
+        "scoreRange": {
+          "label": "Score Range"
+        },
+        "content": {
+          "label": "Content",
+          "hasAnalysis": "Has Analysis",
+          "hasImprovements": "Has Improvements"
+        },
+        "tags": {
+          "label": "Tags",
+          "comingSoon": "Coming Soon"
+        },
+        "activeCount": "{count} active filter",
+        "activeCount_plural": "{count} active filters",
+        "noActive": "No active filters",
+        "clearAll": "Clear all"
+      },
+      "card": {
+        "score": "Score",
+        "analyses": "analyses",
+        "versions": "versions",
+        "lastAnalysisScore": "Latest analysis score",
+        "analyze": "Analyze",
+        "reanalyze": "Re-analyze",
+        "improve": "Improve",
+        "view": "View",
+        "actions": {
+          "view": "View Resume",
+          "analyze": "Analyze Resume",
+          "improve": "Improve Resume",
+          "download": "Download",
+          "duplicate": "Duplicate",
+          "addTag": "Add Tag",
+          "delete": "Delete"
+        },
+        "downloadSuccess": "Resume downloaded successfully",
+        "downloadError": "Failed to download resume"
+      },
+      "workflow": {
+        "upload": "Upload",
+        "analyze": "Analyze",
+        "improve": "Improve",
+        "export": "Export",
+        "progress": "{progress}% Complete"
+      },
+      "bulk": {
+        "selectedCount": "{count} selected",
+        "actions": {
+          "analyzeAll": "Analyze All",
+          "exportAll": "Export All",
+          "moreActions": "More Actions",
+          "duplicateAll": "Duplicate Selected",
+          "tagAll": "Tag Selected",
+          "deleteAll": "Delete Selected"
+        },
+        "clearSelection": "Clear Selection",
+        "comingSoon": "Coming Soon",
+        "deleteDialog": {
+          "title": "Delete Resumes",
+          "description": "Are you sure you want to delete {count} resume? This action cannot be undone.",
+          "description_plural": "Are you sure you want to delete {count} resumes? This action cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Delete"
+        },
+        "success": {
+          "analyze": "Successfully queued {count} resume for analysis",
+          "analyze_plural": "Successfully queued {count} resumes for analysis",
+          "export": "Successfully exported {count} resume",
+          "export_plural": "Successfully exported {count} resumes",
+          "duplicate": "Successfully duplicated {count} resume",
+          "duplicate_plural": "Successfully duplicated {count} resumes",
+          "delete": "Successfully deleted {count} resume",
+          "delete_plural": "Successfully deleted {count} resumes"
+        },
+        "error": {
+          "analyze": "Failed to analyze resumes",
+          "export": "Failed to export resumes",
+          "duplicate": "Failed to duplicate resumes",
+          "delete": "Failed to delete resumes"
+        }
+      },
+      "empty": {
+        "title": "No resumes yet",
+        "description": "Upload your first resume to get started with AI-powered analysis and improvements.",
+        "uploadButton": "Upload Resume",
+        "learnMoreButton": "Learn More",
+        "noResultsTitle": "No resumes found",
+        "noResultsDescription": "Try adjusting your filters or search query to find what you're looking for."
+      },
+      "error": {
+        "title": "Something went wrong",
+        "description": "We couldn't load your resumes. Please try again.",
+        "retryButton": "Try Again"
+      },
+      "timeline": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "thisWeek": "This Week",
+        "thisMonth": "This Month"
+      }
+    }
+  },
   "analyses": {
     "title": "Analysis History",
     "totalAnalyses": "{total} analyses",

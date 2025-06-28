@@ -489,6 +489,158 @@
       "delete": "Excluir",
       "uploadedOn": "Enviado {timeAgo}"
     },
+    "resume": {
+      "library": {
+        "title": "Biblioteca de Currículos",
+        "uploadNew": "Enviar Currículo",
+        "selectedCount": "{count} currículo selecionado",
+        "selectedCount_plural": "{count} currículos selecionados",
+        "selectAll": "Selecionar todos",
+        "deselectAll": "Desmarcar todos",
+        "statistics": {
+          "totalResumes": "Total de Currículos",
+          "totalAnalyses": "Análises",
+          "totalImprovements": "Melhorias",
+          "averageScore": "Pontuação Média"
+        },
+        "viewMode": {
+          "grid": "Visualização em grade",
+          "list": "Visualização em lista",
+          "timeline": "Visualização em linha do tempo"
+        },
+        "sort": {
+          "label": "Ordenar por",
+          "dateUploadedDesc": "Mais recentes primeiro",
+          "dateUploadedAsc": "Mais antigos primeiro",
+          "lastModifiedDesc": "Modificados recentemente",
+          "lastModifiedAsc": "Menos recentemente modificados",
+          "titleAsc": "Título (A-Z)",
+          "titleDesc": "Título (Z-A)",
+          "analysisScoreDesc": "Maior pontuação",
+          "analysisScoreAsc": "Menor pontuação",
+          "mostAnalyzedDesc": "Mais analisados",
+          "mostImprovedDesc": "Mais melhorados"
+        },
+        "filters": {
+          "toggle": "Filtros",
+          "active": "Ativos",
+          "search": {
+            "placeholder": "Pesquisar currículos, cargos ou conteúdo..."
+          },
+          "status": {
+            "label": "Status",
+            "pending": "Pendente",
+            "in_progress": "Em Progresso",
+            "completed": "Concluído",
+            "error": "Erro",
+            "cancelled": "Cancelado"
+          },
+          "dateRange": {
+            "label": "Período",
+            "placeholder": "Selecione o período"
+          },
+          "scoreRange": {
+            "label": "Faixa de Pontuação"
+          },
+          "content": {
+            "label": "Conteúdo",
+            "hasAnalysis": "Tem Análise",
+            "hasImprovements": "Tem Melhorias"
+          },
+          "tags": {
+            "label": "Tags",
+            "comingSoon": "Em Breve"
+          },
+          "activeCount": "{count} filtro ativo",
+          "activeCount_plural": "{count} filtros ativos",
+          "noActive": "Nenhum filtro ativo",
+          "clearAll": "Limpar todos"
+        },
+        "card": {
+          "score": "Pontuação",
+          "analyses": "análises",
+          "versions": "versões",
+          "lastAnalysisScore": "Pontuação da última análise",
+          "analyze": "Analisar",
+          "reanalyze": "Re-analisar",
+          "improve": "Melhorar",
+          "view": "Visualizar",
+          "actions": {
+            "view": "Ver Currículo",
+            "analyze": "Analisar Currículo",
+            "improve": "Melhorar Currículo",
+            "download": "Baixar",
+            "duplicate": "Duplicar",
+            "addTag": "Adicionar Tag",
+            "delete": "Excluir"
+          },
+          "downloadSuccess": "Currículo baixado com sucesso",
+          "downloadError": "Falha ao baixar currículo"
+        },
+        "workflow": {
+          "upload": "Enviar",
+          "analyze": "Analisar",
+          "improve": "Melhorar",
+          "export": "Exportar",
+          "progress": "{progress}% Concluído"
+        },
+        "bulk": {
+          "selectedCount": "{count} selecionados",
+          "actions": {
+            "analyzeAll": "Analisar Todos",
+            "exportAll": "Exportar Todos",
+            "moreActions": "Mais Ações",
+            "duplicateAll": "Duplicar Selecionados",
+            "tagAll": "Marcar Selecionados",
+            "deleteAll": "Excluir Selecionados"
+          },
+          "clearSelection": "Limpar Seleção",
+          "comingSoon": "Em Breve",
+          "deleteDialog": {
+            "title": "Excluir Currículos",
+            "description": "Tem certeza de que deseja excluir {count} currículo? Esta ação não pode ser desfeita.",
+            "description_plural": "Tem certeza de que deseja excluir {count} currículos? Esta ação não pode ser desfeita.",
+            "cancel": "Cancelar",
+            "confirm": "Excluir"
+          },
+          "success": {
+            "analyze": "Análise de {count} currículo adicionada à fila com sucesso",
+            "analyze_plural": "Análise de {count} currículos adicionada à fila com sucesso",
+            "export": "Exportação de {count} currículo concluída com sucesso",
+            "export_plural": "Exportação de {count} currículos concluída com sucesso",
+            "duplicate": "Duplicação de {count} currículo concluída com sucesso",
+            "duplicate_plural": "Duplicação de {count} currículos concluída com sucesso",
+            "delete": "Exclusão de {count} currículo concluída com sucesso",
+            "delete_plural": "Exclusão de {count} currículos concluída com sucesso"
+          },
+          "error": {
+            "analyze": "Falha ao analisar currículos",
+            "export": "Falha ao exportar currículos",
+            "duplicate": "Falha ao duplicar currículos",
+            "delete": "Falha ao excluir currículos"
+          }
+        },
+        "empty": {
+          "title": "Nenhum currículo ainda",
+          "description": "Envie seu primeiro currículo para começar com análises e melhorias alimentadas por IA.",
+          "uploadButton": "Enviar Currículo",
+          "learnMoreButton": "Saiba Mais",
+          "noResultsTitle": "Nenhum currículo encontrado",
+          "noResultsDescription": "Tente ajustar seus filtros ou pesquisa para encontrar o que procura."
+        },
+        "error": {
+          "title": "Algo deu errado",
+          "description": "Não foi possível carregar seus currículos. Por favor, tente novamente.",
+          "retryButton": "Tentar Novamente"
+        },
+        "timeline": {
+          "today": "Hoje",
+          "yesterday": "Ontem",
+          "thisWeek": "Esta Semana",
+          "thisMonth": "Este Mês"
+        }
+      }
+    },
     "analyses": {
       "title": "Histórico de Análises",
       "totalAnalyses": "{total} análises",
