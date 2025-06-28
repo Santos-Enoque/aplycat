@@ -1,9 +1,9 @@
+/* UploadThing Styles */
+@import "@uploadthing/react/styles.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* UploadThing Styles */
-@import "@uploadthing/react/styles.css";
 
 :root {
   --background: 0 0% 100%;
