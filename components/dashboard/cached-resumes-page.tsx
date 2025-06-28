@@ -15,6 +15,7 @@ import {
   Trash2,
   AlertTriangle,
   Plus,
+  Sparkles,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import Link from "next/link";
@@ -48,19 +49,57 @@ export function CachedResumesPage() {
 
   const { resumes, total } = resumesData;
 
-  const handleDelete = async (resumeId: string) => {
+  const handleDelete = async (resumeId: string, fileName: string) => {
     if (deletingId) return;
+
+    // Confirm deletion
+    if (!confirm(`Are you sure you want to delete "${fileName}"? This action cannot be undone.`)) {
+      return;
+    }
 
     setDeletingId(resumeId);
     try {
-      // TODO: Implement delete functionality with optimistic updates
-      console.log("Delete resume:", resumeId);
-      // For now, just simulate loading
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(`/api/resumes/${resumeId}/delete`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete resume');
+      }
+
+      // Show success message
+      console.log('Resume deleted successfully:', result);
+      
+      // Refresh the resumes list
+      window.location.reload(); // Simple refresh for now
+      
     } catch (error) {
       console.error("Failed to delete resume:", error);
+      alert(`Failed to delete resume: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleDownload = async (resumeId: string, fileName: string) => {
+    try {
+      // Create a link to download the file
+      const downloadUrl = `/api/resumes/${resumeId}/download`;
+      
+      // Create temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log(`Downloading resume: ${fileName}`);
+    } catch (error) {
+      console.error("Failed to download resume:", error);
+      alert(`Failed to download resume: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -120,38 +159,80 @@ export function CachedResumesPage() {
               <CardContent>
                 <div className="space-y-4">
                   {/* File Info */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-700">
-                        {resume.fileName}
-                      </span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm text-gray-700">
+                          {resume.fileName}
+                        </span>
+                        <Badge 
+                          variant="outline" 
+                          className="text-xs px-1.5 py-0.5"
+                        >
+                          {resume.fileType}
+                        </Badge>
+                      </div>
+                      {resume.fileSize && (
+                        <span className="text-xs text-gray-500">
+                          {(resume.fileSize / 1024).toFixed(1)} KB
+                        </span>
+                      )}
                     </div>
-                    {resume.fileSize && (
-                      <span className="text-xs text-gray-500">
-                        {(resume.fileSize / 1024).toFixed(1)} KB
-                      </span>
-                    )}
+
+                    {/* Statistics and Storage Info */}
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1">
+                          <BarChart3 className="h-3 w-3 text-blue-500" />
+                          {resume.analysesCount} {resume.analysesCount === 1 ? 'analysis' : 'analyses'}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Sparkles className="h-3 w-3 text-purple-500" />
+                          {resume.improvementsCount} {resume.improvementsCount === 1 ? 'improvement' : 'improvements'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={resume.storageType === 'uploadthing' ? 'default' : 'secondary'}
+                          className="text-xs px-1.5 py-0.5"
+                        >
+                          {resume.storageType === 'uploadthing' ? '☁️ Cloud' : '📦 Legacy'}
+                        </Badge>
+                        {resume.latestAnalysis && (
+                          <Badge 
+                            variant="outline"
+                            className="text-xs px-1.5 py-0.5"
+                          >
+                            ATS: {resume.latestAnalysis.atsScore}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex flex-col gap-2">
+                    {/* Analyze Button */}
                     <Link
                       href={`/analyze?resumeId=${
                         resume.id
                       }&fileName=${encodeURIComponent(resume.fileName)}`}
-                      className="flex-1"
+                      className="w-full"
                     >
                       <Button
                         size="sm"
                         className="w-full bg-green-600 hover:bg-green-700"
                       >
-                        <BarChart3 className="h-4 w-4 mr-1" />
-                        Analyze
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Analyze Resume
                       </Button>
                     </Link>
-                    <div className="flex gap-2 flex-1">
-                      {resume.fileUrl && (
+
+                    {/* Action Buttons Row */}
+                    <div className="flex gap-2">
+                      {/* View Button - only for UploadThing files */}
+                      {resume.fileUrl && resume.storageType === 'uploadthing' && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -168,11 +249,24 @@ export function CachedResumesPage() {
                           </a>
                         </Button>
                       )}
+                      
+                      {/* Download Button */}
                       <Button
                         size="sm"
                         variant="outline"
                         className="flex-1"
-                        onClick={() => handleDelete(resume.id)}
+                        onClick={() => handleDownload(resume.id, resume.fileName)}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Download
+                      </Button>
+                      
+                      {/* Delete Button */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDelete(resume.id, resume.fileName)}
                         disabled={deletingId === resume.id}
                       >
                         {deletingId === resume.id ? (
