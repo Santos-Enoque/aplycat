@@ -287,8 +287,7 @@ function printStats(stats: MigrationStats): void {
 // Validation function to ensure UploadThing is properly configured
 async function validateSetup(): Promise<void> {
   const requiredEnvVars = [
-    'UPLOADTHING_SECRET',
-    'UPLOADTHING_APP_ID',
+    'UPLOADTHING_TOKEN',
   ];
 
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -296,7 +295,16 @@ async function validateSetup(): Promise<void> {
   if (missing.length > 0) {
     console.error('❌ Missing required environment variables:');
     missing.forEach(envVar => console.error(`  - ${envVar}`));
-    console.error('\nPlease set these variables before running the migration.');
+    console.error('\nPlease set UPLOADTHING_TOKEN in your environment variables.');
+    console.error('You can get this from your UploadThing dashboard.');
+    process.exit(1);
+  }
+
+  // Validate token format
+  const token = process.env.UPLOADTHING_TOKEN;
+  if (!token || !token.startsWith('eyJ')) {
+    console.error('❌ Invalid UPLOADTHING_TOKEN format.');
+    console.error('Token should be a JWT-like string starting with "eyJ".');
     process.exit(1);
   }
 

@@ -215,10 +215,10 @@ export function DashboardContent({ user }: DashboardContentProps) {
     window.open("https://instagram.com/aplycat", "_blank");
   };
 
-  const totalAnalyses = user.analyses.length;
-  const totalImprovements = user.improvedResumes.length;
+  const totalAnalyses = user.analyses?.length ?? 0;
+  const totalImprovements = user.improvedResumes?.length ?? 0;
   const latestAnalysis =
-    user.analyses.length > 0
+    user.analyses && user.analyses.length > 0
       ? user.analyses.sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

@@ -5,10 +5,13 @@ import { db, analyticsHelpers } from "@/lib/db";
 const f = createUploadthing();
 
 export const ourFileRouter = {
-  resumeUploader: f({ 
-    pdf: { maxFileSize: "8MB", maxFileCount: 1 },
+  resumeUploader: f({
+    "application/pdf": { maxFileSize: "8MB", maxFileCount: 1 },
     "application/msword": { maxFileSize: "8MB", maxFileCount: 1 },
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { maxFileSize: "8MB", maxFileCount: 1 }
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { 
+      maxFileSize: "8MB", 
+      maxFileCount: 1 
+    }
   })
     .middleware(async ({ req }) => {
       // Check authentication

@@ -1,11 +1,10 @@
 import { createRouteHandler } from "uploadthing/next";
 import { ourFileRouter } from "./core";
 
-// Export routes for Next.js App Router
+// Export routes for Next.js App Router (UploadThing v7+ format)
 export const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
   config: {
-    // Optional: Configure additional settings
-    callbackUrl: process.env.UPLOADTHING_CALLBACK_URL,
+    token: process.env.UPLOADTHING_TOKEN,
   },
 });

@@ -6,8 +6,10 @@
 import { db } from "@/lib/db";
 import { UTApi } from "uploadthing/server";
 
-// Initialize UploadThing API
-const utapi = new UTApi();
+// Initialize UploadThing API (v7+ compatible)
+const utapi = new UTApi({
+  token: process.env.UPLOADTHING_TOKEN,
+});
 
 export interface FileUploadResult {
   url: string;

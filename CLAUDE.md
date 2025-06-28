@@ -413,4 +413,53 @@ export async function processPayment(params: ProcessPaymentParams) {
 
 ---
 
+## GitHub Issue Creation Guidelines
+
+### When asked to create GitHub issues for new features:
+
+1. **Analyze Current State**: First examine the existing codebase to understand current implementation and identify integration points.
+
+2. **Create Epic Issue**: Start with a comprehensive epic that includes:
+   - Clear overview and business impact
+   - Current state vs. target state analysis
+   - Technical architecture overview
+   - Phase breakdown and implementation approach
+   - Success criteria and acceptance requirements
+
+3. **Break Down into Components**: Create individual issues for:
+   - **Data/Storage**: Database schemas, file storage, migrations
+   - **Backend/API**: API routes, services, business logic
+   - **Frontend/UI**: Components, pages, user interactions  
+   - **Performance**: Optimization, caching, scaling
+   - **Security**: Authentication, authorization, data protection
+   - **Analytics**: Tracking, monitoring, insights
+
+4. **Use Consistent Structure**: Each issue should include:
+   - Clear title with emoji and component name
+   - Overview and current vs. target implementation
+   - Detailed technical requirements with code examples
+   - Implementation details and considerations
+   - Comprehensive acceptance criteria
+   - Performance, security, and error handling notes
+   - Dependencies and proper labels
+
+5. **Follow Project Patterns**: Ensure all code examples and architectures follow the established patterns in this CLAUDE.md file, including:
+   - TypeScript best practices and type safety
+   - API route structure and error handling
+   - Database patterns with Prisma
+   - Component and hook conventions
+   - Security and performance guidelines
+
+6. **Label Standards**:
+   - Priority: `critical`, `high-priority`, `medium-priority`, `low-priority`
+   - Component: `frontend`, `backend`, `database`, `performance`, `security`, `analytics`
+   - Type: `epic`, `enhancement`, `bug`, `refactor`, `migration`
+
+7. **Create Issues in GitHub**: Use the `gh` command to create actual issues in the repository, ensuring proper linking between epic and individual issues.
+
+### Example Usage:
+"Create GitHub issues for implementing a real-time notification system that alerts users when their resume analysis completes, integrates with our existing Clerk authentication, and includes user preference management."
+
+---
+
 This document serves as the authoritative guide for development standards in the ApplyCat project. All code should adhere to these guidelines to ensure consistency, maintainability, and quality.
