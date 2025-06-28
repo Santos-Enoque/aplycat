@@ -213,21 +213,55 @@ export function CachedResumesPage() {
 
                   {/* Actions */}
                   <div className="flex flex-col gap-2">
-                    {/* Analyze Button */}
-                    <Link
-                      href={`/analyze?resumeId=${
-                        resume.id
-                      }&fileName=${encodeURIComponent(resume.fileName)}`}
-                      className="w-full"
-                    >
-                      <Button
-                        size="sm"
-                        className="w-full bg-green-600 hover:bg-green-700"
+                    {/* Primary Action Button - View Analysis or Analyze */}
+                    {resume.analysesCount > 0 && resume.latestAnalysis ? (
+                      <Link
+                        href={`/dashboard/analyses/${resume.latestAnalysis.id}`}
+                        className="w-full"
                       >
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        Analyze Resume
-                      </Button>
-                    </Link>
+                        <Button
+                          size="sm"
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Analysis
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/analyze?resumeId=${
+                          resume.id
+                        }&fileName=${encodeURIComponent(resume.fileName)}`}
+                        className="w-full"
+                      >
+                        <Button
+                          size="sm"
+                          className="w-full bg-green-600 hover:bg-green-700"
+                        >
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          Analyze Resume
+                        </Button>
+                      </Link>
+                    )}
+                    
+                    {/* Secondary Action - Re-analyze if analysis exists */}
+                    {resume.analysesCount > 0 && resume.latestAnalysis && (
+                      <Link
+                        href={`/analyze?resumeId=${
+                          resume.id
+                        }&fileName=${encodeURIComponent(resume.fileName)}`}
+                        className="w-full"
+                      >
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          Re-analyze
+                        </Button>
+                      </Link>
+                    )}
 
                     {/* Action Buttons Row */}
                     <div className="flex gap-2">

@@ -47,6 +47,57 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Function to save analysis results to database
+  const saveAnalysisToDatabase = useCallback(async (analysisData: any, file: File | null) => {
+    if (!analysisData || !file) {
+      console.warn('[useStreamingAnalysis] Missing data for saving analysis');
+      return;
+    }
+
+    try {
+      // Get resume ID from session storage if available
+      const uploadThingResumeId = sessionStorage.getItem('aplycat_uploadthing_resume_id');
+      const fallbackResumeId = sessionStorage.getItem('aplycat_fallback_resume_id');
+      const resumeId = uploadThingResumeId || fallbackResumeId;
+
+      const savePayload = {
+        fileName: file.name,
+        analysisData: analysisData,
+        resumeId: resumeId || undefined,
+        overallScore: analysisData.overallScore || 0,
+        atsScore: analysisData.atsScore || 0,
+        scoreCategory: analysisData.scoreCategory || 'Unknown',
+        mainRoast: analysisData.mainRoast || 'No roast available',
+        creditsUsed: 1 // Default credit cost for analysis
+      };
+
+      console.log('[useStreamingAnalysis] Saving analysis to database...', savePayload);
+
+      const response = await fetch('/api/save-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(savePayload),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('[useStreamingAnalysis] Analysis saved successfully:', result);
+        
+        // Store the analysis ID for future reference
+        if (result.analysisId) {
+          sessionStorage.setItem('aplycat_last_analysis_id', result.analysisId);
+        }
+      } else {
+        const error = await response.text();
+        console.error('[useStreamingAnalysis] Failed to save analysis:', error);
+      }
+    } catch (error) {
+      console.error('[useStreamingAnalysis] Error saving analysis:', error);
+    }
+  }, []);
+
   useEffect(() => {
     if (status === 'idle' && analysis) {
        const savedStatus = sessionStorage.getItem('streamingAnalysisStatus') as StreamingStatus;
@@ -121,6 +172,9 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
               const finalData = JSON.parse(buffer);
               setAnalysis(finalData);
               setProgress(100);
+              
+              // Save analysis to database when completed
+              saveAnalysisToDatabase(finalData, lastFile.current);
             } catch (e) {
               console.error('[useStreamingAnalysis] Error parsing final buffer:', e);
             }
@@ -148,7 +202,14 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
                 const data = JSON.parse(jsonStr);
                 
                 // The backend now sends the partial/complete analysis object directly
+                const updatedAnalysis = { ...analysis, ...data };
                 setAnalysis(prev => ({ ...prev, ...data }));
+                
+                // If this appears to be a complete analysis, save it
+                if (data.overallScore !== undefined && data.atsScore !== undefined) {
+                  console.log('[useStreamingAnalysis] Complete analysis detected in stream, saving...');
+                  saveAnalysisToDatabase(updatedAnalysis, lastFile.current);
+                }
               }
             } catch (e) {
               console.error('[useStreamingAnalysis] Error parsing stream data:', e, "Received:", message);
