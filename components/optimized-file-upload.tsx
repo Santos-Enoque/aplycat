@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, X, AlertCircle } from "lucide-react";
+import { useUploadThing } from "@/lib/uploadthing";
 
 interface OptimizedFileUploadProps {
   onAnalysisStarted?: () => void;
@@ -18,6 +19,16 @@ export function OptimizedFileUpload({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // UploadThing hook for real file uploads
+  const { startUpload, isUploading } = useUploadThing("resumeUploader", {
+    onClientUploadComplete: (res) => {
+      console.log("[OPTIMIZED_UPLOAD] UploadThing upload completed:", res);
+    },
+    onUploadError: (error) => {
+      console.error("[OPTIMIZED_UPLOAD] UploadThing upload failed:", error);
+    },
+  });
 
   const handleFileToBase64 = useCallback((file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -69,7 +80,7 @@ export function OptimizedFileUpload({
         );
 
         // Start background processes immediately (don't wait)
-        startBackgroundProcesses(analysisData);
+        startBackgroundProcesses(file, analysisData);
 
         // Navigate immediately to analysis with enhanced loading
         const params = new URLSearchParams({
@@ -90,43 +101,48 @@ export function OptimizedFileUpload({
   );
 
   // Background processes that don't block user experience
-  const startBackgroundProcesses = async (analysisData: any) => {
-    // These run in parallel, user doesn't wait for them
-    Promise.allSettled([
-      uploadToUploadThing(analysisData),
-      saveResumeMetadata(analysisData),
-    ])
-      .then(() => {
-        console.log("[BACKGROUND] File upload and metadata save completed");
+  const startBackgroundProcesses = async (file: File, analysisData: any) => {
+    // Upload to UploadThing (which automatically saves metadata)
+    // This runs in background, user doesn't wait for it
+    uploadToUploadThing(file)
+      .then((result) => {
+        console.log("[BACKGROUND] File upload completed:", result);
+        
+        // Store the UploadThing resume ID for later use if upload succeeded
+        if (result.resumeId) {
+          sessionStorage.setItem("aplycat_uploadthing_resume_id", result.resumeId);
+        }
       })
       .catch((error) => {
-        console.error("[BACKGROUND] Background processes failed:", error);
+        console.error("[BACKGROUND] Background upload failed:", error);
         // Handle gracefully - user experience not affected
+        // Still save a fallback metadata record with Base64 data
+        saveResumeMetadata(analysisData).catch(() => {
+          console.error("[BACKGROUND] Fallback metadata save also failed");
+        });
       });
   };
 
-  const uploadToUploadThing = async (analysisData: any) => {
+  const uploadToUploadThing = async (file: File) => {
     try {
-      // Convert base64 back to File for UploadThing
-      const byteCharacters = atob(analysisData.fileData);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const file = new File([byteArray], analysisData.fileName, {
-        type: analysisData.mimeType,
-      });
-
-      // This would integrate with your UploadThing setup
-      // For now, we'll simulate the upload
       console.log("[BACKGROUND] Starting UploadThing upload...");
 
-      // Simulate upload delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Use the real UploadThing upload
+      const uploadResult = await startUpload([file]);
 
-      console.log("[BACKGROUND] UploadThing upload completed");
-      return { success: true, url: "mock-upload-url" };
+      if (!uploadResult || uploadResult.length === 0) {
+        throw new Error("Upload failed - no result returned");
+      }
+
+      const uploadedFile = uploadResult[0];
+      console.log("[BACKGROUND] UploadThing upload completed:", uploadedFile);
+
+      return { 
+        success: true, 
+        url: uploadedFile.url,
+        key: uploadedFile.key,
+        resumeId: uploadedFile.serverData?.resumeId
+      };
     } catch (error) {
       console.error("[BACKGROUND] UploadThing upload failed:", error);
       throw error;
@@ -135,7 +151,7 @@ export function OptimizedFileUpload({
 
   const saveResumeMetadata = async (analysisData: any) => {
     try {
-      console.log("[BACKGROUND] Saving resume metadata...");
+      console.log("[BACKGROUND] Saving fallback resume metadata...");
 
       const response = await fetch("/api/save-resume-metadata", {
         method: "POST",
@@ -144,8 +160,8 @@ export function OptimizedFileUpload({
           fileName: analysisData.fileName,
           fileSize: analysisData.fileSize,
           mimeType: analysisData.mimeType,
-          // We'll update with real fileUrl once UploadThing completes
-          fileUrl: "pending-upload",
+          // Store as Base64 data URL as fallback
+          fileUrl: `data:${analysisData.mimeType};base64,${analysisData.fileData}`,
         }),
       });
 
@@ -154,14 +170,14 @@ export function OptimizedFileUpload({
       }
 
       const result = await response.json();
-      console.log("[BACKGROUND] Resume metadata saved:", result.resumeId);
+      console.log("[BACKGROUND] Fallback resume metadata saved:", result.resumeId);
 
       // Store resumeId for later use
-      sessionStorage.setItem("aplycat_resume_id", result.resumeId);
+      sessionStorage.setItem("aplycat_fallback_resume_id", result.resumeId);
 
       return result;
     } catch (error) {
-      console.error("[BACKGROUND] Failed to save resume metadata:", error);
+      console.error("[BACKGROUND] Failed to save fallback resume metadata:", error);
       throw error;
     }
   };
@@ -194,17 +210,20 @@ export function OptimizedFileUpload({
     setError(null);
   }, []);
 
-  if (isProcessing) {
+  if (isProcessing || isUploading) {
     return (
       <div className="w-full max-w-md mx-auto">
         <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 text-center bg-purple-50">
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin h-8 w-8 border-4 border-purple-600 border-t-transparent rounded-full"></div>
             <p className="text-lg font-medium text-purple-900">
-              Starting Analysis...
+              {isUploading ? "Uploading File..." : "Starting Analysis..."}
             </p>
             <p className="text-sm text-purple-700">
-              Preparing your resume for AI analysis
+              {isUploading 
+                ? "Securely uploading your resume to cloud storage" 
+                : "Preparing your resume for AI analysis"
+              }
             </p>
           </div>
         </div>
