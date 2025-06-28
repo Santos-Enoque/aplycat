@@ -262,6 +262,7 @@ export async function getCompleteDashboardData() {
       where: { id: user.id },
       include: {
         resumes: {
+          where: { isActive: true }, // Only include active resumes
           include: {
             analyses: {
               orderBy: { createdAt: "desc" },
