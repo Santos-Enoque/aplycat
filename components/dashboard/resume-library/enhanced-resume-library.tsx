@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { LibraryHeader } from "./library-header";
 import { LibraryFilters } from "./library-filters";
 import { LibraryContent } from "./library-content";
 import { BulkOperationsBar } from "./bulk-operations-bar";
+import { ExportModal } from "./export-modal";
 import { useResumeLibrary } from "@/hooks/use-resume-library";
 import type { ResumeLibraryView, FilterOptions, ViewMode, SortOption } from "@/types/resume-library";
 
@@ -29,9 +31,11 @@ const defaultView: ResumeLibraryView = {
 
 export function EnhancedResumeLibrary() {
   const t = useTranslations("resume.library");
+  const router = useRouter();
   const [view, setView] = useState<ResumeLibraryView>(defaultView);
   const [selectedResumes, setSelectedResumes] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Load saved view preferences from localStorage
   useEffect(() => {
@@ -74,8 +78,11 @@ export function EnhancedResumeLibrary() {
   };
 
   const handleBulkAction = async (action: string) => {
-    // Bulk action handling will be implemented
-    console.log('Bulk action:', action, selectedResumes);
+    if (action === 'upload') {
+      router.push('/dashboard');
+    } else if (action === 'export' && selectedResumes.length > 0) {
+      setShowExportModal(true);
+    }
   };
 
   const handleClearSelection = () => {
@@ -133,6 +140,13 @@ export function EnhancedResumeLibrary() {
         isLoading={isLoading}
         error={error}
         onRefresh={refetch}
+      />
+      
+      {/* Export Modal */}
+      <ExportModal
+        resumeIds={selectedResumes}
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
       />
     </div>
   );

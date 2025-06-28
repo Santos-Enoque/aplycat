@@ -681,6 +681,37 @@
         "yesterday": "Yesterday",
         "thisWeek": "This Week",
         "thisMonth": "This Month"
+      },
+      "export": {
+        "title": "Export Resumes",
+        "description": "Export {count} resume with custom options",
+        "description_plural": "Export {count} resumes with custom options",
+        "format": {
+          "label": "Export Format",
+          "pdfDescription": "Export resumes as individual PDF files",
+          "docxDescription": "Export resumes as Word documents",
+          "txtDescription": "Export resumes as plain text files",
+          "zipDescription": "Export all resumes in a compressed ZIP file"
+        },
+        "include": {
+          "label": "Include in Export",
+          "analysis": "Include analysis results",
+          "improvements": "Include improvement suggestions",
+          "metadata": "Include file metadata"
+        },
+        "compression": {
+          "label": "Compression Level",
+          "none": "No compression",
+          "standard": "Standard compression",
+          "high": "Maximum compression"
+        },
+        "exporting": "Exporting {count} resume...",
+        "exporting_plural": "Exporting {count} resumes...",
+        "export": "Export",
+        "cancel": "Cancel",
+        "success": "Successfully exported {count} resume",
+        "success_plural": "Successfully exported {count} resumes",
+        "error": "Export failed. Please try again."
       }
     }
   },

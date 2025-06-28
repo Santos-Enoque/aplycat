@@ -638,6 +638,37 @@
           "yesterday": "Ontem",
           "thisWeek": "Esta Semana",
           "thisMonth": "Este Mês"
+        },
+        "export": {
+          "title": "Exportar Currículos",
+          "description": "Exportar {count} currículo com opções personalizadas",
+          "description_plural": "Exportar {count} currículos com opções personalizadas",
+          "format": {
+            "label": "Formato de Exportação",
+            "pdfDescription": "Exportar currículos como arquivos PDF individuais",
+            "docxDescription": "Exportar currículos como documentos Word",
+            "txtDescription": "Exportar currículos como arquivos de texto simples",
+            "zipDescription": "Exportar todos os currículos em um arquivo ZIP comprimido"
+          },
+          "include": {
+            "label": "Incluir na Exportação",
+            "analysis": "Incluir resultados de análise",
+            "improvements": "Incluir sugestões de melhoria",
+            "metadata": "Incluir metadados do arquivo"
+          },
+          "compression": {
+            "label": "Nível de Compressão",
+            "none": "Sem compressão",
+            "standard": "Compressão padrão",
+            "high": "Compressão máxima"
+          },
+          "exporting": "Exportando {count} currículo...",
+          "exporting_plural": "Exportando {count} currículos...",
+          "export": "Exportar",
+          "cancel": "Cancelar",
+          "success": "Exportação de {count} currículo concluída com sucesso",
+          "success_plural": "Exportação de {count} currículos concluída com sucesso",
+          "error": "Falha na exportação. Por favor, tente novamente."
         }
       }
     },
