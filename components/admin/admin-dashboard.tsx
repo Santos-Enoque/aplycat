@@ -142,7 +142,7 @@ export function AdminDashboard() {
 
         const params = new URLSearchParams({
           page: page.toString(),
-          limit: pagination.limit.toString(),
+          limit: "25", // Use fixed limit to avoid dependency issues
           ...cleanFilters,
         });
 
@@ -172,7 +172,7 @@ export function AdminDashboard() {
         setIsRefreshing(false);
       }
     },
-    [filters, pagination.limit]
+    [filters]
   );
 
   useEffect(() => {
