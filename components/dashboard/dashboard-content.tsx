@@ -130,7 +130,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
     onUploadError: (error) => {
       console.error("[UPLOADTHING] Background upload failed:", error);
     },
-    onUploadBegin: ({ file }) => {
+    onUploadBegin: (file) => {
       console.log("[UPLOADTHING] Background upload started for:", file);
     },
   });

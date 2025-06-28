@@ -71,10 +71,9 @@ export async function DELETE(
         }
       });
 
-      // Also soft delete related analyses and improvements
-      await tx.analysis.updateMany({
-        where: { resumeId: id },
-        data: { isActive: false }
+      // Delete related analyses (they don't have isActive field)
+      await tx.analysis.deleteMany({
+        where: { resumeId: id }
       });
 
       await tx.improvedResume.updateMany({
@@ -87,7 +86,7 @@ export async function DELETE(
 
     // Delete file from UploadThing if it exists (run in background)
     if (resume.uploadThingKey) {
-      deleteResumeFile(resume.uploadThingKey)
+      deleteResumeFile(resume.id, user.id)
         .then(() => {
           console.log(`[DELETE] Successfully deleted UploadThing file: ${resume.uploadThingKey}`);
         })

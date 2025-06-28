@@ -117,7 +117,11 @@ async function checkRateLimit(
 
   try {
     // Use Redis pipeline for atomic operations
-    const pipeline = redis.pipeline();
+    const pipeline = redis?.pipeline();
+    
+    if (!pipeline) {
+      throw new Error('Redis pipeline not available');
+    }
     
     // Increment counter
     pipeline.incr(windowKey);
@@ -132,7 +136,7 @@ async function checkRateLimit(
       throw new Error('Redis pipeline failed');
     }
     
-    const count = results[0][1] as number;
+    const count = (Array.isArray(results[0]) && typeof results[0][1] === 'number') ? results[0][1] : 0;
     const resetTime = windowSeconds - (now - window);
     const remaining = Math.max(0, max - count);
     const allowed = count <= max;

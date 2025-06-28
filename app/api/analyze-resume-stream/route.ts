@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
               // The chunk is already a JSON string, so we just pass it along
               controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
             } catch (controllerError) {
-              console.log('[STREAM_API] Controller closed, stopping stream:', controllerError.message);
+              console.log('[STREAM_API] Controller closed, stopping stream:', controllerError instanceof Error ? controllerError.message : 'Unknown error');
               // Client disconnected, break the loop gracefully
               break;
             }
