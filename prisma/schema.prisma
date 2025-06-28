@@ -34,17 +34,19 @@ model User {
     lastActiveAt DateTime @default(now())
 
     // Relations
-    resumes            Resume[]
-    analyses           Analysis[]
-    improvements       Improvement[]
-    improvedResumes    ImprovedResume[]
-    resumeComparisons  ResumeComparison[]
-    creditTransactions CreditTransaction[]
-    subscriptions      Subscription[]
-    usageEvents        UsageEvent[]
-    feedback           Feedback[]
-    paysuitePayments   PaysuitePayment[]
-    mpesaPayments      MpesaPayment[]
+    resumes             Resume[]
+    analyses            Analysis[]
+    improvements        Improvement[]
+    improvedResumes     ImprovedResume[]
+    resumeComparisons   ResumeComparison[]
+    creditTransactions  CreditTransaction[]
+    subscriptions       Subscription[]
+    usageEvents         UsageEvent[]
+    feedback            Feedback[]
+    paysuitePayments    PaysuitePayment[]
+    mpesaPayments       MpesaPayment[]
+    analysisCheckpoints AnalysisCheckpoint[]
+    improvementSessions ImprovementSession[]
 
     // Add indexes for dashboard performance
     @@index([clerkId])
@@ -155,11 +157,13 @@ model Resume {
     updatedAt DateTime @updatedAt
 
     // Relations
-    user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-    analyses          Analysis[]
-    improvements      Improvement[]
-    improvedResumes   ImprovedResume[]
-    resumeComparisons ResumeComparison[]
+    user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+    analyses            Analysis[]
+    improvements        Improvement[]
+    improvedResumes     ImprovedResume[]
+    resumeComparisons   ResumeComparison[]
+    analysisCheckpoints AnalysisCheckpoint[]
+    improvementSessions ImprovementSession[]
 
     // Critical indexes for dashboard performance
     @@index([userId, isActive, createdAt(sort: Desc)])
@@ -649,4 +653,53 @@ enum PaymentStatus {
     FAILED // Payment failed
     EXPIRED // Payment expired (user didn't confirm in time)
     CANCELLED // Payment cancelled by user
+}
+
+// ===== BACKGROUND AUTO-SAVE SYSTEM =====
+model AnalysisCheckpoint {
+    id               String   @id @default(cuid())
+    resumeId         String
+    userId           String
+    progress         Float    // 0.0 to 1.0
+    partialAnalysis  Json?    // Partial analysis data
+    status           ProcessingStatus
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
+    
+    resume           Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+    user             User     @relation(fields: [userId], references: [clerkId])
+    
+    @@unique([resumeId, userId])
+    @@index([userId, status, updatedAt])
+    @@map("analysis_checkpoints")
+}
+
+model ImprovementSession {
+    id                  String   @id @default(cuid())
+    resumeId            String
+    userId              String
+    targetRole          String?
+    targetIndustry      String?
+    improveInstructions String?
+    partialImprovement  Json?
+    progress            Float    @default(0.0)
+    status              ProcessingStatus
+    createdAt           DateTime @default(now())
+    updatedAt           DateTime @updatedAt
+    
+    resume              Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+    user                User     @relation(fields: [userId], references: [clerkId])
+    
+    @@unique([resumeId, userId])
+    @@index([userId, status, updatedAt])
+    @@map("improvement_sessions")
+}
+
+enum ProcessingStatus {
+    PENDING
+    IN_PROGRESS  
+    PAUSED
+    COMPLETED
+    ERROR
+    CANCELLED
 }

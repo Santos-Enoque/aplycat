@@ -27,7 +27,10 @@
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "test:admin": "playwright test tests/admin-dashboard.admin.spec.ts",
-    "test:dashboard": "playwright test tests/dashboard.spec.ts"
+    "test:dashboard": "playwright test tests/dashboard.spec.ts",
+    "test:e2e": "playwright test --ui",
+    "test:e2e:headless": "playwright test",
+    "test:autosave": "playwright test auto-save.spec.ts --ui"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.19",
@@ -95,6 +98,7 @@
     "@types/react-dom": "^18.3.7",
     "eslint": "^9.28.0",
     "eslint-config-next": "15.3.3",
+    "node-fetch": "^2.7.0",
     "postcss": "^8.5.1",
     "prisma": "^6.9.0",
     "puppeteer": "^24.10.0",

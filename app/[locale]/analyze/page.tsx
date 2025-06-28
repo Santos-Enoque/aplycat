@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useStreamingAnalysis } from "@/hooks/use-streaming-analysis";
 import { StreamingAnalysisDisplay } from "@/components/streaming-analysis-display";
@@ -13,9 +13,11 @@ import { Loader, XCircle, Zap, AlertCircle } from "lucide-react";
 import type { ModelFileInput } from "@/lib/models-consolidated";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { toast } from "sonner";
+import type { ResumeAnalysis } from "@/types/analysis";
 
 function AnalyzePageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations("analyze");
   const { analysis, status, error, startAnalysis, resetAnalysis } =
     useStreamingAnalysis();
@@ -23,8 +25,15 @@ function AnalyzePageContent() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [hasInitiated, setHasInitiated] = useState(false);
   const [isImproveModalOpen, setIsImproveModalOpen] = useState(false);
+  const [isLoadingFromDb, setIsLoadingFromDb] = useState(false);
+  const [cachedAnalysis, setCachedAnalysis] = useState<ResumeAnalysis | null>(null);
+  const [cachedStatus, setCachedStatus] = useState<'idle' | 'loading' | 'completed' | 'error'>('idle');
   const originalFileRef = useRef<ModelFileInput | null>(null);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  // Get analysisId or resumeId from URL if present
+  const analysisId = searchParams.get('analysisId');
+  const resumeId = searchParams.get('resumeId');
 
   useEffect(() => {
     if (status === "completed") {
@@ -35,35 +44,137 @@ function AnalyzePageContent() {
   useEffect(() => {
     if (hasInitiated) return;
 
-    const storedFile = sessionStorage.getItem("streamingAnalysisFile");
-    if (storedFile) {
-      // We have a file, so reset any previous analysis state before we begin.
-      resetAnalysis();
-
-      const { fileName, fileData } = JSON.parse(storedFile);
-      setFileName(fileName);
-      originalFileRef.current = { filename: fileName, fileData: fileData };
-
-      const fetchRes = fetch(fileData);
-      fetchRes
-        .then((res) => res.blob())
-        .then((blob) => {
-          const file = new File([blob], fileName, { type: blob.type });
-          startAnalysis(file);
+    // If we have an analysisId, load from database
+    if (analysisId) {
+      setIsLoadingFromDb(true);
+      setCachedStatus('loading');
+      
+      fetch(`/api/analyses/${analysisId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.analysis) {
+            setCachedAnalysis(data.analysis.analysisData as ResumeAnalysis);
+            setFileName(data.analysis.fileName);
+            setCachedStatus('completed');
+            
+            // Set originalFileRef for improvement functionality
+            if (data.analysis.resume?.fileUrl) {
+              originalFileRef.current = {
+                filename: data.analysis.fileName,
+                fileData: data.analysis.resume.fileUrl
+              };
+            }
+          } else {
+            setCachedStatus('error');
+            console.error('Failed to load analysis:', data.error);
+          }
         })
-        .catch((err) => {
-          console.error("Error converting base64 to file:", err);
-          // Handle error state in UI
+        .catch(err => {
+          setCachedStatus('error');
+          console.error('Error loading analysis:', err);
+        })
+        .finally(() => {
+          setIsLoadingFromDb(false);
         });
+    } else if (resumeId) {
+      // If we have a resumeId, load resume from database and start analysis
+      setIsLoadingFromDb(true);
+      
+      fetch(`/api/resumes/${resumeId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.resume) {
+            const resume = data.resume;
+            setFileName(resume.fileName);
+            
+            // Store resume data for analysis
+            const fileData = resume.fileUrl;
+            originalFileRef.current = { filename: resume.fileName, fileData: fileData };
+            
+            // Store in session storage for compatibility
+            sessionStorage.setItem('streamingAnalysisFile', JSON.stringify({
+              fileName: resume.fileName,
+              fileData: fileData
+            }));
+            
+            // Store resume ID for analysis save
+            sessionStorage.setItem('aplycat_uploadthing_resume_id', resume.id);
+            
+            // Convert to blob and start analysis
+            if (fileData.startsWith('data:')) {
+              // Handle base64 data URL
+              fetch(fileData)
+                .then(res => res.blob())
+                .then(blob => {
+                  const file = new File([blob], resume.fileName, { type: blob.type });
+                  resetAnalysis();
+                  startAnalysis(file);
+                })
+                .catch(err => {
+                  console.error("Error converting base64 to file:", err);
+                  setCachedStatus('error');
+                });
+            } else {
+              // Handle regular URL (UploadThing)
+              fetch(fileData)
+                .then(res => res.blob())
+                .then(blob => {
+                  const file = new File([blob], resume.fileName, { type: resume.mimeType || 'application/pdf' });
+                  resetAnalysis();
+                  startAnalysis(file);
+                })
+                .catch(err => {
+                  console.error("Error fetching file:", err);
+                  setCachedStatus('error');
+                });
+            }
+          } else {
+            setCachedStatus('error');
+            console.error('Failed to load resume:', data.error);
+          }
+        })
+        .catch(err => {
+          setCachedStatus('error');
+          console.error('Error loading resume:', err);
+        })
+        .finally(() => {
+          setIsLoadingFromDb(false);
+        });
+    } else {
+      // Original flow: load from session storage for new analysis
+      const storedFile = sessionStorage.getItem("streamingAnalysisFile");
+      if (storedFile) {
+        // We have a file, so reset any previous analysis state before we begin.
+        resetAnalysis();
+
+        const { fileName, fileData } = JSON.parse(storedFile);
+        setFileName(fileName);
+        originalFileRef.current = { filename: fileName, fileData: fileData };
+
+        const fetchRes = fetch(fileData);
+        fetchRes
+          .then((res) => res.blob())
+          .then((blob) => {
+            const file = new File([blob], fileName, { type: blob.type });
+            startAnalysis(file);
+          })
+          .catch((err) => {
+            console.error("Error converting base64 to file:", err);
+            // Handle error state in UI
+          });
+      }
     }
     setHasInitiated(true);
-  }, [startAnalysis, hasInitiated, resetAnalysis]);
+  }, [startAnalysis, hasInitiated, resetAnalysis, analysisId, resumeId]);
 
   const handleStartImprovement = (
     targetRole: string,
     targetIndustry: string
   ) => {
-    if (!analysis || !originalFileRef.current) {
+    // Use cached analysis if available, otherwise use streaming analysis
+    const currentAnalysis = cachedAnalysis || analysis;
+    
+    if (!currentAnalysis || !originalFileRef.current) {
       toast.error(t("toast.missingData"));
       setIsImproveModalOpen(false);
       return;
@@ -74,7 +185,7 @@ function AnalyzePageContent() {
       JSON.stringify({
         targetRole,
         targetIndustry,
-        analysis, // Pass the full analysis
+        analysis: currentAnalysis, // Pass the full analysis
         originalFile: originalFileRef.current,
       })
     );
@@ -86,11 +197,12 @@ function AnalyzePageContent() {
     if (isDesktop) {
       setIsImproveModalOpen(true);
     } else {
-      if (!analysis || !originalFileRef.current) return;
+      const currentAnalysis = cachedAnalysis || analysis;
+      if (!currentAnalysis || !originalFileRef.current) return;
       sessionStorage.setItem(
         "improvementJobDetails",
         JSON.stringify({
-          analysis,
+          analysis: currentAnalysis,
           originalFile: originalFileRef.current,
         })
       );
@@ -99,6 +211,49 @@ function AnalyzePageContent() {
   };
 
   const renderContent = () => {
+    // Loading state for database fetch
+    if ((analysisId && cachedStatus === "loading") || (resumeId && isLoadingFromDb)) {
+      return (
+        <div className="text-center p-8">
+          <Loader className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-800">
+            {analysisId 
+              ? t("loading.loadingAnalysis", { defaultValue: "Loading analysis..." })
+              : t("loading.loadingResume", { defaultValue: "Loading resume..." })}
+          </h3>
+          <p className="text-gray-600 mt-2">{t("loading.waitMessage")}</p>
+        </div>
+      );
+    }
+
+    // Show cached analysis from database
+    if (analysisId && cachedStatus === "completed" && cachedAnalysis) {
+      return (
+        <StreamingAnalysisDisplay
+          analysis={cachedAnalysis}
+          status="completed"
+          onStartImprovement={handleImprovementInitiation}
+        />
+      );
+    }
+
+    // Error loading from database
+    if (analysisId && cachedStatus === "error") {
+      return (
+        <Card className="bg-red-50 border-red-200 text-center p-8">
+          <XCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-red-800">
+            {t("error.title")}
+          </h3>
+          <p className="text-red-700 mt-2">{t("error.loadingAnalysis", { defaultValue: "Failed to load analysis" })}</p>
+          <Button onClick={() => router.push("/dashboard")} className="mt-4">
+            {t("error.returnToDashboard")}
+          </Button>
+        </Card>
+      );
+    }
+
+    // Original streaming flow
     if (!hasInitiated || status === "connecting") {
       return (
         <div className="text-center p-8">
@@ -173,9 +328,10 @@ function AnalyzePageContent() {
 
           <main>
             {fileName &&
-              (status === "streaming" ||
+              ((status === "streaming" ||
                 status === "completed" ||
-                status === "error") && (
+                status === "error") || 
+                (analysisId && cachedStatus === "completed")) && (
                 <p className="text-center text-muted-foreground mb-6">
                   {t("analysisFor", { fileName })}
                 </p>
