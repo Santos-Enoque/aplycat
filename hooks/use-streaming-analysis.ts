@@ -46,6 +46,7 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
   const lastFile = useRef<File | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const saveAttemptedRef = useRef<boolean>(false);
 
   // Function to save analysis results to database
   const saveAnalysisToDatabase = useCallback(async (analysisData: any, file: File | null) => {
@@ -53,6 +54,14 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
       console.warn('[useStreamingAnalysis] Missing data for saving analysis');
       return;
     }
+
+    // Prevent multiple save attempts for the same analysis
+    if (saveAttemptedRef.current) {
+      console.log('[useStreamingAnalysis] Analysis save already attempted, skipping');
+      return;
+    }
+    
+    saveAttemptedRef.current = true;
 
     try {
       // Get resume ID from session storage if available
@@ -120,6 +129,7 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     setStatus('idle');
     setError(null);
     setProgress(0);
+    saveAttemptedRef.current = false; // Reset save flag
     sessionStorage.removeItem('streamingAnalysis');
     sessionStorage.removeItem('streamingAnalysisStatus');
     sessionStorage.removeItem('streamingAnalysisProgress');
@@ -135,6 +145,7 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     setError(null);
     setAnalysis(null);
     setProgress(0);
+    saveAttemptedRef.current = false; // Reset save flag for new analysis
 
     abortControllerRef.current = new AbortController();
 
@@ -206,7 +217,7 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
                 setAnalysis(prev => ({ ...prev, ...data }));
                 
                 // If this appears to be a complete analysis, save it
-                if (data.overallScore !== undefined && data.atsScore !== undefined) {
+                if (data.overallScore !== undefined && data.atsScore !== undefined && data.mainRoast) {
                   console.log('[useStreamingAnalysis] Complete analysis detected in stream, saving...');
                   saveAnalysisToDatabase(updatedAnalysis, lastFile.current);
                 }

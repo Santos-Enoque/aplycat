@@ -168,8 +168,15 @@ export async function POST(request: NextRequest) {
           const analysisStream = streamingModelService.analyzeResumeStream(user.id, resumeFile);
 
           for await (const chunk of analysisStream) {
-            // The chunk is already a JSON string, so we just pass it along
-            controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
+            // Check if controller is still open before writing
+            try {
+              // The chunk is already a JSON string, so we just pass it along
+              controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
+            } catch (controllerError) {
+              console.log('[STREAM_API] Controller closed, stopping stream:', controllerError.message);
+              // Client disconnected, break the loop gracefully
+              break;
+            }
             
             // We still need to accumulate the JSON to save it at the end
             // This assumes the last chunk is the full object. A more robust
