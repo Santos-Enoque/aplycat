@@ -138,7 +138,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
         
         const analysisData = {
           fileName: file.name,
-          fileData: base64,
+          fileData: `data:${file.type};base64,${base64}`, // Store as full data URL for analyze page
           fileSize: file.size,
           mimeType: file.type,
           timestamp: new Date().toISOString(),
@@ -168,59 +168,36 @@ export function DashboardContent({ user }: DashboardContentProps) {
     }
   };
 
-  // Background upload process that doesn't block user experience
+  // Background upload process that doesn't block user experience  
   const startBackgroundUpload = async (file: File, analysisData: any) => {
+    // Always save fallback metadata immediately to ensure the file is captured
     try {
-      console.log("[DASHBOARD] Starting background UploadThing upload...");
+      console.log("[DASHBOARD] Saving immediate fallback metadata...");
       
-      // Create FormData for UploadThing upload
-      const formData = new FormData();
-      formData.append('files', file);
-      
-      // Upload to UploadThing endpoint
-      const uploadResponse = await fetch('/api/uploadthing', {
-        method: 'POST',
-        body: formData,
+      const fallbackResponse = await fetch("/api/save-resume-metadata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: analysisData.fileName,
+          fileSize: analysisData.fileSize,
+          mimeType: analysisData.mimeType,
+          fileUrl: analysisData.fileData, // Use the full data URL
+        }),
       });
 
-      if (uploadResponse.ok) {
-        const uploadResult = await uploadResponse.json();
-        console.log("[DASHBOARD] Background upload completed:", uploadResult);
-        
-        // Store the resume ID for later use
-        if (uploadResult?.[0]?.serverData?.resumeId) {
-          sessionStorage.setItem("aplycat_uploadthing_resume_id", uploadResult[0].serverData.resumeId);
-        }
-      } else {
-        throw new Error("UploadThing upload failed");
+      if (fallbackResponse.ok) {
+        const fallbackResult = await fallbackResponse.json();
+        console.log("[DASHBOARD] Fallback metadata saved:", fallbackResult.resumeId);
+        sessionStorage.setItem("aplycat_resume_id", fallbackResult.resumeId);
       }
-    } catch (error) {
-      console.error("[DASHBOARD] Background upload failed:", error);
-      
-      // Fallback: save metadata with base64 data
-      try {
-        console.log("[DASHBOARD] Attempting fallback metadata save...");
-        
-        const fallbackResponse = await fetch("/api/save-resume-metadata", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fileName: analysisData.fileName,
-            fileSize: analysisData.fileSize,
-            mimeType: analysisData.mimeType,
-            fileUrl: `data:${analysisData.mimeType};base64,${analysisData.fileData}`,
-          }),
-        });
-
-        if (fallbackResponse.ok) {
-          const fallbackResult = await fallbackResponse.json();
-          console.log("[DASHBOARD] Fallback metadata saved:", fallbackResult.resumeId);
-          sessionStorage.setItem("aplycat_fallback_resume_id", fallbackResult.resumeId);
-        }
-      } catch (fallbackError) {
-        console.error("[DASHBOARD] Fallback metadata save also failed:", fallbackError);
-      }
+    } catch (fallbackError) {
+      console.error("[DASHBOARD] Fallback metadata save failed:", fallbackError);
     }
+
+    // Try UploadThing upload in background (non-blocking, experimental)
+    // Note: This is complex because UploadThing expects a specific client-side flow
+    // For now, we rely on the fallback metadata save above
+    console.log("[DASHBOARD] UploadThing background upload skipped - using fallback metadata save");
   };
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
