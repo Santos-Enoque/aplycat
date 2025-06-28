@@ -133,7 +133,7 @@ export function AdminDashboard() {
         setIsRefreshing(true);
 
         // Merge filters and remove null/undefined values
-        const mergedFilters = { ...filters, ...newFilters };
+        const mergedFilters = { ...(filters || {}), ...(newFilters || {}) };
         const cleanFilters = Object.fromEntries(
           Object.entries(mergedFilters).filter(
             ([_, value]) => value != null && value !== ""
@@ -183,7 +183,7 @@ export function AdminDashboard() {
     key: keyof TransactionFilters,
     value: string | undefined
   ) => {
-    const newFilters = { ...filters, [key]: value };
+    const newFilters = { ...(filters || {}), [key]: value };
     setFilters(newFilters);
     fetchTransactions(newFilters, 1);
   };
@@ -194,7 +194,7 @@ export function AdminDashboard() {
 
   const handlePageChange = (newPage: number) => {
     setPagination((prev) => ({ ...prev, page: newPage }));
-    fetchTransactions(filters, newPage);
+    fetchTransactions(filters || {}, newPage);
   };
 
   const getStatusIcon = (status: string) => {
@@ -323,7 +323,7 @@ export function AdminDashboard() {
         break;
     }
 
-    const newFilters = { ...filters, dateFrom, dateTo };
+    const newFilters = { ...(filters || {}), dateFrom, dateTo };
     setFilters(newFilters);
     fetchTransactions(newFilters, 1);
   };
@@ -361,7 +361,7 @@ export function AdminDashboard() {
       });
 
       // Refresh the transactions list
-      await fetchTransactions(filters, pagination.page);
+      await fetchTransactions(filters || {}, pagination.page);
     } catch (error) {
       console.error("Failed to delete transaction:", error);
       toast.error("Failed to delete transaction", {
@@ -388,7 +388,7 @@ export function AdminDashboard() {
           </p>
         </div>
         <Button
-          onClick={() => fetchTransactions(filters, pagination.page)}
+          onClick={() => fetchTransactions(filters || {}, pagination.page)}
           disabled={isRefreshing}
           variant="outline"
         >
@@ -534,7 +534,7 @@ export function AdminDashboard() {
             <div>
               <label className="text-sm font-medium mb-2 block">Status</label>
               <Select
-                value={filters.status || "all"}
+                value={filters?.status || "all"}
                 onValueChange={(value) =>
                   handleFilterChange(
                     "status",
@@ -559,7 +559,7 @@ export function AdminDashboard() {
             <div>
               <label className="text-sm font-medium mb-2 block">Provider</label>
               <Select
-                value={filters.provider || "all"}
+                value={filters?.provider || "all"}
                 onValueChange={(value) =>
                   handleFilterChange(
                     "provider",
@@ -586,7 +586,7 @@ export function AdminDashboard() {
               </label>
               <Input
                 type="date"
-                value={filters.dateFrom || ""}
+                value={filters?.dateFrom || ""}
                 onChange={(e) =>
                   handleFilterChange("dateFrom", e.target.value || undefined)
                 }
@@ -598,7 +598,7 @@ export function AdminDashboard() {
               <label className="text-sm font-medium mb-2 block">To Date</label>
               <Input
                 type="date"
-                value={filters.dateTo || ""}
+                value={filters?.dateTo || ""}
                 onChange={(e) =>
                   handleFilterChange("dateTo", e.target.value || undefined)
                 }
