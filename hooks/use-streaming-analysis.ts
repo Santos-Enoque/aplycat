@@ -59,6 +59,15 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
 
   // Function to save analysis results to database
   const saveAnalysisToDatabase = useCallback(async (analysisData: any, file: File | null) => {
+    console.log('[useStreamingAnalysis] saveAnalysisToDatabase called with:', {
+      hasAnalysisData: !!analysisData,
+      hasFile: !!file,
+      analysisDataKeys: analysisData ? Object.keys(analysisData) : [],
+      overallScore: analysisData?.overall_score,
+      atsScore: analysisData?.ats_score,
+      mainRoast: analysisData?.main_roast ? analysisData.main_roast.substring(0, 50) + '...' : null
+    });
+
     if (!analysisData || !file) {
       console.warn('[useStreamingAnalysis] Missing data for saving analysis');
       return;
@@ -82,11 +91,11 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
         fileName: file.name,
         analysisData: analysisData,
         resumeId: resumeId || undefined,
-        overallScore: analysisData.overallScore || 0,
-        atsScore: analysisData.atsScore || 0,
-        scoreCategory: analysisData.scoreCategory || 'Unknown',
-        mainRoast: analysisData.mainRoast || 'No roast available',
-        creditsUsed: 1 // Default credit cost for analysis
+        overallScore: analysisData.overall_score || 0,
+        atsScore: analysisData.ats_score || 0,
+        scoreCategory: analysisData.score_category || 'Unknown',
+        mainRoast: analysisData.main_roast || 'No roast available',
+        creditsUsed: 0 // Analysis is now free
       };
 
       console.log('[useStreamingAnalysis] Saving analysis to database...', savePayload);
@@ -144,7 +153,9 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
       
       if (checkpoint && checkpoint.status === 'IN_PROGRESS') {
         // Restore state from checkpoint
-        setAnalysis(checkpoint.partialAnalysis);
+        if (checkpoint.partialAnalysis && typeof checkpoint.partialAnalysis === 'object') {
+          setAnalysis(checkpoint.partialAnalysis as Partial<ResumeAnalysis>);
+        }
         setProgress(checkpoint.progress * 100);
         setStatus('streaming');
         currentResumeId.current = resumeId;
@@ -326,14 +337,24 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
           if (buffer.trim()) {
             try {
               const finalData = JSON.parse(buffer);
-              setAnalysis(finalData);
+              setAnalysis(prev => {
+                const completeAnalysis = { ...prev, ...finalData };
+                // Save the complete analysis when streaming is done
+                saveAnalysisToDatabase(completeAnalysis, lastFile.current);
+                return completeAnalysis;
+              });
               setProgress(100);
-              
-              // Save analysis to database when completed
-              saveAnalysisToDatabase(finalData, lastFile.current);
             } catch (e) {
               console.error('[useStreamingAnalysis] Error parsing final buffer:', e);
             }
+          } else {
+            // No final buffer, but stream is complete - save accumulated analysis
+            setAnalysis(prev => {
+              if (prev && Object.keys(prev).length > 0) {
+                saveAnalysisToDatabase(prev, lastFile.current);
+              }
+              return prev;
+            });
           }
           setStatus('completed');
           break;
@@ -357,15 +378,23 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
               if (jsonStr) {
                 const data = JSON.parse(jsonStr);
                 
-                // The backend now sends the partial/complete analysis object directly
-                const updatedAnalysis = { ...analysis, ...data };
-                setAnalysis(prev => ({ ...prev, ...data }));
+                console.log('[useStreamingAnalysis] Received stream data:', {
+                  dataKeys: Object.keys(data),
+                  hasOverallScore: data.overall_score !== undefined,
+                  hasAtsScore: data.ats_score !== undefined,
+                  hasMainRoast: !!data.main_roast,
+                  dataPreview: JSON.stringify(data).substring(0, 100) + '...'
+                });
                 
-                // If this appears to be a complete analysis, save it
-                if (data.overallScore !== undefined && data.atsScore !== undefined && data.mainRoast) {
-                  console.log('[useStreamingAnalysis] Complete analysis detected in stream, saving...');
-                  saveAnalysisToDatabase(updatedAnalysis, lastFile.current);
-                }
+                // The backend now sends the partial/complete analysis object directly
+                setAnalysis(prev => {
+                  const updatedAnalysis = { ...prev, ...data };
+                  
+                  // Don't save partial data - wait for the complete stream to finish
+                  // The save will happen when done=true at the end of the stream
+                  
+                  return updatedAnalysis;
+                });
               }
             } catch (e) {
               console.error('[useStreamingAnalysis] Error parsing stream data:', e, "Received:", message);
