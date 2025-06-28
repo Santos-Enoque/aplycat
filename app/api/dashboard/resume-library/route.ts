@@ -6,7 +6,7 @@ import type { ResumeLibraryView, SortOption, ProcessingStatus } from "@/types/re
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },

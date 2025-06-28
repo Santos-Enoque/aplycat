@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import type { ResumeLibraryView, FilterOptions, ProcessingStatus } from "@/types/resume-library";
+import { ResumeLibraryView, FilterOptions, ProcessingStatus } from "@/types/resume-library";
 
 interface LibraryFiltersProps {
   view: ResumeLibraryView;

@@ -59,7 +59,7 @@ export function useResumeLibrary(view: ResumeLibraryView): UseResumeLibraryResul
     },
     enabled: !!userId,
     staleTime: 30000, // Consider data stale after 30 seconds
-    cacheTime: 300000, // Keep in cache for 5 minutes
+    gcTime: 300000, // Keep in cache for 5 minutes
   });
 
   return {

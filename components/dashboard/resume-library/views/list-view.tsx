@@ -28,8 +28,7 @@ export function ListView({
       {/* Select All Header */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 flex items-center gap-4">
         <Checkbox
-          checked={allSelected}
-          indeterminate={someSelected}
+          checked={allSelected || someSelected}
           onCheckedChange={(checked) => onSelectAll(checked as boolean)}
         />
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { analyzeResumeAction } from "@/lib/actions/resume-actions";
-import { improveResumeAction } from "@/lib/actions/improvement-actions";
 import type { BulkOperation } from "@/types/resume-library";
 
 interface BulkOperationJob {
@@ -20,7 +18,7 @@ const jobStore = new Map<string, BulkOperationJob>();
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
