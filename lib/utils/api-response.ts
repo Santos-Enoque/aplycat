@@ -30,14 +30,16 @@ export function createSuccessResponse<T>(
   message?: string,
   status: number = 200
 ): NextResponse<ApiSuccessResponse<T>> {
-  return NextResponse.json(
-    {
-      success: true,
-      data,
-      ...(message && { message }),
-    },
-    { status }
-  );
+  const response: ApiSuccessResponse<T> = {
+    success: true,
+    data,
+  };
+  
+  if (message) {
+    response.message = message;
+  }
+  
+  return NextResponse.json(response, { status });
 }
 
 /**
@@ -49,15 +51,20 @@ export function createErrorResponse(
   code?: string,
   details?: unknown
 ): NextResponse<ApiErrorResponse> {
-  return NextResponse.json(
-    {
-      success: false,
-      error,
-      ...(code && { code }),
-      ...(details && { details }),
-    },
-    { status }
-  );
+  const response: ApiErrorResponse = {
+    success: false,
+    error,
+  };
+  
+  if (code) {
+    response.code = code;
+  }
+  
+  if (details) {
+    response.details = details;
+  }
+  
+  return NextResponse.json(response, { status });
 }
 
 /**

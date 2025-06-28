@@ -32,7 +32,7 @@ export interface AuthResult {
  */
 export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     
     if (!userId) {
       return null;
@@ -83,7 +83,7 @@ export async function requireAuth(): Promise<AuthenticatedUser> {
  */
 export async function getCurrentUserWithDetails(): Promise<User | null> {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     
     if (!userId) {
       return null;

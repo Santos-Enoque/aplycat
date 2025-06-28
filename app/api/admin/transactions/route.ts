@@ -71,14 +71,14 @@ export async function GET(request: NextRequest) {
             const status = meta.status || 'completed'; // Default for legacy
             return {
                 id: event.id, 
-                provider: 'stripe', 
-                amount: meta.amount, 
-                currency: meta.currency?.toUpperCase() || 'MZN',
-                status: status, 
+                provider: 'stripe' as const, 
+                amount: Number(meta.amount) || 0, 
+                currency: String(meta.currency).toUpperCase() || 'MZN',
+                status: String(status), 
                 createdAt: event.createdAt, 
-                user: event.user, 
-                description: event.description,
-                credits: meta.credits,
+                user: event.user || { id: '', email: 'Unknown' }, 
+                description: event.description || '',
+                credits: Number(meta.credits) || 0,
             };
         }));
     }
@@ -99,8 +99,14 @@ export async function GET(request: NextRequest) {
             orderBy: { createdAt: 'desc' },
         });
         transactions.push(...mpesaTransactions.map(p => ({
-            id: p.id, provider: 'mpesa', amount: p.amount, currency: 'MZN', status: p.status.toLowerCase(),
-            createdAt: p.createdAt, user: p.user, description: `MPesa purchase for ${p.credits} credits`,
+            id: p.id, 
+            provider: 'mpesa' as const, 
+            amount: p.amount, 
+            currency: 'MZN', 
+            status: p.status.toLowerCase(),
+            createdAt: p.createdAt, 
+            user: p.user || { id: '', email: 'Unknown' }, 
+            description: `MPesa purchase for ${p.credits} credits`,
         })));
     }
     
@@ -156,7 +162,7 @@ export async function DELETE(request: NextRequest) {
     if (provider === 'stripe') {
       // Delete Stripe transaction (usageEvent)
       deletedTransaction = await db.usageEvent.delete({
-        where: { id: transactionId },
+        where: { id: transactionId! },
         include: { user: true }
       });
       
@@ -164,7 +170,7 @@ export async function DELETE(request: NextRequest) {
     } else if (provider === 'mpesa') {
       // Delete MPesa transaction
       deletedTransaction = await db.mpesaPayment.delete({
-        where: { id: transactionId },
+        where: { id: transactionId! },
         include: { user: true }
       });
       
