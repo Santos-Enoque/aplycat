@@ -115,8 +115,10 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     env: {
-      // Load test environment
-      ...process.env,
+      // Load test environment with defined values only
+      ...Object.fromEntries(
+        Object.entries(process.env).filter(([_, value]) => value !== undefined)
+      ) as Record<string, string>,
     },
   },
 
