@@ -1,0 +1,15 @@
+{
+  "cookies": [
+    {
+      "name": "__session",
+      "value": "mock-test-session-1751130705012",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1751217105,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

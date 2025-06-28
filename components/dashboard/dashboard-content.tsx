@@ -22,12 +22,14 @@ import {
   X,
   CreditCard,
   Smartphone,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SystemBanner } from "@/components/ui/system-banner";
 import { RecentTransactions } from "./recent-transactions";
+import { useUploadThing } from "@/lib/uploadthing";
 
 interface DashboardUser {
   id: string;
@@ -111,6 +113,28 @@ export function DashboardContent({ user }: DashboardContentProps) {
   const t = useTranslations("dashboard");
   const tErrors = useTranslations("dashboard.errors");
 
+  // UploadThing hook for background uploads
+  const { startUpload, isUploading } = useUploadThing("resumeUploader", {
+    onClientUploadComplete: (res) => {
+      console.log("[UPLOADTHING] Background upload completed:", res);
+      if (res?.[0]?.serverData?.resumeId) {
+        sessionStorage.setItem("aplycat_uploadthing_resume_id", res[0].serverData.resumeId);
+        console.log("[UPLOADTHING] Resume ID stored:", res[0].serverData.resumeId);
+        
+        // Refresh the page to update resume count (simple but effective)
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    },
+    onUploadError: (error) => {
+      console.error("[UPLOADTHING] Background upload failed:", error);
+    },
+    onUploadBegin: (file) => {
+      console.log("[UPLOADTHING] Background upload started for:", file);
+    },
+  });
+
   // Clear previous analysis data when returning to dashboard
   useEffect(() => {
     // Clear any previous analysis data to ensure fresh start
@@ -128,25 +152,94 @@ export function DashboardContent({ user }: DashboardContentProps) {
       description: "You will be redirected momentarily.",
     });
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const base64 = reader.result as string;
-      sessionStorage.setItem(
-        "streamingAnalysisFile",
-        JSON.stringify({
+    try {
+      // Convert to base64 for immediate analysis
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(",")[1];
+        
+        const analysisData = {
           fileName: file.name,
-          fileData: base64,
-        })
-      );
-      router.push("/analyze");
-    };
-    reader.onerror = (error) => {
-      console.error("Error reading file:", error);
-      toast.error("Could not read the selected file.", {
-        description: "Please try a different file or refresh the page.",
-      });
-    };
+          fileData: `data:${file.type};base64,${base64}`, // Store as full data URL for analyze page
+          fileSize: file.size,
+          mimeType: file.type,
+          timestamp: new Date().toISOString(),
+        };
+
+        // Store for immediate analysis
+        sessionStorage.setItem("streamingAnalysisFile", JSON.stringify(analysisData));
+        
+        // Start background UploadThing upload (non-blocking)
+        startBackgroundUpload(file, analysisData);
+        
+        // Navigate to analysis immediately
+        router.push("/analyze");
+      };
+      
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+        toast.error("Could not read the selected file.", {
+          description: "Please try a different file or refresh the page.",
+        });
+      };
+      
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error processing file:", error);
+      toast.error("Failed to process file. Please try again.");
+    }
+  };
+
+  // Background upload process that doesn't block user experience  
+  const startBackgroundUpload = async (file: File, analysisData: any) => {
+    // Start UploadThing upload in background (primary method)
+    try {
+      console.log("[DASHBOARD] Starting UploadThing background upload...");
+      
+      // Use the UploadThing hook to upload the file
+      // This will automatically call our API route and save to database
+      const uploadResult = await startUpload([file]);
+      
+      if (uploadResult && uploadResult.length > 0) {
+        console.log("[DASHBOARD] UploadThing upload successful:", uploadResult[0]);
+        // The onClientUploadComplete callback will handle storing the resume ID
+        return;
+      } else {
+        throw new Error("UploadThing upload returned no results");
+      }
+    } catch (uploadError) {
+      console.error("[DASHBOARD] UploadThing upload failed, using fallback:", uploadError);
+      
+      // Fallback: save metadata with Base64 data
+      try {
+        console.log("[DASHBOARD] Saving fallback metadata with Base64...");
+        
+        const fallbackResponse = await fetch("/api/save-resume-metadata", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: analysisData.fileName,
+            fileSize: analysisData.fileSize,
+            mimeType: analysisData.mimeType,
+            fileUrl: analysisData.fileData, // Use the full data URL
+          }),
+        });
+
+        if (fallbackResponse.ok) {
+          const fallbackResult = await fallbackResponse.json();
+          console.log("[DASHBOARD] Fallback metadata saved:", fallbackResult.resumeId);
+          sessionStorage.setItem("aplycat_fallback_resume_id", fallbackResult.resumeId);
+          
+          // Refresh dashboard count after fallback save too
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
+      } catch (fallbackError) {
+        console.error("[DASHBOARD] Fallback metadata save also failed:", fallbackError);
+      }
+    }
   };
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
@@ -215,10 +308,10 @@ export function DashboardContent({ user }: DashboardContentProps) {
     window.open("https://instagram.com/aplycat", "_blank");
   };
 
-  const totalAnalyses = user.analyses.length;
-  const totalImprovements = user.improvedResumes.length;
+  const totalAnalyses = user.analyses?.length ?? 0;
+  const totalImprovements = user.improvedResumes?.length ?? 0;
   const latestAnalysis =
-    user.analyses.length > 0
+    user.analyses && user.analyses.length > 0
       ? user.analyses.sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -296,6 +389,49 @@ export function DashboardContent({ user }: DashboardContentProps) {
                   ~2 min analysis
                 </span>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions Grid */}
+      <div className="grid md:grid-cols-2 gap-4 max-w-lg mx-auto">
+        {/* View Resumes Card */}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">My Resumes</h3>
+                <p className="text-sm text-muted-foreground">Manage uploaded resumes</p>
+              </div>
+              <Button asChild variant="outline" className="w-full">
+                <a href="/dashboard/resumes">
+                  View My Resumes ({user.resumes?.length || 0})
+                </a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* View Analyses Card */}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto">
+                <BarChart3 className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">My Analyses</h3>
+                <p className="text-sm text-muted-foreground">View analysis history</p>
+              </div>
+              <Button asChild variant="outline" className="w-full">
+                <a href="/dashboard/analyses">
+                  View Analyses ({totalAnalyses})
+                </a>
+              </Button>
             </div>
           </CardContent>
         </Card>

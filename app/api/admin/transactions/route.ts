@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAuth } from '@/lib/auth/admin-middleware';
+import { createSuccessResponse, handleApiError, CommonErrors, validateRequiredFields } from '@/lib/utils/api-response';
+import { requireAdminAuth } from '@/lib/middleware/auth';
 import { db } from '@/lib/db';
 import { CreditTransactionType } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await requireAdminAuth();
-    if (authResult.error) {
-      return authResult.error;
-    }
+    await requireAdminAuth();
 
     const url = new URL(request.url);
     const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
@@ -21,19 +19,38 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    const whereConditions: any = {};
+    interface WhereConditions {
+      createdAt?: {
+        gte?: Date;
+        lte?: Date;
+      };
+    }
+    
+    const whereConditions: WhereConditions = {};
     if (dateFrom || dateTo) {
       whereConditions.createdAt = {};
       if (dateFrom) whereConditions.createdAt.gte = new Date(dateFrom);
       if (dateTo) whereConditions.createdAt.lte = new Date(dateTo + 'T23:59:59.999Z');
     }
 
-    let transactions: any[] = [];
+    interface TransactionData {
+      id: string;
+      provider: 'stripe' | 'mpesa';
+      amount: number;
+      currency: string;
+      status: string;
+      createdAt: Date;
+      user: { email: string; id: string };
+      description: string;
+      credits?: number;
+    }
+    
+    let transactions: TransactionData[] = [];
     let totalCount = 0;
 
     // Fetch Stripe Transactions
     if (!provider || provider === 'stripe') {
-        const stripeWhere: any = {
+        const stripeWhere: Record<string, unknown> = {
             ...whereConditions,
             eventType: 'CREDIT_PURCHASE',
             metadata: { path: ['provider'], equals: 'stripe' }
@@ -50,25 +67,25 @@ export async function GET(request: NextRequest) {
             orderBy: { createdAt: 'desc' },
         });
         transactions.push(...stripeTransactions.map(event => {
-            const meta = event.metadata as any;
+            const meta = event.metadata as Record<string, unknown>;
             const status = meta.status || 'completed'; // Default for legacy
             return {
                 id: event.id, 
-                provider: 'stripe', 
-                amount: meta.amount, 
-                currency: meta.currency?.toUpperCase() || 'MZN',
-                status: status, 
+                provider: 'stripe' as const, 
+                amount: Number(meta.amount) || 0, 
+                currency: String(meta.currency).toUpperCase() || 'MZN',
+                status: String(status), 
                 createdAt: event.createdAt, 
-                user: event.user, 
-                description: event.description,
-                credits: meta.credits,
+                user: event.user || { id: '', email: 'Unknown' }, 
+                description: event.description || '',
+                credits: Number(meta.credits) || 0,
             };
         }));
     }
 
     // Fetch MPesa Transactions
     if (!provider || provider === 'mpesa') {
-        const mpesaWhere: any = { ...whereConditions };
+        const mpesaWhere: Record<string, unknown> = { ...whereConditions };
         if (status) mpesaWhere.status = status.toUpperCase();
         if (search) {
           mpesaWhere.OR = [
@@ -82,8 +99,14 @@ export async function GET(request: NextRequest) {
             orderBy: { createdAt: 'desc' },
         });
         transactions.push(...mpesaTransactions.map(p => ({
-            id: p.id, provider: 'mpesa', amount: p.amount, currency: 'MZN', status: p.status.toLowerCase(),
-            createdAt: p.createdAt, user: p.user, description: `MPesa purchase for ${p.credits} credits`,
+            id: p.id, 
+            provider: 'mpesa' as const, 
+            amount: p.amount, 
+            currency: 'MZN', 
+            status: p.status.toLowerCase(),
+            createdAt: p.createdAt, 
+            user: p.user || { id: '', email: 'Unknown' }, 
+            description: `MPesa purchase for ${p.credits} credits`,
         })));
     }
     
@@ -103,39 +126,33 @@ export async function GET(request: NextRequest) {
       todayTransactions: 0,
     };
 
-    return NextResponse.json({
-      success: true,
-      data: paginatedTransactions,
+    return createSuccessResponse({
+      transactions: paginatedTransactions,
       pagination: { page, limit, total: totalCount, pages: Math.ceil(totalCount / limit) },
       summary,
       filters: { status, provider, dateFrom, dateTo, search },
     });
 
   } catch (error) {
-    console.error('[ADMIN_TRANSACTIONS] Error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch transactions' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'ADMIN_TRANSACTIONS');
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authResult = await requireAdminAuth();
-    if (authResult.error) {
-      return authResult.error;
-    }
+    await requireAdminAuth();
 
     const url = new URL(request.url);
     const transactionId = url.searchParams.get('id');
     const provider = url.searchParams.get('provider');
 
-    if (!transactionId || !provider) {
-      return NextResponse.json(
-        { success: false, error: 'Transaction ID and provider are required' },
-        { status: 400 }
-      );
+    const missingFields = validateRequiredFields(
+      { transactionId, provider },
+      ['transactionId', 'provider']
+    );
+
+    if (missingFields.length > 0) {
+      return CommonErrors.missingFields(missingFields);
     }
 
     console.log(`[ADMIN_DELETE] Attempting to delete ${provider} transaction: ${transactionId}`);
@@ -145,7 +162,7 @@ export async function DELETE(request: NextRequest) {
     if (provider === 'stripe') {
       // Delete Stripe transaction (usageEvent)
       deletedTransaction = await db.usageEvent.delete({
-        where: { id: transactionId },
+        where: { id: transactionId! },
         include: { user: true }
       });
       
@@ -153,20 +170,16 @@ export async function DELETE(request: NextRequest) {
     } else if (provider === 'mpesa') {
       // Delete MPesa transaction
       deletedTransaction = await db.mpesaPayment.delete({
-        where: { id: transactionId },
+        where: { id: transactionId! },
         include: { user: true }
       });
       
       console.log(`[ADMIN_DELETE] Deleted MPesa transaction: ${transactionId}`);
     } else {
-      return NextResponse.json(
-        { success: false, error: 'Unsupported provider' },
-        { status: 400 }
-      );
+      return CommonErrors.invalidInput(`Unsupported provider: ${provider}`);
     }
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       message: 'Transaction deleted successfully',
       deletedTransaction: {
         id: deletedTransaction.id,
@@ -185,9 +198,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Failed to delete transaction' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'ADMIN_DELETE');
   }
 } 

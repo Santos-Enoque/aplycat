@@ -1,70 +1,44 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUserFromDB } from "@/lib/auth/user-sync";
-import { deductUserCredits, checkUserCredits } from "@/lib/actions/user-actions";
+import { NextRequest } from "next/server";
+import { createSuccessResponse, handleApiError, CommonErrors, validateRequiredFields } from "@/lib/utils/api-response";
+import { requireAuth, deductCredits } from "@/lib/middleware/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUserFromDB();
+    const user = await requireAuth();
+    const body = await request.json();
     
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not authenticated" },
-        { status: 401 }
-      );
+    // Validate required fields
+    const missingFields = validateRequiredFields(body, ['creditsToUse', 'action']);
+    if (missingFields.length > 0) {
+      return CommonErrors.missingFields(missingFields);
     }
 
-    const body = await request.json();
     const { creditsToUse, action } = body;
 
-    if (!creditsToUse || typeof creditsToUse !== "number" || creditsToUse <= 0) {
-      return NextResponse.json(
-        { error: "Invalid credits amount" },
-        { status: 400 }
-      );
+    // Validate credits amount
+    if (typeof creditsToUse !== "number" || creditsToUse <= 0) {
+      return CommonErrors.invalidInput("Credits amount must be a positive number");
     }
 
-    if (!action || typeof action !== "string") {
-      return NextResponse.json(
-        { error: "Action description is required" },
-        { status: 400 }
-      );
+    // Validate action description
+    if (typeof action !== "string" || action.trim().length === 0) {
+      return CommonErrors.invalidInput("Action description must be a non-empty string");
     }
 
-    // Check if user has enough credits
-    const hasEnoughCredits = await checkUserCredits(creditsToUse);
-    
-    if (!hasEnoughCredits) {
-      return NextResponse.json(
-        { error: "Insufficient credits" },
-        { status: 400 }
-      );
-    }
-
-    // Deduct credits
-    const success = await deductUserCredits(
+    // Deduct credits using centralized function
+    const result = await deductCredits(
+      user.id,
       creditsToUse,
-      action,
-      'IMPROVEMENT_USE' // Using IMPROVEMENT_USE as a general category for feature usage
+      action
     );
 
-    if (!success) {
-      return NextResponse.json(
-        { error: "Failed to deduct credits" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       creditsUsed: creditsToUse,
+      remainingCredits: result.remainingCredits,
       description: action,
     });
 
   } catch (error) {
-    console.error("[USE_CREDITS] Error processing credit transaction:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error, "USE_CREDITS");
   }
 } 

@@ -133,7 +133,7 @@ export function AdminDashboard() {
         setIsRefreshing(true);
 
         // Merge filters and remove null/undefined values
-        const mergedFilters = { ...filters, ...newFilters };
+        const mergedFilters = { ...(filters || {}), ...(newFilters || {}) };
         const cleanFilters = Object.fromEntries(
           Object.entries(mergedFilters).filter(
             ([_, value]) => value != null && value !== ""
@@ -142,7 +142,7 @@ export function AdminDashboard() {
 
         const params = new URLSearchParams({
           page: page.toString(),
-          limit: pagination.limit.toString(),
+          limit: "25", // Use fixed limit to avoid dependency issues
           ...cleanFilters,
         });
 
@@ -172,7 +172,7 @@ export function AdminDashboard() {
         setIsRefreshing(false);
       }
     },
-    [filters, pagination.limit]
+    [filters]
   );
 
   useEffect(() => {
@@ -183,7 +183,7 @@ export function AdminDashboard() {
     key: keyof TransactionFilters,
     value: string | undefined
   ) => {
-    const newFilters = { ...filters, [key]: value };
+    const newFilters = { ...(filters || {}), [key]: value };
     setFilters(newFilters);
     fetchTransactions(newFilters, 1);
   };
@@ -194,7 +194,7 @@ export function AdminDashboard() {
 
   const handlePageChange = (newPage: number) => {
     setPagination((prev) => ({ ...prev, page: newPage }));
-    fetchTransactions(filters, newPage);
+    fetchTransactions(filters || {}, newPage);
   };
 
   const getStatusIcon = (status: string) => {
@@ -323,7 +323,7 @@ export function AdminDashboard() {
         break;
     }
 
-    const newFilters = { ...filters, dateFrom, dateTo };
+    const newFilters = { ...(filters || {}), dateFrom, dateTo };
     setFilters(newFilters);
     fetchTransactions(newFilters, 1);
   };
@@ -361,7 +361,7 @@ export function AdminDashboard() {
       });
 
       // Refresh the transactions list
-      await fetchTransactions(filters, pagination.page);
+      await fetchTransactions(filters || {}, pagination?.page || 1);
     } catch (error) {
       console.error("Failed to delete transaction:", error);
       toast.error("Failed to delete transaction", {
@@ -388,7 +388,7 @@ export function AdminDashboard() {
           </p>
         </div>
         <Button
-          onClick={() => fetchTransactions(filters, pagination.page)}
+          onClick={() => fetchTransactions(filters || {}, pagination?.page || 1)}
           disabled={isRefreshing}
           variant="outline"
         >
@@ -534,7 +534,7 @@ export function AdminDashboard() {
             <div>
               <label className="text-sm font-medium mb-2 block">Status</label>
               <Select
-                value={filters.status || "all"}
+                value={filters?.status || "all"}
                 onValueChange={(value) =>
                   handleFilterChange(
                     "status",
@@ -559,7 +559,7 @@ export function AdminDashboard() {
             <div>
               <label className="text-sm font-medium mb-2 block">Provider</label>
               <Select
-                value={filters.provider || "all"}
+                value={filters?.provider || "all"}
                 onValueChange={(value) =>
                   handleFilterChange(
                     "provider",
@@ -586,7 +586,7 @@ export function AdminDashboard() {
               </label>
               <Input
                 type="date"
-                value={filters.dateFrom || ""}
+                value={filters?.dateFrom || ""}
                 onChange={(e) =>
                   handleFilterChange("dateFrom", e.target.value || undefined)
                 }
@@ -598,7 +598,7 @@ export function AdminDashboard() {
               <label className="text-sm font-medium mb-2 block">To Date</label>
               <Input
                 type="date"
-                value={filters.dateTo || ""}
+                value={filters?.dateTo || ""}
                 onChange={(e) =>
                   handleFilterChange("dateTo", e.target.value || undefined)
                 }
@@ -617,7 +617,7 @@ export function AdminDashboard() {
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-            <Badge variant="outline">{pagination.total} total</Badge>
+            <Badge variant="outline">{pagination?.total || 0} total</Badge>
           </div>
         </CardHeader>
         <CardContent>
@@ -636,7 +636,7 @@ export function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.length === 0 ? (
+                {!Array.isArray(transactions) || transactions.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={8}
@@ -646,7 +646,7 @@ export function AdminDashboard() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  transactions.map((transaction) => (
+                  (Array.isArray(transactions) ? transactions : []).map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
                         <div>
@@ -751,30 +751,30 @@ export function AdminDashboard() {
           </div>
 
           {/* Pagination */}
-          {pagination.pages > 1 && (
+          {pagination?.pages && pagination.pages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <div className="text-sm text-gray-500">
-                Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
-                of {pagination.total} transactions
+                Showing {((pagination?.page || 1) - 1) * (pagination?.limit || 25) + 1} to{" "}
+                {Math.min((pagination?.page || 1) * (pagination?.limit || 25), pagination?.total || 0)}{" "}
+                of {pagination?.total || 0} transactions
               </div>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(pagination.page - 1)}
-                  disabled={pagination.page <= 1}
+                  onClick={() => handlePageChange((pagination?.page || 1) - 1)}
+                  disabled={(pagination?.page || 1) <= 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm">
-                  Page {pagination.page} of {pagination.pages}
+                  Page {pagination?.page || 1} of {pagination?.pages || 1}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                  disabled={pagination.page >= pagination.pages}
+                  onClick={() => handlePageChange((pagination?.page || 1) + 1)}
+                  disabled={(pagination?.page || 1) >= (pagination?.pages || 1)}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>

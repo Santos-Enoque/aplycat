@@ -1,0 +1,10 @@
+import { createRouteHandler } from "uploadthing/next";
+import { ourFileRouter } from "./core";
+
+// Export routes for Next.js App Router (UploadThing v7+ format)
+export const { GET, POST } = createRouteHandler({
+  router: ourFileRouter,
+  config: {
+    token: process.env.UPLOADTHING_TOKEN,
+  },
+});
