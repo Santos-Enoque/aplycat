@@ -2,6 +2,9 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { ResumeAnalysis } from '@/types/analysis';
+import { backgroundProcessor } from '@/lib/background-processor';
+import { streamingAutoSave } from '@/lib/streaming-auto-save';
+import { useAuth } from '@clerk/nextjs';
 // import * as Sentry from '@sentry/nextjs';
 
 interface StreamingChunk {
@@ -25,9 +28,13 @@ export interface UseStreamingAnalysisReturn {
   stopAnalysis: () => void;
   retryAnalysis: () => void;
   resetAnalysis: () => void;
+  recoverFromCheckpoint: (resumeId: string) => Promise<any>;
+  hasRecoverableState: boolean;
 }
 
 export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
+  const { userId } = useAuth();
+  
   const [analysis, setAnalysis] = useState<Partial<ResumeAnalysis> | null>(() => {
     if (typeof window === 'undefined') return null;
     const saved = sessionStorage.getItem('streamingAnalysis');
@@ -42,9 +49,11 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     if (typeof window === 'undefined') return 0;
     return Number(sessionStorage.getItem('streamingAnalysisProgress')) || 0;
   });
+  const [hasRecoverableState, setHasRecoverableState] = useState<boolean>(false);
 
   const lastFile = useRef<File | null>(null);
-
+  const currentResumeId = useRef<string | null>(null);
+  const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const saveAttemptedRef = useRef<boolean>(false);
 
@@ -107,6 +116,102 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     }
   }, []);
 
+  // Enhanced auto-save function with background processing
+  const autoSaveProgress = useCallback(async (partialAnalysis: any, progressValue: number) => {
+    if (!userId || !currentResumeId.current) return;
+
+    try {
+      // Queue background auto-save (non-blocking)
+      await backgroundProcessor.saveAnalysisProgress({
+        resumeId: currentResumeId.current,
+        userId,
+        progress: progressValue / 100,
+        partialAnalysis,
+        status: progressValue >= 100 ? 'COMPLETED' : 'IN_PROGRESS',
+      });
+    } catch (error) {
+      console.error('[useStreamingAnalysis] Auto-save failed:', error);
+      // Don't throw - auto-save should be resilient
+    }
+  }, [userId]);
+
+  // Recovery function to check for existing checkpoints
+  const recoverFromCheckpoint = useCallback(async (resumeId: string) => {
+    if (!userId) return null;
+
+    try {
+      const checkpoint = await streamingAutoSave.recoverAnalysisState(resumeId, userId);
+      
+      if (checkpoint && checkpoint.status === 'IN_PROGRESS') {
+        // Restore state from checkpoint
+        setAnalysis(checkpoint.partialAnalysis);
+        setProgress(checkpoint.progress * 100);
+        setStatus('streaming');
+        currentResumeId.current = resumeId;
+        
+        // Update session storage for backward compatibility
+        sessionStorage.setItem('streamingAnalysis', JSON.stringify(checkpoint.partialAnalysis));
+        sessionStorage.setItem('streamingAnalysisProgress', (checkpoint.progress * 100).toString());
+        sessionStorage.setItem('streamingAnalysisStatus', 'streaming');
+        
+        return checkpoint;
+      }
+      return null;
+    } catch (error) {
+      console.error('[useStreamingAnalysis] Recovery failed:', error);
+      return null;
+    }
+  }, [userId]);
+
+  // Check for recoverable state on mount
+  useEffect(() => {
+    if (userId) {
+      const checkRecoverableState = async () => {
+        const uploadThingResumeId = sessionStorage.getItem('aplycat_uploadthing_resume_id');
+        const fallbackResumeId = sessionStorage.getItem('aplycat_fallback_resume_id');
+        const resumeId = uploadThingResumeId || fallbackResumeId;
+        
+        if (resumeId) {
+          const checkpoint = await streamingAutoSave.recoverAnalysisState(resumeId, userId);
+          setHasRecoverableState(
+            checkpoint !== null && 
+            checkpoint.status === 'IN_PROGRESS' && 
+            checkpoint.progress < 1.0
+          );
+        }
+      };
+      
+      checkRecoverableState();
+    }
+  }, [userId]);
+
+  // Set up periodic auto-save during streaming
+  useEffect(() => {
+    if (status === 'streaming' && analysis && userId) {
+      // Clear any existing interval
+      if (autoSaveIntervalRef.current) {
+        clearInterval(autoSaveIntervalRef.current);
+      }
+      
+      // Set up auto-save every 10 seconds
+      autoSaveIntervalRef.current = setInterval(() => {
+        autoSaveProgress(analysis, progress);
+      }, 10000);
+    } else {
+      // Clear interval when not streaming
+      if (autoSaveIntervalRef.current) {
+        clearInterval(autoSaveIntervalRef.current);
+        autoSaveIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (autoSaveIntervalRef.current) {
+        clearInterval(autoSaveIntervalRef.current);
+      }
+    };
+  }, [status, analysis, progress, userId, autoSaveProgress]);
+
   useEffect(() => {
     if (status === 'idle' && analysis) {
        const savedStatus = sessionStorage.getItem('streamingAnalysisStatus') as StreamingStatus;
@@ -129,15 +234,39 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     setStatus('idle');
     setError(null);
     setProgress(0);
+    setHasRecoverableState(false);
     saveAttemptedRef.current = false; // Reset save flag
+    
+    // Clear session storage
     sessionStorage.removeItem('streamingAnalysis');
     sessionStorage.removeItem('streamingAnalysisStatus');
     sessionStorage.removeItem('streamingAnalysisProgress');
+    
+    // Clear auto-save interval
+    if (autoSaveIntervalRef.current) {
+      clearInterval(autoSaveIntervalRef.current);
+      autoSaveIntervalRef.current = null;
+    }
+    
+    // Cancel streaming
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-  }, []);
+    
+    // Mark checkpoint as cancelled in background
+    if (userId && currentResumeId.current) {
+      backgroundProcessor.saveAnalysisProgress({
+        resumeId: currentResumeId.current,
+        userId,
+        progress: 0,
+        partialAnalysis: {},
+        status: 'CANCELLED',
+      });
+    }
+    
+    currentResumeId.current = null;
+  }, [userId]);
 
   const startAnalysis = useCallback(async (file: File) => {
     lastFile.current = file;
@@ -146,6 +275,22 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     setAnalysis(null);
     setProgress(0);
     saveAttemptedRef.current = false; // Reset save flag for new analysis
+
+    // Get or generate resume ID for tracking
+    const uploadThingResumeId = sessionStorage.getItem('aplycat_uploadthing_resume_id');
+    const fallbackResumeId = sessionStorage.getItem('aplycat_fallback_resume_id');
+    currentResumeId.current = uploadThingResumeId || fallbackResumeId;
+
+    // Initialize checkpoint if user is authenticated
+    if (userId && currentResumeId.current) {
+      await backgroundProcessor.saveAnalysisProgress({
+        resumeId: currentResumeId.current,
+        userId,
+        progress: 0,
+        partialAnalysis: {},
+        status: 'IN_PROGRESS',
+      });
+    }
 
     abortControllerRef.current = new AbortController();
 
@@ -256,7 +401,7 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
         setStatus('error');
       }
     }
-  }, []);
+  }, [userId]);
 
   const stopAnalysis = useCallback(() => {
     if (abortControllerRef.current) {
@@ -281,6 +426,8 @@ export function useStreamingAnalysis(): UseStreamingAnalysisReturn {
     stopAnalysis,
     retryAnalysis,
     resetAnalysis,
+    recoverFromCheckpoint,
+    hasRecoverableState,
   };
 }
 
