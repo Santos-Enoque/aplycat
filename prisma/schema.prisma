@@ -164,11 +164,67 @@ model Resume {
     resumeComparisons   ResumeComparison[]
     analysisCheckpoints AnalysisCheckpoint[]
     improvementSessions ImprovementSession[]
+    tags                ResumeTag[]
+    analytics           ResumeAnalytics?
 
     // Critical indexes for dashboard performance
     @@index([userId, isActive, createdAt(sort: Desc)])
     @@index([userId, createdAt(sort: Desc)])
     @@map("resumes")
+}
+
+// ===== RESUME ORGANIZATION & ANALYTICS =====
+model ResumeTag {
+    id       String @id @default(cuid())
+    name     String
+    color    String @default("#6B7280") // Default gray color
+    userId   String
+    resumeId String
+
+    // Timestamps
+    createdAt DateTime @default(now())
+
+    // Relations
+    resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+    // Ensure unique tag names per resume
+    @@unique([resumeId, name])
+    @@index([userId])
+    @@map("resume_tags")
+}
+
+model ResumeAnalytics {
+    id String @id @default(cuid())
+    resumeId String @unique
+
+    // Usage counters
+    viewCount        Int @default(0)
+    analysisCount    Int @default(0)
+    improvementCount Int @default(0)
+    exportCount      Int @default(0)
+    shareCount       Int @default(0)
+
+    // Timestamps for tracking
+    lastViewedAt     DateTime?
+    lastAnalyzedAt   DateTime?
+    lastImprovedAt   DateTime?
+    lastExportedAt   DateTime?
+    lastSharedAt     DateTime?
+
+    // Performance metrics
+    avgAnalysisScore     Float? // Average of all analysis scores
+    bestAnalysisScore    Int?   // Best analysis score achieved
+    totalProcessingTime  Int    @default(0) // Total processing time in ms
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+    @@index([resumeId])
+    @@map("resume_analytics")
 }
 
 // ===== ANALYSIS RESULTS =====
