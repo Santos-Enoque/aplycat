@@ -1,18 +1,18 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { db, analyticsHelpers } from "@/lib/db";
 
 const f = createUploadthing();
 
 export const ourFileRouter = {
   resumeUploader: f({ 
-    pdf: { maxFileSize: "10MB", maxFileCount: 1 },
-    "application/msword": { maxFileSize: "10MB", maxFileCount: 1 },
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { maxFileSize: "10MB", maxFileCount: 1 }
+    pdf: { maxFileSize: "8MB", maxFileCount: 1 },
+    "application/msword": { maxFileSize: "8MB", maxFileCount: 1 },
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { maxFileSize: "8MB", maxFileCount: 1 }
   })
     .middleware(async ({ req }) => {
       // Check authentication
-      const { userId } = auth();
+      const { userId } = await auth();
       if (!userId) {
         throw new Error("Unauthorized - You must be logged in to upload files");
       }
