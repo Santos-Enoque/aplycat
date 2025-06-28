@@ -51,6 +51,7 @@ export const ourFileRouter = {
             userId: metadata.userId,
             fileName: file.name,
             fileUrl: file.url,
+            uploadThingKey: file.key, // Store UploadThing key for deletion
             fileSize: file.size,
             mimeType: file.type,
             title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension for title
