@@ -1,9 +1,16 @@
 import {
   generateUploadButton,
   generateUploadDropzone,
+  generateReactHelpers,
 } from "@uploadthing/react";
-// TODO: Create uploadthing API route if needed
-// import type { OurFileRouter } from "@/app/api/uploadthing/core";
+import type { OurFileRouter } from "@/app/api/uploadthing/core";
 
-export const UploadButton = generateUploadButton<any>();
-export const UploadDropzone = generateUploadDropzone<any>(); 
+// Generate typed components with our file router
+export const UploadButton = generateUploadButton<OurFileRouter>();
+export const UploadDropzone = generateUploadDropzone<OurFileRouter>();
+
+// Generate typed hooks for use in components
+export const { useUploadThing, uploadFiles } = generateReactHelpers<OurFileRouter>();
+
+// Export types for use in components
+export type { OurFileRouter }; 
