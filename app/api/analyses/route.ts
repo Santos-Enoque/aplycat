@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
         // Include related improvements count
         _count: {
           select: {
-            improvedResumes: true
+            improvements: true
           }
         }
       },
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       creditsUsed: analysis.creditsUsed,
       createdAt: analysis.createdAt,
       updatedAt: analysis.updatedAt,
-      improvementsCount: analysis._count.improvedResumes,
+      improvementsCount: analysis._count.improvements,
       resume: analysis.resume ? {
         id: analysis.resume.id,
         fileName: analysis.resume.fileName,
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
       scoreGrade: analysis.atsScore >= 80 ? 'excellent' : 
                   analysis.atsScore >= 60 ? 'good' : 
                   analysis.atsScore >= 40 ? 'fair' : 'poor',
-      hasImprovements: analysis._count.improvedResumes > 0
+      hasImprovements: analysis._count.improvements > 0
     }));
 
     return NextResponse.json({
