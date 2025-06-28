@@ -25,7 +25,7 @@ setup('authenticate with Clerk', async ({ page }) => {
   await clerk.signIn({
     page,
     signInParams: {
-      strategy: 'email_code', // or 'password' depending on your setup
+      strategy: 'password', // Use password strategy to include password field
       identifier: process.env.TEST_USER_EMAIL || 'test@example.com',
       password: process.env.TEST_USER_PASSWORD || 'test_password',
     }

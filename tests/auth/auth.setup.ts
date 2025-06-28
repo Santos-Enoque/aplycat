@@ -23,10 +23,13 @@ setup('authenticate', async ({ page }) => {
     await page.goto('/sign-in');
     
     // Use Clerk's test helpers to sign in
-    await clerk.signIn(page, {
-      strategy: 'password',
-      identifier: process.env.TEST_USER_EMAIL || 'test@example.com',
-      password: process.env.TEST_USER_PASSWORD || 'test_password',
+    await clerk.signIn({
+      page,
+      signInParams: {
+        strategy: 'password',
+        identifier: process.env.TEST_USER_EMAIL || 'test@example.com',
+        password: process.env.TEST_USER_PASSWORD || 'test_password',
+      }
     });
     
     // Wait for redirect after sign-in
