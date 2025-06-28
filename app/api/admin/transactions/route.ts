@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createSuccessResponse, handleApiError, CommonErrors, validateRequiredFields } from '@/lib/utils/api-response';
 import { requireAdminAuth } from '@/lib/middleware/auth';
 import { db } from '@/lib/db';
