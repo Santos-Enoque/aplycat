@@ -605,6 +605,7 @@
         "versions": "versions",
         "lastAnalysisScore": "Latest analysis score",
         "analyze": "Analyze",
+        "viewAnalysis": "View Analysis",
         "reanalyze": "Re-analyze",
         "improve": "Improve",
         "view": "View",

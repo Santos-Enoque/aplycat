@@ -71,11 +71,28 @@ export function ResumeCard({
   };
 
   const handleAnalyze = () => {
-    router.push(`/dashboard/resume/${resume.id}/analyze`);
+    if (latestAnalysis?.id) {
+      // View existing analysis
+      router.push(`/analyze?analysisId=${latestAnalysis.id}`);
+    } else {
+      // Start new analysis
+      router.push(`/analyze?resumeId=${resume.id}`);
+    }
   };
 
   const handleImprove = () => {
-    router.push(`/dashboard/resume/${resume.id}/improve`);
+    // Store resume data for the improve flow
+    const streamingAnalysisFile = {
+      filename: resume.fileName,
+      fileData: resume.fileUrl, // This will be the UploadThing URL or base64 data
+    };
+    
+    // Store in sessionStorage for the improve page to use
+    sessionStorage.setItem('streamingAnalysisFile', JSON.stringify(streamingAnalysisFile));
+    sessionStorage.setItem('aplycat_uploadthing_resume_id', resume.id);
+    
+    // Navigate to improve-v2 which handles the target role/industry collection
+    router.push('/improve-v2');
   };
 
   const handleDownload = async () => {
@@ -225,7 +242,7 @@ export function ResumeCard({
               className="flex-1"
             >
               <TrendingUp className="h-4 w-4 mr-1" />
-              {analysisCount > 0 ? t("reanalyze") : t("analyze")}
+              {analysisCount > 0 ? t("viewAnalysis") : t("analyze")}
             </Button>
             <Button
               size="sm"
@@ -287,7 +304,7 @@ export function ResumeCard({
               variant="outline"
               onClick={handleAnalyze}
             >
-              {analysisCount > 0 ? t("reanalyze") : t("analyze")}
+              {analysisCount > 0 ? t("viewAnalysis") : t("analyze")}
             </Button>
             <Button
               size="sm"
@@ -369,7 +386,7 @@ export function ResumeCard({
             variant="outline"
             onClick={handleAnalyze}
           >
-            {analysisCount > 0 ? t("reanalyze") : t("analyze")}
+            {analysisCount > 0 ? t("viewAnalysis") : t("analyze")}
           </Button>
           <Button
             size="sm"
