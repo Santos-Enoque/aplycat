@@ -31,12 +31,12 @@ export function LibraryContent({
 }: LibraryContentProps) {
   const t = useTranslations("resume.library");
 
-  if (isLoading) {
-    return <LoadingState viewMode={view.viewMode} />;
-  }
-
   if (error) {
     return <ErrorState error={error} onRetry={onRefresh} />;
+  }
+
+  if (isLoading) {
+    return <LoadingState viewMode={view.viewMode} />;
   }
 
   if (resumes.length === 0) {
@@ -64,6 +64,7 @@ export function LibraryContent({
     selectedResumes,
     onResumeSelect: handleResumeSelect,
     onSelectAll: handleSelectAll,
+    onRefresh,
   };
 
   switch (view.viewMode) {

@@ -45,3 +45,15 @@ export async function tagResume(resumeId: string, tags: string[]) {
 
   return response.json();
 }
+
+export async function deleteResume(resumeId: string) {
+  const response = await fetch(`/api/resumes/${resumeId}/delete`, {
+    method: "DELETE",
+  });
+  
+  if (!response.ok) {
+    throw new Error("Failed to delete resume");
+  }
+
+  return response.json();
+}

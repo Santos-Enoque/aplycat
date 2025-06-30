@@ -11,6 +11,7 @@ interface TimelineViewProps {
   selectedResumes: string[];
   onResumeSelect: (resumeId: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  onRefresh: () => void;
 }
 
 interface TimelineGroup {
@@ -22,6 +23,7 @@ export function TimelineView({
   resumes,
   selectedResumes,
   onResumeSelect,
+  onRefresh,
 }: TimelineViewProps) {
   const t = useTranslations("resume.library.timeline");
 
@@ -105,6 +107,7 @@ export function TimelineView({
                     viewMode="timeline"
                     selected={selectedResumes.includes(resume.id)}
                     onSelect={(selected) => onResumeSelect(resume.id, selected)}
+                    onDelete={onRefresh}
                   />
                 </div>
               ))}
