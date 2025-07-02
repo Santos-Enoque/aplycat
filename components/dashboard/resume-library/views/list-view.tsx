@@ -11,6 +11,7 @@ interface ListViewProps {
   selectedResumes: string[];
   onResumeSelect: (resumeId: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  onRefresh: () => void;
 }
 
 export function ListView({
@@ -18,6 +19,7 @@ export function ListView({
   selectedResumes,
   onResumeSelect,
   onSelectAll,
+  onRefresh,
 }: ListViewProps) {
   const t = useTranslations("resume.library");
   const allSelected = resumes.length > 0 && selectedResumes.length === resumes.length;
@@ -45,6 +47,7 @@ export function ListView({
             viewMode="list"
             selected={selectedResumes.includes(resume.id)}
             onSelect={(selected) => onResumeSelect(resume.id, selected)}
+            onDelete={onRefresh}
           />
         ))}
       </div>

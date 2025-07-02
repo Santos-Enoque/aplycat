@@ -9,12 +9,14 @@ interface GridViewProps {
   selectedResumes: string[];
   onResumeSelect: (resumeId: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  onRefresh: () => void;
 }
 
 export function GridView({
   resumes,
   selectedResumes,
   onResumeSelect,
+  onRefresh,
 }: GridViewProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -25,6 +27,7 @@ export function GridView({
           viewMode="grid"
           selected={selectedResumes.includes(resume.id)}
           onSelect={(selected) => onResumeSelect(resume.id, selected)}
+          onDelete={onRefresh}
         />
       ))}
     </div>

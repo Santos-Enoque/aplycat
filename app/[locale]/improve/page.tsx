@@ -37,17 +37,19 @@ function ImprovePageContent() {
     hasInitiated.current = true;
 
     const storedData = sessionStorage.getItem("improvementJobDetails");
+    const resumeId = sessionStorage.getItem("aplycat_uploadthing_resume_id");
     if (storedData) {
       const { targetRole, targetIndustry, originalFile } =
         JSON.parse(storedData);
-      improveResume(originalFile, targetRole, targetIndustry);
+      improveResume(originalFile, targetRole, targetIndustry, resumeId);
     }
   }, []);
 
   const improveResume = async (
     originalFile: any,
     targetRole: string,
-    targetIndustry: string
+    targetIndustry: string,
+    resumeId: string | null
   ) => {
     setStatus("loading");
     setError(null);
@@ -61,6 +63,7 @@ function ImprovePageContent() {
           originalFile,
           targetRole,
           targetIndustry,
+          resumeId,
         }),
       });
 

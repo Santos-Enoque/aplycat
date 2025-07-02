@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -36,7 +46,7 @@ import {
 import { formatDistanceToNow, format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { WorkflowProgressMini } from "./workflow-progress-mini";
-import { downloadResume } from "@/lib/api/resume-operations";
+import { downloadResume, deleteResume } from "@/lib/api/resume-operations";
 import { toast } from "sonner";
 import type { ResumeWithRelations, ViewMode } from "@/types/resume-library";
 
@@ -45,6 +55,7 @@ interface ResumeCardProps {
   viewMode: ViewMode;
   selected: boolean;
   onSelect: (selected: boolean) => void;
+  onDelete?: () => void; // Callback to refresh the list after deletion
 }
 
 export function ResumeCard({
@@ -52,10 +63,13 @@ export function ResumeCard({
   viewMode,
   selected,
   onSelect,
+  onDelete,
 }: ResumeCardProps) {
   const t = useTranslations("resume.library.card");
   const router = useRouter();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const latestAnalysis = resume.analyses?.[0];
   const analysisScore = latestAnalysis?.atsScore;
@@ -91,6 +105,15 @@ export function ResumeCard({
     sessionStorage.setItem('streamingAnalysisFile', JSON.stringify(streamingAnalysisFile));
     sessionStorage.setItem('aplycat_uploadthing_resume_id', resume.id);
     
+    // If we have an existing analysis, store it as improvementJobDetails
+    if (latestAnalysis) {
+      const improvementJobDetails = {
+        analysis: latestAnalysis,
+        originalFile: streamingAnalysisFile,
+      };
+      sessionStorage.setItem('improvementJobDetails', JSON.stringify(improvementJobDetails));
+    }
+    
     // Navigate to improve-v2 which handles the target role/industry collection
     router.push('/improve-v2');
   };
@@ -107,11 +130,58 @@ export function ResumeCard({
     }
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteResume(resume.id);
+      toast.success(t("deleteSuccess"));
+      // Call the onDelete callback to refresh the list
+      if (onDelete) {
+        onDelete();
+      }
+    } catch (error) {
+      toast.error(t("deleteError"));
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   const statusIcon = getStatusIcon(resume);
   const scoreColor = getScoreColor(analysisScore);
 
+  const deleteDialog = (
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t("deleteDialog.description", { filename: resume.fileName })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>
+            {t("deleteDialog.cancel")}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              t("deleteDialog.confirm")
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   if (viewMode === 'grid') {
     return (
+      <>
       <div className={cn(
         "bg-white dark:bg-gray-800 rounded-lg border hover:shadow-md transition-all duration-200",
         selected && "ring-2 ring-blue-500 border-blue-500"
@@ -169,7 +239,11 @@ export function ResumeCard({
                     {t("actions.addTag")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600 dark:text-red-400">
+                  <DropdownMenuItem 
+                    className="text-red-600 dark:text-red-400"
+                    onClick={() => setShowDeleteDialog(true)}
+                    disabled={isDeleting}
+                  >
                     <Trash2 className="h-4 w-4 mr-2" />
                     {t("actions.delete")}
                   </DropdownMenuItem>
@@ -256,11 +330,14 @@ export function ResumeCard({
           </div>
         </div>
       </div>
+      {deleteDialog}
+      </>
     );
   }
 
   if (viewMode === 'list') {
     return (
+      <>
       <div className={cn(
         "bg-white dark:bg-gray-800 rounded-lg border hover:shadow-sm transition-all duration-200",
         selected && "ring-2 ring-blue-500 border-blue-500"
@@ -328,7 +405,11 @@ export function ResumeCard({
                   {t("actions.download")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600 dark:text-red-400">
+                <DropdownMenuItem 
+                  className="text-red-600 dark:text-red-400"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={isDeleting}
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   {t("actions.delete")}
                 </DropdownMenuItem>
@@ -337,15 +418,18 @@ export function ResumeCard({
           </div>
         </div>
       </div>
+      {deleteDialog}
+      </>
     );
   }
 
   // Timeline view
   return (
-    <div className={cn(
-      "bg-white dark:bg-gray-800 rounded-lg border hover:shadow-sm transition-all duration-200",
-      selected && "ring-2 ring-blue-500 border-blue-500"
-    )}>
+    <>
+      <div className={cn(
+        "bg-white dark:bg-gray-800 rounded-lg border hover:shadow-sm transition-all duration-200",
+        selected && "ring-2 ring-blue-500 border-blue-500"
+      )}>
       <div className="p-4 space-y-3">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3 flex-1">
@@ -397,6 +481,8 @@ export function ResumeCard({
         </div>
       </div>
     </div>
+    {deleteDialog}
+    </>
   );
 }
 
