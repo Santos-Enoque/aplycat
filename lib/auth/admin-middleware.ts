@@ -22,15 +22,13 @@ export async function requireAdminAuth(): Promise<{ user: any; error?: never } |
     const hasAdminRole = user.publicMetadata?.role === 'admin' || 
                         user.privateMetadata?.role === 'admin';
 
-    // TEMPORARY: Allow all authenticated users for testing
     if (!hasAdminRole) {
-      console.log(`[ADMIN_AUTH] Warning: User ${user.id} accessing admin without admin role - allowing for development`);
-      // return {
-      //   error: NextResponse.json(
-      //     { error: 'Admin access required' },
-      //     { status: 403 }
-      //   )
-      // };
+      return {
+        error: NextResponse.json(
+          { error: 'Admin access required' },
+          { status: 403 }
+        )
+      };
     }
 
     console.log(`[ADMIN_AUTH] Admin access granted for user ${user.id}`);

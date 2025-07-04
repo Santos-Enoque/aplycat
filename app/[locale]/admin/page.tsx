@@ -15,12 +15,7 @@ export default async function AdminPage() {
     user.privateMetadata?.role === "admin";
 
   if (!hasAdminRole) {
-    // For development, allow all authenticated users
-    console.log(
-      `[ADMIN_PAGE] Warning: User ${user.id} accessing admin without admin role - allowing for development`
-    );
-    // In production, uncomment this:
-    // redirect('/dashboard');
+    redirect('/dashboard');
   }
 
   return (

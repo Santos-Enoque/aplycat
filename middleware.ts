@@ -26,8 +26,14 @@ const isProtectedRoute = createRouteMatcher([
   '/pt/improved-resume(.*)',
 ]);
 
+const isAdminRoute = createRouteMatcher([
+  '/admin(.*)',
+  '/en/admin(.*)',
+  '/pt/admin(.*)',
+]);
+
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
   const url = req.nextUrl;
 
   // Apply rate limiting to payment endpoints
@@ -88,6 +94,26 @@ export default clerkMiddleware(async (auth, req) => {
     const signInUrl = new URL(`/${currentLocale}/sign-in`, req.url);
     signInUrl.searchParams.set('redirect_url', req.url);
     return NextResponse.redirect(signInUrl);
+  }
+
+  // Check admin route access
+  if (isAdminRoute(req)) {
+    if (!userId) {
+      const signInUrl = new URL(`/${currentLocale}/sign-in`, req.url);
+      signInUrl.searchParams.set('redirect_url', req.url);
+      return NextResponse.redirect(signInUrl);
+    }
+
+    // Check if user has admin role in either public or private metadata
+    const hasAdminRole = 
+      (sessionClaims?.metadata as any)?.role === 'admin' ||
+      (sessionClaims?.publicMetadata as any)?.role === 'admin' ||
+      (sessionClaims?.privateMetadata as any)?.role === 'admin';
+
+    if (!hasAdminRole) {
+      // Redirect non-admin users to dashboard
+      return NextResponse.redirect(new URL(`/${currentLocale}/dashboard`, req.url));
+    }
   }
 
   // Redirect authenticated users from root to dashboard
